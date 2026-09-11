@@ -13,3 +13,6 @@ datasets/
 
 # Generated dataset inventories, manifests, checkpoints, and reports
 artifacts/
+
+**/__marimo__/
+.marimo.toml
