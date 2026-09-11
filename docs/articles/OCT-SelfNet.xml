@@ -1,0 +1,1480 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD Journal Publishing DTD v2.3 20070202//EN" "journalpublishing.dtd">
+<article xml:lang="EN" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" article-type="research-article">
+<front>
+<journal-meta>
+<journal-id journal-id-type="publisher-id">Front. Big Data</journal-id>
+<journal-title>Frontiers in Big Data</journal-title>
+<abbrev-journal-title abbrev-type="pubmed">Front. Big Data</abbrev-journal-title>
+<issn pub-type="epub">2624-909X</issn>
+<publisher>
+<publisher-name>Frontiers Media S.A.</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="doi">10.3389/fdata.2025.1609124</article-id>
+<article-categories>
+<subj-group subj-group-type="heading">
+<subject>Big Data</subject>
+<subj-group>
+<subject>Original Research</subject>
+</subj-group>
+</subj-group>
+</article-categories>
+<title-group>
+<article-title>OCT-SelfNet: a self-supervised framework with multi-source datasets for generalized retinal disease detection</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" corresp="yes">
+<name><surname>Jannat</surname> <given-names>Fatema-E</given-names></name>
+<xref ref-type="corresp" rid="c001"><sup>&#x0002A;</sup></xref>
+<uri xlink:href="http://loop.frontiersin.org/people/2887053/overview"/>
+<role content-type="https://credit.niso.org/contributor-roles/writing-review-editing/"/>
+<role content-type="https://credit.niso.org/contributor-roles/writing-original-draft/"/>
+</contrib>
+<contrib contrib-type="author">
+<name><surname>Gholami</surname> <given-names>Sina</given-names></name>
+<role content-type="https://credit.niso.org/contributor-roles/formal-analysis/"/>
+<role content-type="https://credit.niso.org/contributor-roles/writing-original-draft/"/>
+</contrib>
+<contrib contrib-type="author">
+<name><surname>Alam</surname> <given-names>Minhaj Nur</given-names></name>
+<uri xlink:href="http://loop.frontiersin.org/people/2405717/overview"/>
+<role content-type="https://credit.niso.org/contributor-roles/resources/"/>
+<role content-type="https://credit.niso.org/contributor-roles/conceptualization/"/>
+<role content-type="https://credit.niso.org/contributor-roles/supervision/"/>
+<role content-type="https://credit.niso.org/contributor-roles/writing-review-editing/"/>
+</contrib>
+<contrib contrib-type="author">
+<name><surname>Tabkhi</surname> <given-names>Hamed</given-names></name>
+<role content-type="https://credit.niso.org/contributor-roles/conceptualization/"/>
+<role content-type="https://credit.niso.org/contributor-roles/resources/"/>
+<role content-type="https://credit.niso.org/contributor-roles/writing-review-editing/"/>
+<role content-type="https://credit.niso.org/contributor-roles/investigation/"/>
+<role content-type="https://credit.niso.org/contributor-roles/supervision/"/>
+<role content-type="https://credit.niso.org/contributor-roles/methodology/"/>
+</contrib>
+</contrib-group>
+<aff><institution>Department of Electrical and Computer Engineering, University of North Carolina at Charlotte</institution>, <addr-line>Charlotte, NC</addr-line>, <country>United States</country></aff>
+<author-notes>
+<fn fn-type="edited-by"><p>Edited by: Suhang Wang, The Pennsylvania State University (PSU), United States</p></fn>
+<fn fn-type="edited-by"><p>Reviewed by: Zhong Chen, Southern Illinois University Carbondale, United States</p>
+<p>Alladoumbaye Ngueilbaye, Shenzhen University, China</p></fn>
+<corresp id="c001">&#x0002A;Correspondence: Fatema-E Jannat <email>fjannat&#x00040;charlotte.edu</email></corresp>
+</author-notes>
+<pub-date pub-type="epub">
+<day>29</day>
+<month>07</month>
+<year>2025</year>
+</pub-date>
+<pub-date pub-type="collection">
+<year>2025</year>
+</pub-date>
+<volume>8</volume>
+<elocation-id>1609124</elocation-id>
+<history>
+<date date-type="received">
+<day>10</day>
+<month>04</month>
+<year>2025</year>
+</date>
+<date date-type="accepted">
+<day>07</day>
+<month>07</month>
+<year>2025</year>
+</date>
+</history>
+<permissions>
+<copyright-statement>Copyright &#x000A9; 2025 Jannat, Gholami, Alam and Tabkhi.</copyright-statement>
+<copyright-year>2025</copyright-year>
+<copyright-holder>Jannat, Gholami, Alam and Tabkhi</copyright-holder>
+<license xlink:href="http://creativecommons.org/licenses/by/4.0/"><p>This is an open-access article distributed under the terms of the Creative Commons Attribution License (CC BY). The use, distribution or reproduction in other forums is permitted, provided the original author(s) and the copyright owner(s) are credited and that the original publication in this journal is cited, in accordance with accepted academic practice. No use, distribution or reproduction is permitted which does not comply with these terms.</p></license>
+</permissions>
+<abstract>
+<sec>
+<title>Introduction</title>
+<p>In the medical AI field, there is a significant gap between advances in AI technology and the challenge of applying locally trained models to diverse patient populations. This is mainly due to the limited availability of labeled medical image data, driven by privacy concerns. To address this, we have developed a self-supervised machine learning framework for detecting eye diseases from optical coherence tomography (OCT) images, aiming to achieve generalized learning while minimizing the need for large labeled datasets.</p>
+</sec>
+<sec>
+<title>Methods</title>
+<p>Our framework, OCT-SelfNet, effectively addresses the challenge of data scarcity by integrating diverse datasets from multiple sources, ensuring a comprehensive representation of eye diseases. By employing a robust two-phase training strategy self-supervised pre-training with unlabeled data followed by a supervised training stage, we utilized the power of a masked autoencoder built on the SwinV2 backbone.</p>
+</sec>
+<sec>
+<title>Results</title>
+<p>Extensive experiments were conducted across three datasets with varying encoder backbones, assessing scenarios including the absence of self-supervised pre-training, the absence of data fusion, low data availability, and unseen data to evaluate the efficacy of our methodology. OCT-SelfNet outperformed the baseline model (ResNet-50, ViT) in most cases. Additionally, when tested for cross-dataset generalization, OCT-SelfNet surpassed the performance of the baseline model, further demonstrating its strong generalization ability. An ablation study revealed significant improvements attributable to self-supervised pre-training and data fusion methodologies.</p>
+</sec>
+<sec>
+<title>Discussion</title>
+<p>Our findings suggest that the OCT-SelfNet framework is highly promising for real-world clinical deployment in detecting eye diseases from OCT images. This demonstrates the effectiveness of our two-phase training approach and the use of a masked autoencoder based on the SwinV2 backbone. Our work bridges the gap between basic research and clinical application, which significantly enhances the framework&#x00027;s domain adaptation and generalization capabilities in detecting eye diseases.</p>
+</sec></abstract>
+<kwd-group>
+<kwd>self-supervised</kwd>
+<kwd>transformer</kwd>
+<kwd>deep learning</kwd>
+<kwd>SwinV2</kwd>
+<kwd>autoencoder</kwd>
+<kwd>OCT</kwd>
+<kwd>classification</kwd>
+<kwd>transfer learning</kwd>
+</kwd-group>
+<counts>
+<fig-count count="15"/>
+<table-count count="7"/>
+<equation-count count="5"/>
+<ref-count count="43"/>
+<page-count count="24"/>
+<word-count count="12908"/>
+</counts>
+<custom-meta-wrap>
+<custom-meta>
+<meta-name>section-at-acceptance</meta-name>
+<meta-value>Data Mining and Management</meta-value>
+</custom-meta>
+</custom-meta-wrap>
+</article-meta>
+</front>
+<body>
+<sec sec-type="intro" id="s1">
+<title>1 Introduction</title>
+<p>A significant gap exists between the progress made in AI technology and its applicability in real-world medical scenarios. The problem of applicability arises primarily due to the scarcity of labeled data in the medical domain, largely driven by privacy concerns. This limitation restricts the deployment of scalable medical AI solutions in diverse patient populations. Solving this issue is crucial for advancing AI-driven healthcare and ensuring that models can generalize to diverse clinical settings. Our work addressed these challenges by developing a machine learning (ML) tool to detect eye diseases using optical coherence tomography (OCT) images, which is vital for effective eye care management. In addition, we created a model that learns generalized features from diverse, unlabeled data, enhancing its applicability and reliability in real-world medical scenarios. Our contributions focus on overcoming data scarcity and ensuring the wide applicability of AI models in healthcare.</p>
+<p>Age-related macular degeneration (AMD) is one of the leading causes of irreversible blindness and vision impairment (VI) globally. VI affects nearly 2.2 billion people globally, among which almost 1 billion cases could be prevented with early diagnosis and intervention (World Health Organization, <xref ref-type="bibr" rid="B40">2023</xref>). Therefore, it is essential to identify individuals at risk of disease onset or progression from early to more advanced stages since timely intervention can prevent or slow progression, thus preventing irreversible VI (Scott and Bressler, <xref ref-type="bibr" rid="B31">2013</xref>). Individuals with a high risk for VI would benefit from more frequent ophthalmic examinations, monitoring, and treatment (Yi et al., <xref ref-type="bibr" rid="B42">2009</xref>).</p>
+<p>In real-world clinical settings, the effectiveness of deep learning networks is often limited by the use of homogeneous training datasets. To enhance their performance, it is essential to use diverse datasets from multiple institutions with varying demographics, OCT devices, and protocols. This diversity will improve the models&#x00027; adaptability and scalability in clinical workflows. Moreover, it will enable the model to be trained on a larger sample size, helping to mitigate the issue of data scarcity and further enhancing its generalization ability.</p>
+<p>Self-supervised learning (SSL) is a new approach to computer vision, and advancements have been made in Natural Language Processing (NLP), specifically with the development of BERT (Devlin et al., <xref ref-type="bibr" rid="B6">2018</xref>). SSL focuses on deriving meaningful information from unlabeled data. The masked autoencoder (MAE) (He et al., <xref ref-type="bibr" rid="B11">2022</xref>) focuses on reconstructing masked portions of the input data. This approach allowed the model to learn robust feature representations by understanding the underlying structure of the visual data.</p>
+<p>Our proposed work has brought and evaluated recent advances in large pre-trained transformers to enhance the detection and diagnosis for automated ophthalmic diagnosis. We have developed a large-scale, self-supervised model with random masking inspired by masked autoencoder (He et al., <xref ref-type="bibr" rid="B11">2022</xref>) with a transformer architecture, SwinV2 (Liu et al., <xref ref-type="bibr" rid="B22">2022</xref>) backbone, explicitly for classifying AMD using OCT images. Our approach builds on the current implementation of Masked Autoencoders (MAE) for OCT data by introducing two key differences that set it apart. First, while conventional MAEs typically rely on standard ViT architectures, we integrate the more advanced SwinV2 architecture, which offers superior feature extraction through its hierarchical attention mechanism, capturing both fine-grained and global structures in OCT images more effectively. Second, we enhance the pre-training phase of our OCT-SelfNet framework by incorporating a Data Fusion methodology, allowing our model to learn from multiple diverse datasets simultaneously. This contrasts with the standard MAE, where models are typically trained on a single dataset, potentially limiting their generalizability. By using data fusion, our model not only learns more diverse representations but is also better trained to generalize across different clinical datasets and imaging conditions, making it more acceptable for real-world applications. We focus on the binary classification of distinguishing normal cases from those with AMD.</p>
+<p>By leveraging self-supervised learning (SSL), this model aims to reduce the need for experts to make extensive manual annotations, easing the workload and facilitating broader clinical AI applications from retinal imaging data. Our model can learn versatile and generalizable features from unlabeled retinal OCT datasets, which is crucial for creating AI systems that require fewer labeled examples to adapt to various diagnostic tasks.</p>
+<p>Our framework follows a two-phase approach designed to optimize model performance by leveraging both self-supervised and supervised learning techniques. In the first phase, a SwinV2-based masked autoencoder undergoes self-supervised training using a combination of three different OCT datasets without any labels. This phase allows the model to learn generalized, low-level features by reconstructing masked portions of the input images, capturing valuable information across various datasets. By training without labels, the model can identify robust patterns shared across different clinical contexts, enhancing its ability to learn rich representations that are not biased by specific dataset annotations. In the second phase, the model undergoes a training in a supervised manner, focusing on each dataset. This phase enables the model to learn more dataset-specific features, training its weights to better align with the particular dataset it is working with. To assess the performance of different transformer models with our method, we also evaluated our results using Vision Transformer (ViT) (Dosovitskiy et al., <xref ref-type="bibr" rid="B7">2020</xref>) and Swin Transformer-based masked autoencoders (Liu et al., <xref ref-type="bibr" rid="B23">2021</xref>). ViT computes self-attention across the entire image, which requires quadratic time complexity <italic>O</italic>(<italic>N</italic><sup>2</sup>) with respect to the number of patches (<italic>N</italic>). This is computationally expensive, especially for high-resolution images. Due to this global attention, ViT becomes inefficient for large images. In Swin, the shifted window attention mechanism is introduced, where self-attention is computed within local, non-overlapping windows, which reduces the computational complexity to <italic>O</italic>(<italic>N</italic>) per window. However, it allows for global context learning by shifting the windows across layers. SwinV2 introduces additional optimizations to reduce computational overhead further. It improves scalability, allowing the model to handle even larger images more efficiently without sacrificing performance. This comparison allowed us to observe how each transformer model adapted to our approach.</p>
+<p>Studies demonstrate the adaptability of the ResNet50 model in handling complex tasks like AMD detection and diabetic retinopathy classification using OCT images, showcasing the effectiveness of this architecture in medical imaging analysis (Alam et al., <xref ref-type="bibr" rid="B1">2020</xref>; Leingang et al., <xref ref-type="bibr" rid="B19">2023</xref>; Sotoudeh-Paima et al., <xref ref-type="bibr" rid="B32">2022</xref>; Xu et al., <xref ref-type="bibr" rid="B41">2023</xref>). We used it as the reference model to compare with the result from our proposed methodology. In addition to using the ResNet50 model, we also employed the Vit-base model as another baseline model to conduct a comprehensive analysis. Multiple OCT datasets (Kermany et al., <xref ref-type="bibr" rid="B15">2018</xref>; Srinivasan et al., <xref ref-type="bibr" rid="B33">2014</xref>; Li et al., <xref ref-type="bibr" rid="B21">2020</xref>), named DS1, DS2, and DS3, respectively, were combined to train an improved DL model to increase the training data&#x00027;s diversity and allow our model to learn a broader range of patterns and relationships. This diversity will improve the model&#x00027;s generalization to new, unseen data, and it will be beneficial for the cases where the larger dataset is unavailable.</p>
+<p>A graphical depiction of our methodology, with procedural steps, is shown in <xref ref-type="fig" rid="F1">Figure 1</xref>. <xref ref-type="fig" rid="F1">Figure 1a</xref> illustrates self-supervised pre-training using OCT images from multiple sources. OCT images from training sets of three sources are combined without labels to create a fused dataset for the SSL pre-training. A masked autoencoder with a transformer-based network consisting of an encoder and a decoder parts is used in this phase. <xref ref-type="fig" rid="F1">Figure 1b</xref> shows training on an individual dataset, where the decoder part is replaced with a classification head, and pre-trained weights are transferred to the encoder. <xref ref-type="fig" rid="F1">Figure 1c</xref> depicts the performance and generalization evaluation on test sets from all sources using the trained classifier model. Specifically, if the classifier is trained using DS1, it is subsequently evaluated on all three test sets. This evaluation aims to observe how well the model performs on test sets other than the one it was trained on, thereby assessing its generalization capability as a supervised classifier and cross-dataset generalizer across diverse datasets.</p>
+<fig id="F1" position="float">
+<label>Figure 1</label>
+<caption><p>A graphical depiction of our methodology, with procedural steps. <bold>(a)</bold> Self-supervised pre-training using OCT images from multiple sources. <bold>(b)</bold> Supervised training on an individual dataset. <bold>(c)</bold> Performance and generalization evaluation on test sets from all sources.</p></caption>
+<alt-text>Diagram illustrating a machine learning pipeline for OCT image processing. (a) Unlabeled data from multiple sources is combined and pre-processed and used for self-supervised pre-training utilizing a ViT/Swin/SwinV2-based masked autoencoder. (b) Labeled datasets are used for supervised training with a classifier that comprises of pre-trained encoder and a classification head. (c) Performance is evaluated with a fine-tuned classifier on test sets from various sources.</alt-text>
+<graphic mimetype="image" mime-subtype="tiff" xlink:href="fdata-08-1609124-g0001.tif"/>
+</fig>
+<p>The main contributions of this paper are summarized as follows:</p>
+<list list-type="bullet">
+<list-item><p>This paper implemented a two-phase approach: (1) a SwinV2-based masked autoencoder in the pre-training phase to deeply understand image structures and relationships between different regions, and (2) a supervised training stage classifier that is for classifying specific age-related macular degeneration (AMD) cases from normal cases using OCT images.</p></list-item>
+<list-item><p>This paper incorporates a Data Fusion methodology into its framework to enhance the capability of the model by combining information from multiple sources, which allows for more robust and comprehensive analysis, improving the model&#x00027;s ability to generalize and make accurate predictions across small datasets and clinical scenarios.</p></list-item>
+<list-item><p>Through a comprehensive evaluation and ablation study, this paper demonstrates that the proposed approach shows much higher robustness and better generalization even when evaluated on different test sets without requiring additional training. This is promising for effective implementation in practical clinical environments.</p></list-item>
+<list-item><p>This paper also evaluates OCT-SelfNet as a cross-dataset generalizer, where it exceeds the baseline model&#x00027;s performance, further demonstrating its strong generalization ability in handling unseen data.</p></list-item>
+</list>
+</sec>
+<sec id="s2">
+<title>2 Related works</title>
+<p>Machine Learning (ML) and Deep Learning (DL) techniques have shown promise in automating ophthalmic diagnosis. Significant research has been done on longitudinal OCT retinal layer segmentation through the use of an LSTM-based U-Net architecture (He et al., <xref ref-type="bibr" rid="B13">2023</xref>). Additionally, the work by Mukherjee et al. (<xref ref-type="bibr" rid="B26">2022a</xref>) and Mukherjee et al. (<xref ref-type="bibr" rid="B27">2022b</xref>) has leveraged advanced techniques such as 3D U-Net and 3D convolutional autoencoders, for retinal layer segmentation in OCT images.</p>
+<p>Implementing a self-supervised framework using transformer-based encoder networks with multi-source datasets for generalized retinal disease detection signifies a notable progression in medical image analysis. This approach leverages the power of transformer models (Vaswani et al., <xref ref-type="bibr" rid="B35">2017</xref>), originally introduced in natural language processing (NLP) and adapted for computer vision tasks such as medical imaging by opening opportunities for scalable and generalized models and sparked significant interest among researchers in computer vision. Inspired by this, the vision transformer (ViT) (Dosovitskiy et al., <xref ref-type="bibr" rid="B7">2020</xref>) has been developed. It has been extensively studied in medical imaging (Alshammari et al., <xref ref-type="bibr" rid="B2">2022</xref>; Ayana et al., <xref ref-type="bibr" rid="B4">2023</xref>; Kihara et al., <xref ref-type="bibr" rid="B16">2022</xref>; Okolo et al., <xref ref-type="bibr" rid="B28">2022</xref>; Wang et al., <xref ref-type="bibr" rid="B38">2022</xref>). However, employing a ViT architecture requires significant computational resources, posing a challenge for communities with limited computational infrastructure. Moreover, the necessity of substantial datasets for efficient training presents challenges in scenarios with limited data availability, particularly in the medical field. Despite these challenges, researchers are actively working on solutions to address these issues through continuous advancements in hardware, developing efficient techniques and algorithms.</p>
+<p>In contrast to previous works (Awais et al., <xref ref-type="bibr" rid="B3">2017</xref>; Leandro et al., <xref ref-type="bibr" rid="B17">2023</xref>; Lee et al., <xref ref-type="bibr" rid="B18">2017</xref>; Lu et al., <xref ref-type="bibr" rid="B25">2018</xref>; Tsuji et al., <xref ref-type="bibr" rid="B34">2020</xref>), which study one dataset in isolation, our study is distinct and intrinsically more challenging as we investigate the intricacies of domain adaptation by simultaneously considering multiple datasets, training our model on one dataset, and assessing its performance on other datasets to understand domain generalization and adaptation dynamics.</p>
+<p>The evolution of SSL in computer vision progressed significantly with the introduction of BEiT (Bao et al., <xref ref-type="bibr" rid="B5">2021</xref>), which incorporated BERT-like pre-training methods into image processing. BEiT&#x00027;s approach to predicting masked portions of images illustrated a significant advancement in self-supervised learning paradigms, bridging the gap between language and vision modalities. Other works underlined (Fang et al., <xref ref-type="bibr" rid="B8">2022</xref>; Jing and Tian, <xref ref-type="bibr" rid="B14">2020</xref>; Qiu and Sun, <xref ref-type="bibr" rid="B29">2019</xref>) the growing significance of SSL in ophthalmology-focused deep learning research. They demonstrate how SSL can be leveraged to overcome challenges such as the scarcity of labeled data and the need for patient-specific diagnostic tools. In the field of Cervical OCT image classification, the work by Wang et al. (<xref ref-type="bibr" rid="B36">2024</xref>) has used this SSL combining contrastive-MIM framework and Swin transformer architecture to use unlabeled cervical OCT images. MedFLIP, developed by Li et al. (<xref ref-type="bibr" rid="B20">2024</xref>), has integrated a Masked Auto Encoder with a text encoder to facilitate mutual learning between text and image modalities in medical image analysis. For the analysis of smaller CT scan datasets, Wolf et al. (<xref ref-type="bibr" rid="B39">2023</xref>) focused on self-supervised pre-training using contrastive and masked autoencoders to leverage a large, unannotated CT dataset during the pre-training phase. Zhou et al. (<xref ref-type="bibr" rid="B43">2023</xref>) also used this SSL framework to train on medical images and subsequently employed the pre-trained model for downstream tasks such as chest X-ray disease classification, abdominal CT multi-organ segmentation, and MRI brain tumor segmentation.</p>
+<p>Automated ophthalmic diagnosis benefits significantly from the application of machine learning techniques, as indicated by research (Alam et al., <xref ref-type="bibr" rid="B1">2020</xref>; Friberg et al., <xref ref-type="bibr" rid="B9">2011</xref>; Schmidt-Erfurth et al., <xref ref-type="bibr" rid="B30">2018</xref>; Wang et al., <xref ref-type="bibr" rid="B37">2016</xref>). However, relying on similar datasets during training often hinders their real-world effectiveness, resulting in challenges when deployed in clinical settings. To optimize their effectiveness in clinical workflow, they require access to diverse datasets from multiple institutions with varying demographics, OCT image-capturing devices, or protocols to improve their adaptability, versatility, and scalability. Our framework employs the data fusion methodology, and in an ablation study, the noticeable performance decline without data fusion highlights the necessity of leveraging diverse datasets. This aspect is particularly advantageous in enhancing the model&#x00027;s generalization capabilities, making it adept at handling unseen data and variations in image settings commonly encountered in clinical scenarios.</p>
+</sec>
+<sec sec-type="methods" id="s3">
+<title>3 Methodology</title>
+<p>In this work, we have leveraged pre-trained weights from an SSL MAE network (He et al., <xref ref-type="bibr" rid="B11">2022</xref>) with SwinV2 (Liu et al., <xref ref-type="bibr" rid="B22">2022</xref>) as a backbone, and combined multiple datasets, demonstrating a two-stage approach concerning the classification of Normal vs. AMD from OCT images by comparing their performance against the baseline model. Our proposed framework comprises four integral stages.</p>
+<list list-type="order">
+<list-item><p>Data fusion: a comprehensive approach by integrating datasets from three different sources has been adopted to enhance the data diversity.</p></list-item>
+<list-item><p>Self-supervised pre-training: in this stage, self-supervised pre-training was conducted on unlabeled OCT images using transformer-based MAE to acquire visual representations. After completing this training, the learned weights were transferred to a classifier model.</p></list-item>
+<list-item><p>Supervised training: subsequently, supervised training was performed on labeled OCT datasets using the transferred weights to enhance the model&#x00027;s classification capabilities.</p></list-item>
+<list-item><p>Baseline training: we have used ResNet50 (He et al., <xref ref-type="bibr" rid="B12">2015</xref>), and ViT-base (without SSL) (Dosovitskiy et al., <xref ref-type="bibr" rid="B7">2020</xref>) classifier as the baseline model to compare the performance of the proposed models.</p></list-item>
+</list>
+<sec>
+<title>3.1 Data fusion</title>
+<p>In this step, we used three datasets containing Optical Coherence Tomography (OCT) images that illustrate various retinal diseases. For this study, we focused on binary classification and therefore only retained OCT images of NORMAL and AMD cases, and the rest of the categories of OCT images were removed. Then we split each of those datasets into training, validation, and test sets. All training data from the three datasets was combined and shuffled into a single training set, and all validation sets were similarly combined. Test sets were excluded from the data merging process to maintain the model&#x00027;s complete separation from the test sets, which will later be used for evaluation purposes in the later stage. These combined training and validation sets are used in the self-supervised pre-training stage.</p>
+<p>The motivation behind this data combination is to increase the diversity of the training data so that the model can learn larger representations in the self-supervised pre-training stage, and it will help the model to generalize better for the case of an unseen dataset. During the supervised stage, the trained model will be trained using three separate datasets. Each training session will focus on an individual training set, with evaluations conducted on the test set of that dataset as well as on the test sets from the other two datasets. This approach will help assess the performance of the classifier.</p>
+</sec>
+<sec>
+<title>3.2 Self-supervised pre-training</title>
+<p>SSL is a technique that enables a model to train itself from unlabeled data by understanding the structure or representation of the data. An example of an SSL technique is the MAE (He et al., <xref ref-type="bibr" rid="B11">2022</xref>), which randomly masks some parts of the input data and trains the model to learn the representation of the given data to reconstruct the original input.</p>
+<p>The MAE trained in this study was primarily composed of two components: an encoder and a decoder. The image, resized to (224 &#x000D7; 224) was fed into the encoder portion of the MAE, which then applied a patch operation (16 &#x000D7; 16 patches) to randomly mask a portion (70%) of the input image and finally processed it through a transformer encoder. We chose to use random masking as part of the self-supervised learning (SSL) approach because it is a simple yet effective strategy for encouraging the model to learn robust feature representations without requiring labeled data. Random masking allows the model to focus on different regions of the image during training. During the experimentation phase, we conducted a series of trials to explore different masking ratios, including 20%, 50%, 70%, and 80%. Based on our results, we observed that masking 70% of the image produced the best performance in terms of model accuracy and generalization. Therefore, we settled on the 70% masking ratio as it provided the most balanced trade-off between model performance and computational efficiency. This 70% masking ratio was found to be optimal as it strikes a good balance between covering a significant portion of the image for effective training and preserving enough visible content for the model to focus on important features.</p>
+<p>In the encoder, we used three distinct networks&#x02013;ViT (Dosovitskiy et al., <xref ref-type="bibr" rid="B7">2020</xref>), Swin (Liu et al., <xref ref-type="bibr" rid="B23">2021</xref>), and SwinV2 (Liu et al., <xref ref-type="bibr" rid="B22">2022</xref>) as a backbone to conduct a comprehensive study on their performance.</p>
+<list list-type="order">
+<list-item><p>ViT-based MAE: in ViT-based MAE, the encoder comprised an embedding dimension of 1,024 and four attention heads, repeated for six layers. The encoder&#x00027;s final output was the set of features representing a higher-level abstraction of the original input image. The features were taken as input and processed by the decoder through the transformer layers. The transformer had an embedding dimension of 1,024 and four attention heads, which were repeated for four layers. After passing through a linear layer to get the patches, masking was applied, and finally, the image was reconstructed.</p></list-item>
+<list-item><p>Swin-based MAE: the Swin transformer-based MAE uses an encoder built with a Swin transformer backbone with an embedding size of 96. The number of layers in each stage of the Swin transformer architecture is (2, 2, 18, 2), which indicates the number of layers at each stage. The model uses shifted window attention mechanisms in each stage to focus on local information within 4 &#x000D7; 4 patches. This gradually builds a global understanding by connecting windows with shifts. The attention heads are set to (6, 12, 24, 48), which doubles with each stage. This enables the model to attend to more intricate details, indicating that different layers of the encoder employ varying attention heads, capturing hierarchical features in the input image.</p></list-item>
+</list>
+<list list-type="simple">
+<list-item><p>The decoder had an embedding size of 768, which allowed for a more expressive representation in the decoding process. The decoder network had a similar number of attention heads and layers as the encoder. It involved a patch-expanding mechanism and Swin transformer layers, which were configured to restore the spatial dimensions of the encoded features. The layer-wise design was built to gradually reconstruct the original image dimensions, ensuring that the decoder could effectively decode the encoded representation obtained by the encoder.</p></list-item>
+<list-item><p>3. SwinV2-based MAE: we used a SwinV2-based MAE for this task, taking advantage of the SwinV2 network&#x00027;s superior performance. While we kept the Swin-based decoder, we switched the encoder for SwinV2 to address issues with training stability, high-resolution processing, and data efficiency. SwinV2&#x00027;s improved performance over Swin is perfect for our need for both detail and efficiency. The encoder configuration was set using an embedding dimension of 96, depths of (2, 2, 6, 2), and attention heads of (3, 6, 12, 24). This tailored approach allowed the SwinV2-based MAEs to excel at extracting intricate details.</p></list-item>
+</list>
+</sec>
+<sec>
+<title>3.3 Supervised training</title>
+<p>Following the self-supervised pre-training with the combined training samples, a transfer learning approach is applied in this supervised stage. For the classifier architecture, a classification head was added to the model in place of the decoder to use MAE as a classifier. The classification head took the features from the encoder part and ran through a linear layer to produce class logits. These class logits were then used for classification tasks. The linear layer comprised three successive dense layers, each accompanied by Rectified Linear Unit (ReLU) activation functions. This linear layer learned weights during training. The softmax function was then used to transform the class logits into class probabilities, enabling the model to predict the respective classes. While training, we applied the feature extraction methodology, where the pre-trained encoder weights were kept frozen, and only the classification head layers were trained. This choice was intentional, as it is more suited to real-life implementations, especially when dealing with limited data. Freezing the encoder allows us to leverage the robust capabilities of pre-trained models, even on small datasets, and the model can still perform effectively. Moreover, this approach significantly reduces training time, which is crucial in real-world applications where computational resources and time are often constrained.</p>
+<p>The approach involved training one dataset and then evaluating the model&#x00027;s performance on the test set and two other test sets from other datasets to assess its robustness. This cross-evaluation procedure was repeated for all three datasets, comprehensively analyzing the model&#x00027;s adaptability across diverse datasets. In <xref ref-type="fig" rid="F2">Figure 2</xref>, the two-stage training process is illustrated.</p>
+<fig id="F2" position="float">
+<label>Figure 2</label>
+<caption><p>Overview of the framework: in the initial pre-training phase <bold>(a)</bold>, the framework uses masked image autoencoder as a self-supervised task to learn representations from unlabeled images. In this process, a random subset of image patches is masked and fed into the auto-encoder. Then in the subsequent supervised training stage <bold>(b)</bold>, the pre-trained encoder from the first phase is employed along with a linear classifier for the classification task. The learned weights from the pre-training phase are transferred to this phase.</p></caption>
+<alt-text>Diagram illustrating two processes: (a) Self-supervised pre-training involves an input image being randomly masked, encoded into a latent vector, decoded, and reconstructed with associated loss calculation. (b) Supervised fine-tuning uses the pre-trained encoder with a classification head to classify the input image into &#x0201C;Normal&#x0201D; or &#x0201C;AMD&#x0201D;.</alt-text>
+<graphic mimetype="image" mime-subtype="tiff" xlink:href="fdata-08-1609124-g0002.tif"/>
+</fig>
+<p>Integrating self-supervised pre-training and supervised training in this methodology establishes a robust framework, OCT-SelfNet, for classifying retinal diseases in OCT images. Combining the MAE architecture and the subsequent classifier model aims to capitalize on the learned representations to improve the model&#x00027;s generalization to new, unseen data.</p>
+</sec>
+<sec>
+<title>3.4 Baseline model</title>
+<p>For the comparison, we used ResNet-50 as our baseline model. Unlike our proposed approach, ResNet-50 did not undergo a self-supervised pre-training stage. Instead, we used a version of ResNet-50 that was pre-trained on the ImageNet dataset. This allowed us to evaluate the performance differences between a model with conventional pre-training and our self-supervised pre-training methodology. This ResNet-50 architecture started with a 7 &#x000D7; 7 kernel convolution and a max pooling layer, followed by a series of convolutional layers with varying sizes and numbers of kernels. Repeated in specific patterns, these layers enhanced the network&#x00027;s ability to extract and process complex features from images. After 50 convolutional layers, the network concluded with average pooling and fully connected layers with two nodes using softmax activation for binary classification (Normal vs. AMD). To provide a more comprehensive evaluation, we extended our baseline comparison by incorporating the ViT-Base (Vision Transformer) model (without the SSL pre-training). The choice of ViT-Base is motivated by its strong performance in various computer vision tasks, leveraging transformer-based architectures that are fundamentally different from the convolutional operations in ResNet50. By including ViT-Base, and ResNet50, we aim to evaluate the performance of our model against two state-of-the-art architectures.</p>
+<p>The complete algorithm for the two-phase training process is presented in pseudocode (<xref ref-type="fig" rid="F16">Algorithm 1</xref>) for clearer understanding.</p>
+<fig id="F16" position="float">
+<label>Algorithm 1</label>
+<caption><p>An algorithm for self-supervised pre-training and supervised training for OCT classification.</p></caption>
+<graphic mimetype="image" mime-subtype="tiff" xlink:href="fdata-08-1609124-g0016.tif"/>
+</fig>
+<p><xref ref-type="table" rid="T1">Table 1</xref> details the network size and floating point operations per second (FLOPS) of the proposed and baseline models. It can be seen that the proposed OCT-SelfNet-SwinV2 classifier model has a slightly larger size than the baseline ResNet-50 classifier, but its FLOPS is very close to the ResNet-50. This demonstrates that while the proposed model introduces some additional parameters (34.27M) than ResNet-50 (23.5M), it still is much smaller than the ViT-base model (86M) and does not increase the computational load, making it comparable to the smaller ResNet-50 model in terms of efficiency.</p>
+<table-wrap position="float" id="T1">
+<label>Table 1</label>
+<caption><p>Network details.</p></caption>
+<table frame="box" rules="all">
+<thead>
+<tr style="background-color:#919498;color:#ffffff">
+<th valign="top" align="left"><bold>Mode</bold></th>
+<th valign="top" align="left"><bold>Model</bold></th>
+<th valign="top" align="center"><bold>Model size (M)</bold></th>
+<th valign="top" align="center"><bold>FLOPS (G)</bold></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top" align="left" rowspan="3">Pre-training</td>
+<td valign="top" align="left">OCT-SelfNet-ViT</td>
+<td valign="top" align="center">126.88</td>
+<td valign="top" align="center">10.06</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-Swinlarge</td>
+<td valign="top" align="center">83.56</td>
+<td valign="top" align="center">16.41</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2</td>
+<td valign="top" align="center">33.79</td>
+<td valign="top" align="center">5.62</td>
+</tr>
+<tr>
+<td valign="top" align="left" rowspan="5">Classifier</td>
+<td valign="top" align="left">Resnet-50</td>
+<td valign="top" align="center">23.5</td>
+<td valign="top" align="center">4.1</td>
+</tr>
+ <tr>
+<td valign="top" align="left">ViT-base</td>
+<td valign="top" align="center">86</td>
+<td valign="top" align="center">16.85</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-ViT</td>
+<td valign="top" align="center">60.52</td>
+<td valign="top" align="center">10.47</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-Swinlarge</td>
+<td valign="top" align="center">84.01</td>
+<td valign="top" align="center">8.55</td>
+</tr>
+<tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2</td>
+<td valign="top" align="center">34.27</td>
+<td valign="top" align="center">3.34</td>
+</tr></tbody>
+</table>
+</table-wrap>
+</sec>
+<sec>
+<title>3.5 Loss function</title>
+<p>We have employed a loss function for the pre-training phase that uses the mean squared error (MSE) between the predicted and original images and only considers the pixels where the mask is active. To determine the loss on the pixels where the mask is active, the mean square error (MSE) is multiplied by the mask. The percentage of the image that is masked is shown by the mask ratio. The loss is computed by dividing the mean square error (MSE) by the mask ratio because the mask is being used to focus only on particular regions of the image. This enables us to scale the loss appropriately and appropriately normalize the loss to the portion of the image that is masked. The loss function is provided in <xref ref-type="disp-formula" rid="E1">Equation 1</xref>,</p>
+<disp-formula id="E1"><label>(1)</label><mml:math id="M1"><mml:mtable class="eqnarray" columnalign="left"><mml:mtr><mml:mtd><mml:mfrac><mml:mrow><mml:mn>1</mml:mn></mml:mrow><mml:mrow><mml:msub><mml:mrow><mml:mi>m</mml:mi></mml:mrow><mml:mrow><mml:mi>r</mml:mi><mml:mi>a</mml:mi><mml:mi>t</mml:mi><mml:mi>i</mml:mi><mml:mi>o</mml:mi></mml:mrow></mml:msub></mml:mrow></mml:mfrac><mml:mo>&#x000D7;</mml:mo><mml:mfrac><mml:mrow><mml:mn>1</mml:mn></mml:mrow><mml:mrow><mml:mi>N</mml:mi></mml:mrow></mml:mfrac><mml:mstyle displaystyle="true"><mml:munderover accentunder="false" accent="false"><mml:mrow><mml:mo>&#x02211;</mml:mo></mml:mrow><mml:mrow><mml:mi>i</mml:mi><mml:mo>=</mml:mo><mml:mn>1</mml:mn></mml:mrow><mml:mrow><mml:mi>N</mml:mi></mml:mrow></mml:munderover></mml:mstyle><mml:msup><mml:mrow><mml:mrow><mml:mo stretchy="false">(</mml:mo><mml:mrow><mml:mover accent="true"><mml:mrow><mml:msub><mml:mrow><mml:mi>x</mml:mi></mml:mrow><mml:mrow><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:mrow><mml:mo>&#x00304;</mml:mo></mml:mover><mml:mo>-</mml:mo><mml:msub><mml:mrow><mml:mi>x</mml:mi></mml:mrow><mml:mrow><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:mrow><mml:mo stretchy="false">)</mml:mo></mml:mrow></mml:mrow><mml:mrow><mml:mn>2</mml:mn></mml:mrow></mml:msup><mml:mo>&#x000D7;</mml:mo><mml:msub><mml:mrow><mml:mi>m</mml:mi></mml:mrow><mml:mrow><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:mtd></mml:mtr></mml:mtable></mml:math></disp-formula>
+<p>Here <inline-formula><mml:math id="M2"><mml:mover accent="true"><mml:mrow><mml:msub><mml:mrow><mml:mi>x</mml:mi></mml:mrow><mml:mrow><mml:mi>i</mml:mi></mml:mrow></mml:msub></mml:mrow><mml:mo>&#x00304;</mml:mo></mml:mover></mml:math></inline-formula> is the predicted image, <italic>x</italic><sub><italic>i</italic></sub> is the original input image, <italic>m</italic><sub><italic>i</italic></sub> is the mask, <italic>m</italic><sub><italic>ratio</italic></sub> is the mask ratio and N is the number of total sample.</p>
+</sec>
+</sec>
+<sec id="s4">
+<title>4 Datasets</title>
+<p>Our experiments were carried out on three distinct datasets, DS1, DS2, and DS3 to ensure a comprehensive evaluation of the proposed methodology for binary image classification (Normal vs. AMD). The use of those different datasets enables the training of models using varied distributions and provides richer comparisons of model performance across various test sets. In each of these datasets, there are multiple categories such as Normal, AMD, CNV, etc. Each OCT image is associated with a single disease category. For our study, we only considered the Normal and AMD categories from each dataset. Since our primary objective for this project was to develop a binary classifier for distinguishing NORMAL and AMD, we focused exclusively on these two classes of OCT images, removing other categories from both the training and evaluation processes.</p>
+<sec>
+<title>4.1 DS1</title>
+<p>DS1 encompasses a total of 109,559 OCT retinal (Spectralis OCT, Heidelberg Engineering, Germany) images which are classified into four categories: Normal, Choroidal Neovascularization (CNV), Diabetic Macular Edema (DME), and Drusen. We discovered identical images as stated before in this study (Gholami et al., <xref ref-type="bibr" rid="B10">2023</xref>). So we followed their approach to clean the data and after that, we were left with 101,565 images. While Drusen are not an early sign of CNV, their presence in the retina can indicate a higher risk for developing advanced AMD, including the wet form which eventually involves the growth of abnormal blood vessels beneath the retina, a process known as CNV. Since Drusen is primarily associated with the early stage of AMD, we annotated Drusen images as AMD. Then we split this DS1 intro train, test, and validation set with 80%, 10%, 10% ratio.</p>
+</sec>
+<sec>
+<title>4.2 DS2</title>
+<p>The DS2 dataset includes retinal images from 45 subjects, consisting of 15 normal patients, 15 patients with dry AMD, and 15 patients with DME. We split this dataset into training, validation, and test sets, with the first 10 subjects allocated to training, the subsequent two subjects to validation, and the final three subjects to testing. All OCT volumes were obtained using Heidelberg Engineering Spectralis SD-OCT in protocols approved by the IRB (Srinivasan et al., <xref ref-type="bibr" rid="B33">2014</xref>).</p>
+</sec>
+<sec>
+<title>4.3 DS3</title>
+<p>DS3 is a dataset comprising OCT images from 500 subjects. These images were captured using two different fields of view: 3- and 6-mm. A single 3-mm file contains 304 scans of an individual patient, while a 6-mm file contains 400 scans. Our focus was on the slice images of the fovea since they capture the most prominent features of the retina. We considered peripheral retinal sections to have limited significance in classification. All OCT images were captured using a spectral-domain OCT system with a center wavelength of 840 nm (RTVue-XR, Optovue, CA) (Li et al., <xref ref-type="bibr" rid="B21">2020</xref>). This DS3 was divided into training, validation, and test sets using a stratified approach based on disease categories (AMD and Normal). Each disease category was grouped separately, and then the dataset was split into three subsets: 80% for training, 10% for validation, and 10% for testing, ensuring an equal distribution of samples across all disease categories. This stratified splitting approach helps maintain representative distributions of diseases in each subset, which is essential for effectively training and evaluating machine learning models.</p>
+<p>During the self-supervised pre-training stage, the model was trained with training sets from those three datasets to keep the test set unseen from the model. Also, all classes from those three datasets have been used in this pre-training stage, allowing it to grasp the intricacies of representation learning comprehensively. This inclusive training approach enabled the network to capture a broad spectrum of features and patterns present in the diverse classes. However, in the supervised training stage, we focused on binary classification tasks concentrating solely on AMD and Normal categories. This two-phase training approach, from comprehensive pre-training to feature extraction, strategically guides the model&#x00027;s representation learning and optimizes its performance for the targeted binary classification objective.</p>
+<p>A general overview of these three datasets is provided in <xref ref-type="fig" rid="F3">Figure 3</xref>, with the distribution of data across the training, validation, and test sets, along with the count of normal and AMD in each set, accompanied by a bar chart and donut chart.</p>
+<fig id="F3" position="float">
+<label>Figure 3</label>
+<caption><p>Illustration of Normal and AMD distribution from three datasets (DS1, DS2, and DS3) with bar chart and donut chart.</p></caption>
+<alt-text>Bar and donut charts show class distributions for datasets DS1, DS2, and DS3. DS1: Normal samples dominate, 86%, DS2: Similar pattern, 66.1% Normal, DS3: Slightly less skewed, 67.8% Normal as seen in Donut Charts. Bar diagram shows the sample counts for Train, Validation, and Test sets for each dataset.</alt-text>
+<graphic mimetype="image" mime-subtype="tiff" xlink:href="fdata-08-1609124-g0003.tif"/>
+</fig>
+</sec>
+</sec>
+<sec id="s5">
+<title>5 Experiments</title>
+<sec>
+<title>5.1 Implementation details</title>
+<p>The learning rate is set to 1.5 &#x000D7; 10<sup>&#x02212;4</sup> and Adam optimizer with weight decay (Loshchilov and Hutter, <xref ref-type="bibr" rid="B24">2017</xref>) of 0.05, using &#x003B2;<sub>1</sub> and &#x003B2;<sub>2</sub> values of 0.9 and 0.95, respectively. The input consists of a batch of 32 images, which were normalized. The NVIDIA Tesla V100 graphical processing unit (GPU) was used for the experiments. In the self-supervised pre-training stage, the model was run for 50 epochs, and the model with the minimum validation loss was saved for subsequent training. For the supervised training stage, the model was run for 100 epochs with early stopping criteria with a patience of 10, and the model with the maximum validation accuracy was saved for testing. All the baseline experiments were done and evaluated on an NVIDIA GeForce RTX 3060 Ti GPU using similar hyperparameters. During supervised training stage random rotation, horizontal flip, color jittering, Gaussian blurring, and elastic transform techniques were used for data augmentation.</p>
+<p>All images were resized to 224 &#x000D7; 224 in training, and codes were implemented with CUDA 11.2, Pytorch 1.12.1, and Python 3.10.9.</p>
+</sec>
+<sec>
+<title>5.2 Evaluation metrics</title>
+<p>The distribution <xref ref-type="fig" rid="F3">Figure 3</xref> reveals that all three datasets are highly imbalanced, with the NORMAL cases significantly outnumbering the AMD cases. This imbalance makes accuracy an inadequate measure of the model&#x00027;s performance, as it could be misleadingly high simply due to the prevalence of NORMAL cases. Instead, the AUC-ROC score is a more appropriate metric, accounting for both true positive and false positive rates across various threshold settings. To provide a comprehensive evaluation, we also used the Area Under the Precision-Recall Curve (AUC-PR) and the F1-Score and Wilcoxon Signed-Ranking. These metrics offer further insights into the model&#x00027;s ability to handle imbalanced data by considering the precision and recall, which are critical for understanding the model&#x00027;s performance in distinguishing between the minority and majority classes.</p>
+<list list-type="order">
+<list-item><p>Accuracy: accuracy measures how many correct predictions were made by the model; it is calculated by dividing the total number of correct predictions by the total number of predictions. The formula for accuracy is given by <xref ref-type="disp-formula" rid="E2">Equation 2</xref>.</p></list-item>
+</list>
+<disp-formula id="E2"><label>(2)</label><mml:math id="M3"><mml:mtable class="eqnarray" columnalign="left"><mml:mtr><mml:mtd><mml:mi>A</mml:mi><mml:mi>c</mml:mi><mml:mi>c</mml:mi><mml:mi>u</mml:mi><mml:mi>r</mml:mi><mml:mi>a</mml:mi><mml:mi>c</mml:mi><mml:mi>y</mml:mi><mml:mo>=</mml:mo><mml:mfrac><mml:mrow><mml:mi>T</mml:mi><mml:mi>P</mml:mi><mml:mo>&#x0002B;</mml:mo><mml:mi>T</mml:mi><mml:mi>N</mml:mi></mml:mrow><mml:mrow><mml:mi>T</mml:mi><mml:mi>P</mml:mi><mml:mo>&#x0002B;</mml:mo><mml:mi>T</mml:mi><mml:mi>N</mml:mi><mml:mo>&#x0002B;</mml:mo><mml:mi>F</mml:mi><mml:mi>P</mml:mi><mml:mo>&#x0002B;</mml:mo><mml:mi>F</mml:mi><mml:mi>N</mml:mi></mml:mrow></mml:mfrac></mml:mtd></mml:mtr></mml:mtable></mml:math></disp-formula>
+<list list-type="simple">
+<list-item><p>Here, TP = true positives, TN = true negatives, FP = false positives, and FN = false negatives.</p></list-item>
+<list-item><p>2. AUC-ROC: the area under the receiver operating characteristic curve (AUC-ROC) is a metric used to evaluate a binary classifier. The ROC curve plots the true positive rate against the false positive rate for different threshold values. The AUC-ROC is the area under the ROC curve, which gives a single value that summarizes the overall performance of the model across various threshold settings. Higher AUC-ROC indicates better discrimination of positive and negative classes.</p></list-item>
+<list-item><p>3. AUC-PR: similar to AUC-ROC, the Area Under the Precision-Recall curve (AUC-PR) is a performance metric used to evaluate a binary classifier. PR curve focuses on precision and recall by plotting precision against recall for different threshold values. The AUC-PR is the area under the Precision-Recall curve, which provides a single value to denote the model&#x00027;s overall performance across various threshold settings. The higher the score, the better the performance.</p></list-item>
+<list-item><p>4. F1-score: F1-score is another performance evaluation metric that takes both precision and recall into consideration which makes this metric very useful in the case of data imbalance. The F1-score is calculated using the <xref ref-type="disp-formula" rid="E3">Equation 3</xref>.</p></list-item>
+</list>
+<disp-formula id="E3"><label>(3)</label><mml:math id="M4"><mml:mtable class="eqnarray" columnalign="left"><mml:mtr><mml:mtd><mml:mi>F</mml:mi><mml:mn>1</mml:mn><mml:mi>S</mml:mi><mml:mi>c</mml:mi><mml:mi>o</mml:mi><mml:mi>r</mml:mi><mml:mi>e</mml:mi><mml:mo>=</mml:mo><mml:mfrac><mml:mrow><mml:mn>2</mml:mn><mml:mo>&#x0002A;</mml:mo><mml:mi>P</mml:mi><mml:mi>r</mml:mi><mml:mi>e</mml:mi><mml:mi>c</mml:mi><mml:mi>i</mml:mi><mml:mi>s</mml:mi><mml:mi>i</mml:mi><mml:mi>o</mml:mi><mml:mi>n</mml:mi><mml:mo>&#x0002A;</mml:mo><mml:mi>R</mml:mi><mml:mi>e</mml:mi><mml:mi>c</mml:mi><mml:mi>a</mml:mi><mml:mi>l</mml:mi><mml:mi>l</mml:mi></mml:mrow><mml:mrow><mml:mi>P</mml:mi><mml:mi>r</mml:mi><mml:mi>e</mml:mi><mml:mi>c</mml:mi><mml:mi>i</mml:mi><mml:mi>s</mml:mi><mml:mi>i</mml:mi><mml:mi>o</mml:mi><mml:mi>n</mml:mi><mml:mo>&#x0002B;</mml:mo><mml:mi>R</mml:mi><mml:mi>e</mml:mi><mml:mi>c</mml:mi><mml:mi>a</mml:mi><mml:mi>l</mml:mi><mml:mi>l</mml:mi></mml:mrow></mml:mfrac></mml:mtd></mml:mtr></mml:mtable></mml:math></disp-formula>
+<list list-type="simple">
+<list-item><p>The value of F1-score ranges from 0 to 1, where a higher value indicates better performance.</p></list-item>
+<list-item><p>5. Wilcoxon Signed-Rank test: a statistical test has been done to assess whether the observed performance differences (e.g., between our proposed model, OCT-SelfNet, and the baseline models) are statistically significant or merely due to random variation. To evaluate this, the <italic>p</italic>-value for AUC-ROC scores between OCT-SelfNet and the baseline models in each of our experiments is calculated. Given that AUC-ROC scores are not guaranteed to follow a normal distribution and the data is paired, the Wilcoxon Signed-Rank Test is used. A <italic>p</italic>-value &#x0003C; 0.05 indicates a statistically significant difference, meaning the observed improvement or difference is unlikely to be due to chance and vice versa.</p></list-item>
+</list>
+</sec>
+<sec>
+<title>5.3 Self-supervised pre-training result</title>
+<p>Our evaluation explored the efficacy of three transformer-based networks&#x02013;ViT, Swin, and SwinV2&#x02013;by conducting pre-training for 50 epochs. Specifically, the SwinV2-based MAE exhibited notable proficiency, achieving a mean squared error (MSE) loss of 0.007 after 50 training epochs, as depicted in <xref ref-type="fig" rid="F4">Figure 4</xref>. <xref ref-type="fig" rid="F5">Figure 5</xref> illustrates a visualization of the OCT image reconstruction from the SwinV2-based MAE for different epochs. These qualitative visualizations demonstrate the performance of the Swinv2-based self-supervised Masked Autoencoder (MAE) during pre-training. The visualizations consist of a sequence of images arranged from left to right: starting with the ground truth image, followed by the input image where random regions are masked, and reconstructed images showing predicted patches at different epochs (epoch-2, epoch-20, and epoch-50). This series illustrates the model&#x00027;s progressive learning process in reconstructing the masked regions over time. Initially, the reconstructed images show rudimentary patch predictions at epoch-2, gradually improving in accuracy and detail by epoch-20. After epoch 50, the model achieves more refined reconstructions, though the predicted patches in the reconstructed image may not be entirely clear. However, our project&#x00027;s primary objective was not to generate flawless reconstructions but to capture intricate image structures and patterns. In subsequent tasks, we used these pre-trained weights, leveraging their learned representations rather than initializing the classifier network randomly.</p>
+<fig id="F4" position="float">
+<label>Figure 4</label>
+<caption><p>The training and validation MSE Loss curves of OCT-SelfNet with SwinV2 backbone.</p></caption>
+<alt-text>Line chart showing MSE loss against epochs for training and validation. Both losses decrease sharply at first, then gradually taper off, stabilizing around 50 epochs. Training loss is slightly higher than validation loss throughout.</alt-text>
+<graphic mimetype="image" mime-subtype="tiff" xlink:href="fdata-08-1609124-g0004.tif"/>
+</fig>
+<fig id="F5" position="float">
+<label>Figure 5</label>
+<caption><p>Qualitative visualizations of the performance of SwinV2-based self-supervised MAE pre-training. <bold>(a)</bold> Ground truth image, <bold>(b)</bold> input image with masks, <bold>(c)</bold> after epoch-2, <bold>(d)</bold> after epoch-20, and <bold>(e)</bold> final reconstructed image after epoch-50.</p></caption>
+<alt-text>Series of images showing a comparison of ground truth, masked input, and progressively reconstructed images in different epochs. Columns represent: (a) Ground truth images, (b) Input images with masks, (c) After epoch two, (d) After epoch twenty, (f) Final reconstructed images after epoch fifty. Rows display different image samples undergoing this process.</alt-text>
+<graphic mimetype="image" mime-subtype="tiff" xlink:href="fdata-08-1609124-g0005.tif"/>
+</fig>
+</sec>
+<sec>
+<title>5.4 Supervised training result</title>
+<sec>
+<title>5.4.1 Performance comparison with different encoder networks</title>
+<p>To observe how different transformer model adapts to our approach, in this experimentation, we employed three diverse transformer-based MAE networks during the pre-training phase. In the next stage, self-supervised training, we maintained the same encoder and leveraged transfer learning to transfer the learned weights. Additionally, a classifier network was integrated for the downstream classification tasks. Each supervised network underwent training for every dataset, and evaluations were conducted across all three test sets to assess the network&#x00027;s performance on previously unseen test data. The performance was then compared with the baseline model ResNet-50, which underwent training on each dataset and subsequent evaluation on all three test sets. Data augmentation techniques were applied throughout this experimental process. Performance metrics, including Accuracy, AUC-ROC, AUC-PR, and F1-Score, were employed to measure the effectiveness of the different encoders.</p>
+<p>Analysis of <xref ref-type="table" rid="T2">Table 2</xref> shows that, in general classification tasks, the performance of our self-supervised training approach is comparable to that of the baseline models. However, as demonstrated in <xref ref-type="table" rid="T3">Table 3</xref>, our method exhibits superior performance in cross-dataset generalization analysis. In this evaluation, the model was trained on DS1, and its classification performance was assessed on DS2 and DS3. Similar evaluations were conducted for DS2 and DS3 as well. The results in the table demonstrate that our method outperforms the baseline models in most cases, highlighting the superior generalization capability of our approach compared to traditional models.</p>
+<table-wrap position="float" id="T2">
+<label>Table 2</label>
+<caption><p>Comparison of our work with the baseline methods (ResNet-50, and ViT) with three datasets.</p></caption>
+<table frame="box" rules="all">
+<thead>
+<tr style="background-color:#919498;color:#ffffff">
+<th valign="top" align="left"><bold>Dataset</bold></th>
+<th valign="top" align="left"><bold>Classifier name</bold></th>
+<th valign="top" align="center"><bold>Accuracy</bold></th>
+<th valign="top" align="center"><bold>AUC-ROC</bold></th>
+<th valign="top" align="center"><bold>AUC-PR</bold></th>
+<th valign="top" align="center"><bold>F1-score</bold></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top" align="left" rowspan="5">DS1 (Test-1)</td>
+<td valign="top" align="left">ResNet50</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center"><bold>0.97</bold></td>
+<td valign="top" align="center"><bold>0.97</bold></td>
+</tr>
+ <tr>
+<td valign="top" align="left">ViT</td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center">0.97</td>
+<td valign="top" align="center">0.91</td>
+<td valign="top" align="center">0.83</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-ViT</td>
+<td valign="top" align="center">0.94</td>
+<td valign="top" align="center">0.94</td>
+<td valign="top" align="center">0.84</td>
+<td valign="top" align="center">0.75</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-Swinlarge</td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center">0.90</td>
+<td valign="top" align="center">0.83</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2</td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center">0.89</td>
+<td valign="top" align="center">0.84</td>
+</tr>
+<tr>
+<td valign="top" align="left" rowspan="5">DS2 (Test-2)</td>
+<td valign="top" align="left">ResNet50</td>
+<td valign="top" align="center">0.87</td>
+<td valign="top" align="center">0.80</td>
+<td valign="top" align="center">0.86</td>
+<td valign="top" align="center">0.76</td>
+</tr>
+ <tr>
+<td valign="top" align="left">ViT</td>
+<td valign="top" align="center">0.87</td>
+<td valign="top" align="center">0.93</td>
+<td valign="top" align="center">0.90</td>
+<td valign="top" align="center">0.82</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-ViT</td>
+<td valign="top" align="center">0.90</td>
+<td valign="top" align="center">0.97</td>
+<td valign="top" align="center">0.94</td>
+<td valign="top" align="center">0.87</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-Swinlarge</td>
+<td valign="top" align="center">0.92</td>
+<td valign="top" align="center">0.99</td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center">0.90</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+</tr>
+<tr>
+<td valign="top" align="left" rowspan="5">DS3 (Test-3)</td>
+<td valign="top" align="left">ResNet50</td>
+<td valign="top" align="center">0.95</td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center">0.94</td>
+<td valign="top" align="center">0.94</td>
+</tr>
+ <tr>
+<td valign="top" align="left">ViT</td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-ViT</td>
+<td valign="top" align="center">0.94</td>
+<td valign="top" align="center">0.98</td>
+<td valign="top" align="center">0.97</td>
+<td valign="top" align="center">0.91</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-Swinlarge</td>
+<td valign="top" align="center">0.97</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.96</td>
+</tr>
+<tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2</td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center">0.98</td>
+<td valign="top" align="center">0.97</td>
+<td valign="top" align="center">0.97</td>
+</tr></tbody>
+</table>
+<table-wrap-foot>
+<p>The evaluation focuses on binary classification accuracy, AUC-ROC, AUC-PR, and F1-score. Scores shown in bold represent the highest performance.</p>
+</table-wrap-foot>
+</table-wrap>
+<table-wrap position="float" id="T3">
+<label>Table 3</label>
+<caption><p>Comparison of classifiers for DS1, DS2, and DS3 datasets for cross dataset generalization analysis.</p></caption>
+<table frame="box" rules="all">
+<thead>
+<tr style="background-color:#919498;color:#ffffff">
+<th valign="top" align="left" rowspan="2"><bold>Train set</bold></th>
+<th valign="top" align="left" rowspan="2"><bold>Classifier name</bold></th>
+<th valign="top" align="center" colspan="2"><bold>Accuracy</bold></th>
+<th valign="top" align="center" colspan="2"><bold>AUC-ROC</bold></th>
+<th valign="top" align="center" colspan="2"><bold>AUC-PR</bold></th>
+<th valign="top" align="center" colspan="2"><bold>F1-score</bold></th>
+</tr>
+<tr style="background-color:#919498;color:#ffffff">
+<th valign="top" align="center"><bold>Test-2</bold></th>
+<th valign="top" align="center"><bold>Test-3</bold></th>
+<th valign="top" align="center"><bold>Test-2</bold></th>
+<th valign="top" align="center"><bold>Test-3</bold></th>
+<th valign="top" align="center"><bold>Test-2</bold></th>
+<th valign="top" align="center"><bold>Test-3</bold></th>
+<th valign="top" align="center"><bold>Test-2</bold></th>
+<th valign="top" align="center"><bold>Test-3</bold></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top" align="left" rowspan="5">DS1</td>
+<td valign="top" align="left">ResNet50</td>
+<td valign="top" align="center">0.98</td>
+<td valign="top" align="center">0.70</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.56</td>
+<td valign="top" align="center">0.97</td>
+<td valign="top" align="center">0.70</td>
+<td valign="top" align="center">0.98</td>
+<td valign="top" align="center">0.20</td>
+</tr>
+ <tr>
+<td valign="top" align="left">ViT</td>
+<td valign="top" align="center">0.98</td>
+<td valign="top" align="center"><bold>0.97</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.98</td>
+<td valign="top" align="center"><bold>0.95</bold></td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-ViT</td>
+<td valign="top" align="center">0.95</td>
+<td valign="top" align="center">0.78</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.87</td>
+<td valign="top" align="center">0.97</td>
+<td valign="top" align="center">0.76</td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center">0.51</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-Swinlarge</td>
+<td valign="top" align="center">0.97</td>
+<td valign="top" align="center">0.77</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.87</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.76</td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center">0.51</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.88</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.93</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.86</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.80</td>
+</tr>
+<tr style="background-color:#919498;color:#ffffff">
+<td/>
+<td/>
+<td valign="top" align="center"><bold>Test-1</bold></td>
+<td valign="top" align="center"><bold>Test-3</bold></td>
+<td valign="top" align="center"><bold>Test-1</bold></td>
+<td valign="top" align="center"><bold>Test-3</bold></td>
+<td valign="top" align="center"><bold>Test-1</bold></td>
+<td valign="top" align="center"><bold>Test-3</bold></td>
+<td valign="top" align="center"><bold>Test-1</bold></td>
+<td valign="top" align="center"><bold>Test-3</bold></td>
+</tr>
+ <tr>
+<td valign="top" align="left" rowspan="5">DS2</td>
+<td valign="top" align="left">ResNet50</td>
+<td valign="top" align="center"><bold>0.77</bold></td>
+<td valign="top" align="center">0.42</td>
+<td valign="top" align="center">0.59</td>
+<td valign="top" align="center">0.54</td>
+<td valign="top" align="center">0.33</td>
+<td valign="top" align="center">0.64</td>
+<td valign="top" align="center">0.28</td>
+<td valign="top" align="center">0.51</td>
+</tr>
+ <tr>
+<td valign="top" align="left">ViT</td>
+<td valign="top" align="center">0.64</td>
+<td valign="top" align="center">0.47</td>
+<td valign="top" align="center">0.66</td>
+<td valign="top" align="center">0.71</td>
+<td valign="top" align="center">0.24</td>
+<td valign="top" align="center">0.55</td>
+<td valign="top" align="center">0.30</td>
+<td valign="top" align="center">0.53</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-ViT</td>
+<td valign="top" align="center">0.71</td>
+<td valign="top" align="center">0.54</td>
+<td valign="top" align="center">0.74</td>
+<td valign="top" align="center">0.85</td>
+<td valign="top" align="center">0.30</td>
+<td valign="top" align="center">0.67</td>
+<td valign="top" align="center">0.35</td>
+<td valign="top" align="center"><bold>0.67</bold></td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-Swinlarge</td>
+<td valign="top" align="center">0.65</td>
+<td valign="top" align="center"><bold>0.55</bold></td>
+<td valign="top" align="center">0.75</td>
+<td valign="top" align="center">0.76</td>
+<td valign="top" align="center">0.26</td>
+<td valign="top" align="center">0.58</td>
+<td valign="top" align="center">0.37</td>
+<td valign="top" align="center">0.57</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2</td>
+<td valign="top" align="center">0.72</td>
+<td valign="top" align="center"><bold>0.55</bold></td>
+<td valign="top" align="center"><bold>0.79</bold></td>
+<td valign="top" align="center"><bold>0.86</bold></td>
+<td valign="top" align="center"><bold>0.42</bold></td>
+<td valign="top" align="center"><bold>0.73</bold></td>
+<td valign="top" align="center"><bold>0.39</bold></td>
+<td valign="top" align="center">0.59</td>
+</tr>
+<tr style="background-color:#919498;color:#ffffff">
+<td/>
+<td/>
+<td valign="top" align="center"><bold>Test-1</bold></td>
+<td valign="top" align="center"><bold>Test-2</bold></td>
+<td valign="top" align="center"><bold>Test-1</bold></td>
+<td valign="top" align="center"><bold>Test-2</bold></td>
+<td valign="top" align="center"><bold>Test-1</bold></td>
+<td valign="top" align="center"><bold>Test-2</bold></td>
+<td valign="top" align="center"><bold>Test-1</bold></td>
+<td valign="top" align="center"><bold>Test-2</bold></td>
+</tr>
+ <tr>
+<td valign="top" align="left" rowspan="5">DS3</td>
+<td valign="top" align="left">ResNet50</td>
+<td valign="top" align="center">0.86</td>
+<td valign="top" align="center">0.87</td>
+<td valign="top" align="center">0.72</td>
+<td valign="top" align="center">0.87</td>
+<td valign="top" align="center"><bold>0.53</bold></td>
+<td valign="top" align="center">0.84</td>
+<td valign="top" align="center"><bold>0.49</bold></td>
+<td valign="top" align="center">0.82</td>
+</tr>
+ <tr>
+<td valign="top" align="left">ViT</td>
+<td valign="top" align="center">0.68</td>
+<td valign="top" align="center">0.93</td>
+<td valign="top" align="center">0.74</td>
+<td valign="top" align="center"><bold>0.96</bold></td>
+<td valign="top" align="center">0.36</td>
+<td valign="top" align="center"><bold>0.96</bold></td>
+<td valign="top" align="center">0.34</td>
+<td valign="top" align="center">0.88</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-ViT</td>
+<td valign="top" align="center">0.88</td>
+<td valign="top" align="center">0.85</td>
+<td valign="top" align="center"><bold>0.77</bold></td>
+<td valign="top" align="center">0.90</td>
+<td valign="top" align="center">0.46</td>
+<td valign="top" align="center">0.88</td>
+<td valign="top" align="center">0.39</td>
+<td valign="top" align="center">0.71</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-Swinlarge</td>
+<td valign="top" align="center">0.86</td>
+<td valign="top" align="center"><bold>0.94</bold></td>
+<td valign="top" align="center">0.75</td>
+<td valign="top" align="center">0.95</td>
+<td valign="top" align="center">0.45</td>
+<td valign="top" align="center">0.95</td>
+<td valign="top" align="center">0.44</td>
+<td valign="top" align="center"><bold>0.91</bold></td>
+</tr>
+<tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2</td>
+<td valign="top" align="center"><bold>0.88</bold></td>
+<td valign="top" align="center">0.83</td>
+<td valign="top" align="center">0.75</td>
+<td valign="top" align="center">0.93</td>
+<td valign="top" align="center">0.44</td>
+<td valign="top" align="center">0.84</td>
+<td valign="top" align="center">0.46</td>
+<td valign="top" align="center">0.72</td>
+</tr></tbody>
+</table>
+<table-wrap-foot>
+<p>Results of our work (OCT-SelfNet-ViT) are compared with baseline methods (ResNet-50, ViT) on binary classification. Scores shown in bold represent the highest performance.</p>
+</table-wrap-foot>
+</table-wrap>
+<p>The bar chart depicted in <xref ref-type="fig" rid="F6">Figure 6</xref> presents a comparison of AUC-ROC scores among various classifiers across three datasets and test sets. The grouped bars allow for a direct comparison of each classifier&#x00027;s performance, showcasing OCT-SelfNet&#x00027;s superior performance over the baseline models in most instances. This visualization enables a clear observation of how each classifier performs across different datasets and highlights OCT-SelfNet&#x00027;s competitive edge in terms of AUC-ROC scores. AUC-ROC is the preferred metric for evaluating classifiers on imbalanced binary datasets because it comprehensively assesses their ability to distinguish between classes across thresholds. This metric focuses on discrimination ability, particularly crucial for imbalanced datasets where one class dominates. Therefore, we chose AUC-ROC to plot our comparison bar chart, ensuring an informative evaluation of classifier performance across various datasets and test sets.</p>
+<fig id="F6" position="float">
+<label>Figure 6</label>
+<caption><p>Comparison of AUC-ROC scores for different classifiers across three datasets and test sets. Each group represents AUC-ROC scores for classifiers within a specific dataset and test set combination, highlighting performance variations. Comparison of AUC-ROC scores for different classifiers across three datasets and test sets. Each group represents AUC-ROC scores for classifiers within a specific dataset and test set combination, highlighting performance variations.</p></caption>
+<alt-text>Bar chart comparing the AUC-ROC performance of five models: Resnet50, ViT, OCT-SelfNet-ViT, OCT-SelfNet-Swinlarge, and OCT-SelfNet-SwinV2 across three datasets. Each test sets includes results for all the classifiers side by side, showing the performance comparison.</alt-text>
+<graphic mimetype="image" mime-subtype="tiff" xlink:href="fdata-08-1609124-g0006.tif"/>
+</fig>
+<p>For <xref ref-type="table" rid="T2">Tables 2</xref>, <xref ref-type="table" rid="T3">3</xref>, we performed the Wilcoxon Signed-Rank Test on the AUC-ROC scores of both the baseline model, ResNet50, and our model, OCT-SelfNet-SwinV2. The resulting <italic>p</italic>-value is 0.02, further demonstrating that the difference in AUC-ROC scores is statistically significant.</p>
+<p>In this performance analysis, the OCT-SelfNet-SwinV2 classifier demonstrates the most reliable performance across all test sets, which is particularly impressive given its smaller size compared to other transformer-based classifiers. Although OCT-SelfNet-Swinlarge slightly outperforms OCT-SelfNet-SwinV2 on Dataset 3, considering both the model&#x00027;s size and its performance scores, SwinV2 proves to be an excellent and efficient option as shown in <xref ref-type="table" rid="T1">Table 1</xref>. This balance between computational cost and model effectiveness shows the model&#x00027;s potential for deployment in real-world applications where computational efficiency is important. Additionally, a visualization plot in <xref ref-type="fig" rid="F7">Figure 7</xref> is shown to highlight the OCT-SelfNet-SwinV2 model&#x00027;s decision making process. In this figure, multiple sample images from each dataset is shown, followed by their corresponding attention maps overlaid on top of the original ground truth images. This visualization allows for a better understanding of the regions that were the main focus of the model while making the decision. In the color map, red and yellow areas indicate the most important regions for the model&#x00027;s prediction, receiving the highest attention, while blue areas represent regions with the least attention. From the overlay images, it can be observed that for DS2, which has a comparatively smaller sample size, the attention maps exhibit some noise in the form of additional small highlighted regions which indicates that the model&#x00027;s attention may be less stable due to limited data availability.</p>
+<fig id="F7" position="float">
+<label>Figure 7</label>
+<caption><p>Visualization of model interpretability with attention map overlays highlighting important regions across datasets. Each row corresponds to each dataset, and the subsequent row shows the attention map of the OCT-SelfNet-SwinV2 model overlaid on the ground truth image.</p></caption>
+<alt-text>Series of retinal images organized in rows, from three datasets labeled DS-1, DS-2, and DS-3. Each dataset has two rows; one for &#x0201C;Ground Truth&#x0201D; in grayscale showing retinal scans, and the other for &#x0201C;Attention Map&#x0201D; with colorful overlays highlighting specific areas. Each row contains five image.</alt-text>
+<graphic mimetype="image" mime-subtype="tiff" xlink:href="fdata-08-1609124-g0007.tif"/>
+</fig>
+<p><xref ref-type="fig" rid="F8">Figure 8</xref> presents the confusion matrix for the OCT-SelfNet-SwinV2 classifier, showcasing its performance after trained on each dataset. In the first row, the matrix illustrates the classifier&#x00027;s effectiveness on Test Set-1 and its generalization across two additional test sets when it was trained on DS1. The second row highlights the results for DS2, while the third row shows the performance for DS3. These confusion matrices provide a comprehensive, category-specific performance analysis, offering deeper insights into the classifier&#x00027;s generalization capabilities across multiple datasets.</p>
+<fig id="F8" position="float">
+<label>Figure 8</label>
+<caption><p>Confusion matrices for the OCT-SelfNet-SwinV2 classifier, trained on DS1 <bold>(Row 1)</bold>, DS2 <bold>(Row 2)</bold>, and DS3 <bold>(Row 3)</bold>. These matrices illustrate the model&#x00027;s performance on its respective test set and generalization across the remaining test sets, providing detailed category-specific insights.</p></caption>
+<alt-text>Nine confusion matrices are displayed for OCT-SelfNet-SwinV2 fine-tuned on datasets DS1, DS2, and DS3. Each set has matrices for Test Set-1, Test Set-2, and Test Set-3. The matrices compare True Labels and Predicted Labels for AMD and Normal categories, showing varied prediction results across test sets.</alt-text>
+<graphic mimetype="image" mime-subtype="tiff" xlink:href="fdata-08-1609124-g0008.tif"/>
+</fig>
+<p>To better visualize the overall performance and the capability of distinguishing categories of OCT-SelfNet-SwinV2 across three datasets, an AUC-ROC curve is shown in <xref ref-type="fig" rid="F9">Figure 9</xref>.</p>
+<fig id="F9" position="float">
+<label>Figure 9</label>
+<caption><p>AUC-ROC curves for the OCT-SelfNet-SwinV2 classifier, trained on DS1 <bold>(Row 1)</bold>, DS2 <bold>(Row 2)</bold>, and DS3 <bold>(Row 3)</bold>.</p></caption>
+<alt-text>Three rows of ROC curves compare the performance of OCT-SelfNet-SwinV2 across three datasets, DS1, DS2, and Dataset-3, each evaluated on Test Sets 1, 2, and 3. Each graph shows an orange curve representing true positive rate versus false positive rate. A dashed blue diagonal line serves as a baseline. The curves generally show high true positive rates, indicating good model performance.</alt-text>
+<graphic mimetype="image" mime-subtype="tiff" xlink:href="fdata-08-1609124-g0009.tif"/>
+</fig>
+<p><xref ref-type="fig" rid="F10">Figure 10</xref> showcases the results of OCT image classification using the OCT-SelfNet-SwinV2 model. The figure displays a series of OCT images, each annotated with the model&#x00027;s prediction and the corresponding ground truth label. Correct predictions are highlighted in green, and incorrect predictions are marked in red. This visual representation facilitates an intuitive assessment of the model&#x00027;s performance in classifying OCT images across various scenarios, including true positives, true negatives, false positives, and false negatives. For each of these cases, two sample images are provided to illustrate instances where the model succeeded and struggled to make accurate predictions. This analysis reveals that the model encounters difficulties, particularly with visually challenging images to differentiate. In such cases, where the distinctions between categories like AMD and Normal are subtle or ambiguous, the model&#x00027;s predictions are less accurate. This suggests that the model&#x00027;s performance declines when faced with images that require more detailed visual interpretation, highlighting areas where further refinement may be needed.</p>
+<fig id="F10" position="float">
+<label>Figure 10</label>
+<caption><p>OCT image classification results: this figure displays a series of OCT images with OCT-SelfNet-SwinV2 model predictions and ground truth labels. Each image is annotated with two lines: the first line shows the model&#x00027;s prediction (either AMD or Normal), and the second line indicates the ground truth category. Predictions that match the ground truth are highlighted in green, while incorrect predictions are marked in red.</p></caption>
+<alt-text>It displays a series of OCT images with OCT-SelfNet-SwinV2 model predictions and ground truth labels. Each image is annotated with two lines: the first line shows the model&#x00027;s prediction (either AMD or Normal), and the second line indicates the ground truth category. Predictions that match the ground truth are highlighted in green, while incorrect predictions are marked in red.</alt-text>
+<graphic mimetype="image" mime-subtype="tiff" xlink:href="fdata-08-1609124-g0010.tif"/>
+</fig>
+</sec>
+<sec>
+<title>5.4.2 Performance evaluation on the effect of self-supervised pre-training</title>
+<p>This experiment aimed to assess the impact of self-supervised pre-training on overall performance. We conducted experiments where the classifier was trained from scratch without using any pre-trained weights. Our goal was to compare the model&#x00027;s performance with and without self-supervised pre-training. The results, detailed in <xref ref-type="table" rid="T4">Table 4</xref> under the names OCT-SelfNet-SwinV2-with-SSL and OCT-SelfNet-SwinV2-without-SSL, show a significant drop in scores for smaller datasets (such as DS2 and DS3) when pre-training was not used. Although not to the same degree, DS1 also showed this drop.</p>
+<table-wrap position="float" id="T4">
+<label>Table 4</label>
+<caption><p>Analyzing the impact of self-supervised pre-training: comparing our framework with SwinV2 classifier on test sets from three datasets.</p></caption>
+<table frame="box" rules="all">
+<thead>
+<tr style="background-color:#919498;color:#ffffff">
+<th valign="top" align="left" rowspan="2"><bold>Dataset</bold></th>
+<th valign="top" align="left" rowspan="2"><bold>Classifier name</bold></th>
+<th valign="top" align="center" colspan="3"><bold>Accuracy</bold></th>
+<th valign="top" align="center" colspan="3"><bold>AUC-ROC</bold></th>
+<th valign="top" align="center" colspan="3"><bold>AUC-PR</bold></th>
+<th valign="top" align="center" colspan="3"><bold>F1-score</bold></th>
+</tr>
+<tr style="background-color:#919498;color:#ffffff">
+<th valign="top" align="center"><bold>Test1</bold></th>
+<th valign="top" align="center"><bold>Test2</bold></th>
+<th valign="top" align="center"><bold>Test3</bold></th>
+<th valign="top" align="center"><bold>Test1</bold></th>
+<th valign="top" align="center"><bold>Test2</bold></th>
+<th valign="top" align="center"><bold>Test3</bold></th>
+<th valign="top" align="center"><bold>Test1</bold></th>
+<th valign="top" align="center"><bold>Test2</bold></th>
+<th valign="top" align="center"><bold>Test3</bold></th>
+<th valign="top" align="center"><bold>Test1</bold></th>
+<th valign="top" align="center"><bold>Test2</bold></th>
+<th valign="top" align="center"><bold>Test3</bold></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top" align="left" rowspan="2">DS1</td>
+<td valign="top" align="left">OCT-SelfNet-SwinV2-with-SSL</td>
+<td valign="top" align="center"><bold>0.96</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.88</bold></td>
+<td valign="top" align="center"><bold>0.96</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.93</bold></td>
+<td valign="top" align="center"><bold>0.89</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.86</bold></td>
+<td valign="top" align="center"><bold>0.84</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.80</bold></td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2-without-SSL</td>
+<td valign="top" align="center">0.95</td>
+<td valign="top" align="center">0.94</td>
+<td valign="top" align="center">0.75</td>
+<td valign="top" align="center">0.95</td>
+<td valign="top" align="center">0.98</td>
+<td valign="top" align="center">0.81</td>
+<td valign="top" align="center">0.87</td>
+<td valign="top" align="center">0.97</td>
+<td valign="top" align="center">0.69</td>
+<td valign="top" align="center">0.79</td>
+<td valign="top" align="center">0.91</td>
+<td valign="top" align="center">0.53</td>
+</tr>
+<tr>
+<td valign="top" align="left" rowspan="2">DS2</td>
+<td valign="top" align="left">OCT-SelfNet-SwinV2-with-SSL</td>
+<td valign="top" align="center">0.72</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.55</bold></td>
+<td valign="top" align="center"><bold>0.79</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.86</bold></td>
+<td valign="top" align="center"><bold>0.42</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.73</bold></td>
+<td valign="top" align="center"><bold>0.39</bold></td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center"><bold>0.59</bold></td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2-without-SSL</td>
+<td valign="top" align="center"><bold>0.73</bold></td>
+<td valign="top" align="center">0.93</td>
+<td valign="top" align="center">0.44</td>
+<td valign="top" align="center">0.73</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.71</td>
+<td valign="top" align="center">0.24</td>
+<td valign="top" align="center">0.98</td>
+<td valign="top" align="center">0.52</td>
+<td valign="top" align="center">0.36</td>
+<td valign="top" align="center">0.90</td>
+<td valign="top" align="center">0.54</td>
+</tr>
+<tr>
+<td valign="top" align="left" rowspan="2">DS3</td>
+<td valign="top" align="left">OCT-SelfNet-SwinV2-with-SSL</td>
+<td valign="top" align="center"><bold>0.88</bold></td>
+<td valign="top" align="center">0.83</td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center"><bold>0.75</bold></td>
+<td valign="top" align="center"><bold>0.93</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.44</bold></td>
+<td valign="top" align="center"><bold>0.84</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.46</bold></td>
+<td valign="top" align="center">0.72</td>
+<td valign="top" align="center"><bold>0.96</bold></td>
+</tr>
+<tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2-without-SSL</td>
+<td valign="top" align="center">0.84</td>
+<td valign="top" align="center"><bold>0.84</bold></td>
+<td valign="top" align="center">0.91</td>
+<td valign="top" align="center">0.73</td>
+<td valign="top" align="center">0.88</td>
+<td valign="top" align="center">0.97</td>
+<td valign="top" align="center">0.36</td>
+<td valign="top" align="center">0.81</td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center">0.39</td>
+<td valign="top" align="center"><bold>0.73</bold></td>
+<td valign="top" align="center">0.87</td>
+</tr></tbody>
+</table>
+<table-wrap-foot>
+<p>Evaluation includes accuracy, AUC-ROC, AUC-PR, and F1-score for multi-class classification performance. Scores shown in bold represent the highest performance.</p>
+</table-wrap-foot>
+</table-wrap>
+<p>Calculating the <italic>p</italic>-value for the AUC-ROC scores between the OCT-SelfNet-SwinV2-without-SSL and OCT-SelfNet-SwinV2-with-SSL models, we obtained a <italic>p</italic>-value of 0.01, which is significantly low, demonstrating a substantial performance improvement from using the SSL methodology.</p>
+<p>These findings suggest that our proposed framework is particularly effective in scenarios where larger datasets are unavailable, as pre-training significantly enhances performance, especially for smaller datasets.</p>
+<p><xref ref-type="fig" rid="F11">Figure 11</xref> displays a bar chart comparing the AUC-ROC scores of the OCT-SelfNet-SwinV2 classifier with and without the self-supervised pre-training stage. The grouped bar chart allows for a side-by-side comparison, clearly indicating that OCT-SelfNet-SwinV2-with-SSL consistently outperforms its counterpart in all evaluated cases.</p>
+<fig id="F11" position="float">
+<label>Figure 11</label>
+<caption><p>Comparison of AUC-ROC scores for OCT-SelfNet-SwinV2 classifier without and with self-supervised pretraining phase across three datasets and test sets.</p></caption>
+<alt-text>Bar chart comparing the AUC-ROC scores for OCT-SelfNet-SwinV2 without SSL (yellow) and with SSL (red) across three datasets. Each dataset has three test results. OCT-SelfNet-SwinV2 with SSL consistently achieves higher scores across tests and datasets.</alt-text>
+<graphic mimetype="image" mime-subtype="tiff" xlink:href="fdata-08-1609124-g0011.tif"/>
+</fig>
+</sec>
+<sec>
+<title>5.4.3 Performance evaluation on the effect of data fusion in the pre-training phase</title>
+<p>In this experiment, we examined the impact of data fusion on classifier performance. Our approach involved using a self-supervised pre-training model based on SwinV2 with individual datasets during training. During the supervised training stage, we used pre-trained weights from the self-supervised model specific to each dataset (DS1, DS2, and DS3). We then compared this approach&#x00027;s performance with a pre-trained model using data fusion. <xref ref-type="table" rid="T5">Table 5</xref> presents the performance analysis between the methodologies with and without data fusion for the SwinV2-based network. The results demonstrate a notable decline in performance for smaller datasets (DS2 and DS3) when data fusion was not employed. Conversely, the decline was minimal for DS1, suggesting that data fusion significantly enhances performance, especially for smaller datasets. The <italic>p</italic>-value between the OCT-SelfNet-SwinV2-without-datafusion and OCT-SelfNet-SwinV2-with-datafusion models is 0.01, indicating a significant performance improvement with the use of the data fusion methodology. These findings underscore our proposed methodology&#x00027;s practical relevance and effectiveness in clinical settings.</p>
+<table-wrap position="float" id="T5">
+<label>Table 5</label>
+<caption><p>Analyzing the impact of data fusion in the pre-training phase: comparing our framework with SwinV2 classifier on test sets from three datasets.</p></caption>
+<table frame="box" rules="all">
+<thead>
+<tr style="background-color:#919498;color:#ffffff">
+<th valign="top" align="left" rowspan="2"><bold>Dataset</bold></th>
+<th valign="top" align="left" rowspan="2"><bold>Classifier name</bold></th>
+<th valign="top" align="center" colspan="3"><bold>Accuracy</bold></th>
+<th valign="top" align="center" colspan="3"><bold>AUC-ROC</bold></th>
+<th valign="top" align="center" colspan="3"><bold>AUC-PR</bold></th>
+<th valign="top" align="center" colspan="3"><bold>F1-score</bold></th>
+</tr>
+<tr style="background-color:#919498;color:#ffffff">
+<th valign="top" align="center"><bold>Test1</bold></th>
+<th valign="top" align="center"><bold>Test2</bold></th>
+<th valign="top" align="center"><bold>Test3</bold></th>
+<th valign="top" align="center"><bold>Test1</bold></th>
+<th valign="top" align="center"><bold>Test2</bold></th>
+<th valign="top" align="center"><bold>Test3</bold></th>
+<th valign="top" align="center"><bold>Test1</bold></th>
+<th valign="top" align="center"><bold>Test2</bold></th>
+<th valign="top" align="center"><bold>Test3</bold></th>
+<th valign="top" align="center"><bold>Test1</bold></th>
+<th valign="top" align="center"><bold>Test2</bold></th>
+<th valign="top" align="center"><bold>Test3</bold></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top" align="left" rowspan="2">DS1</td>
+<td valign="top" align="left">OCT-SelfNet-SwinV2-with-datafusion</td>
+<td valign="top" align="center"><bold>0.96</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.88</bold></td>
+<td valign="top" align="center"><bold>0.96</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.93</bold></td>
+<td valign="top" align="center">0.89</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.86</bold></td>
+<td valign="top" align="center"><bold>0.84</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.80</bold></td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2-without-datafusion</td>
+<td valign="top" align="center"><bold>0.96</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.80</td>
+<td valign="top" align="center"><bold>0.96</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.90</td>
+<td valign="top" align="center"><bold>0.91</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.81</td>
+<td valign="top" align="center"><bold>0.84</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.61</td>
+</tr>
+<tr>
+<td valign="top" align="left" rowspan="2">DS2</td>
+<td valign="top" align="left">OCT-SelfNet-SwinV2-with-datafusion</td>
+<td valign="top" align="center"><bold>0.72</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.55</bold></td>
+<td valign="top" align="center"><bold>0.79</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.86</bold></td>
+<td valign="top" align="center"><bold>0.42</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.73</bold></td>
+<td valign="top" align="center"><bold>0.39</bold></td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center"><bold>0.59</bold></td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2-without-datafusion</td>
+<td valign="top" align="center">0.65</td>
+<td valign="top" align="center">0.90</td>
+<td valign="top" align="center">0.33</td>
+<td valign="top" align="center">0.69</td>
+<td valign="top" align="center">0.97</td>
+<td valign="top" align="center">0.52</td>
+<td valign="top" align="center">0.24</td>
+<td valign="top" align="center">0.95</td>
+<td valign="top" align="center">0.33</td>
+<td valign="top" align="center">0.31</td>
+<td valign="top" align="center">0.86</td>
+<td valign="top" align="center">0.50</td>
+</tr>
+<tr>
+<td valign="top" align="left" rowspan="2">DS3</td>
+<td valign="top" align="left">OCT-SelfNet-SwinV2-with-datafusion</td>
+<td valign="top" align="center"><bold>0.88</bold></td>
+<td valign="top" align="center"><bold>0.83</bold></td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center"><bold>0.75</bold></td>
+<td valign="top" align="center"><bold>0.93</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.44</bold></td>
+<td valign="top" align="center"><bold>0.84</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.46</bold></td>
+<td valign="top" align="center"><bold>0.72</bold></td>
+<td valign="top" align="center"><bold>0.96</bold></td>
+</tr>
+<tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2-without-datafusion</td>
+<td valign="top" align="center">0.87</td>
+<td valign="top" align="center">0.80</td>
+<td valign="top" align="center">0.95</td>
+<td valign="top" align="center">0.71</td>
+<td valign="top" align="center">0.88</td>
+<td valign="top" align="center">0.97</td>
+<td valign="top" align="center">0.39</td>
+<td valign="top" align="center">0.80</td>
+<td valign="top" align="center">0.97</td>
+<td valign="top" align="center">0.40</td>
+<td valign="top" align="center">0.65</td>
+<td valign="top" align="center">0.92</td>
+</tr></tbody>
+</table>
+<table-wrap-foot>
+<p>Evaluation includes accuracy, AUC-ROC, AUC-PR, and F1-score for multi-class classification performance. Scores shown in bold represent the highest performance.</p>
+</table-wrap-foot>
+</table-wrap>
+<p><xref ref-type="fig" rid="F12">Figure 12</xref> illustrates a bar chart that contrasts the AUC-ROC scores of the OCT-SelfNet-SwinV2 classifier with and without the integration of the data-fusion methodology. This grouped presentation enables a direct comparison, highlighting the consistent superiority of OCT-SelfNet-SwinV2-with-datafusion across all assessed cases.</p>
+<fig id="F12" position="float">
+<label>Figure 12</label>
+<caption><p>Comparison of AUC-ROC scores for OCT-SelfNet-SwinV2 classifier without and with data fusion methodology across three datasets and test sets.</p></caption>
+<alt-text>Bar graph comparing AUC ROC values for three test datasets across two models: OCT-SelfNet-SwinV2 without data fusion and OCT-SelfNet-SwinV2 with data fusion. The data with fusion generally shows higher performance.</alt-text>
+<graphic mimetype="image" mime-subtype="tiff" xlink:href="fdata-08-1609124-g0012.tif"/>
+</fig>
+</sec>
+<sec>
+<title>5.4.4 Performance evaluation on unseen datasets settings</title>
+<p>This experiment aimed to evaluate the performance of our proposed method on datasets that were not part of the pre-training phase; only DS1 was used during pre-training. This allowed us to assess how our method performed on unseen sets, Test Set 2 and Test Set 3, both of which were entirely new to the model which will showcase the practical applicability of our approach in scenarios where there is insufficient data available for training.</p>
+<p>In this experiment, the OCT-SelfNet-SwinV2 underwent pre-training exclusively with DS1, and the acquired weights were subsequently transferred to the classifier network. The classifier network was then trained on DS1, and evaluations were conducted on Test Set 1, Test Set 2, and Test Set 3. For effective pre-training and optimal learning representation, a larger dataset is essential, therefore, DS1 was selected as it has the highest number of samples among the three datasets. The results of this experiment, presented in <xref ref-type="table" rid="T6">Table 6</xref>, demonstrate that the proposed method consistently outperforms or matches the baseline model across diverse test sets. When evaluating Test Set-1 and Test Set-2, both the baseline model and our approach exhibited similar scores. However, when assessing Test Set-3, which comprises unseen data with variations in image settings, the baseline model&#x00027;s performance significantly declined compared to ours. The narrow score gaps observed in OCT-SelfNet-SwinV2 across diverse test sets highlight the generalization capabilities of our proposed approach. <xref ref-type="fig" rid="F13">Figure 13</xref> presents a bar chart comparing the AUC-ROC scores for each test set across different classifiers. The grouped bar chart clearly illustrates the superiority of OCT-SelfNet-SwinV2 over the ResNet-50 model in most cases, further confirming its effectiveness in handling a broad spectrum of datasets.</p>
+<table-wrap position="float" id="T6">
+<label>Table 6</label>
+<caption><p>Comparison of SwinV2-based classifier results, with the encoder pre-trained on Train Set 1 and classifier trained on DS1, followed by evaluation on Test Set 1, Test Set 2, and Test Set 3, in comparison to the baseline model.</p></caption>
+<table frame="box" rules="all">
+<thead>
+<tr style="background-color:#919498;color:#ffffff">
+<th valign="top" align="left" rowspan="2"><bold>Train set</bold></th>
+<th valign="top" align="left" rowspan="2"><bold>Classifier name</bold></th>
+<th valign="top" align="center" colspan="3"><bold>Accuracy</bold></th>
+<th valign="top" align="center" colspan="3"><bold>AUC-ROC</bold></th>
+<th valign="top" align="center" colspan="3"><bold>AUC-PR</bold></th>
+<th valign="top" align="center" colspan="3"><bold>F1-score</bold></th>
+</tr>
+<tr style="background-color:#919498;color:#ffffff">
+<th valign="top" align="center"><bold>Test-1</bold></th>
+<th valign="top" align="center"><bold>Test-2</bold></th>
+<th valign="top" align="center"><bold>Test-3</bold></th>
+<th valign="top" align="center"><bold>Test-1</bold></th>
+<th valign="top" align="center"><bold>Test-2</bold></th>
+<th valign="top" align="center"><bold>Test-3</bold></th>
+<th valign="top" align="center"><bold>Test-1</bold></th>
+<th valign="top" align="center"><bold>Test-2</bold></th>
+<th valign="top" align="center"><bold>Test-3</bold></th>
+<th valign="top" align="center"><bold>Test-1</bold></th>
+<th valign="top" align="center"><bold>Test-2</bold></th>
+<th valign="top" align="center"><bold>Test-3</bold></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top" align="left" rowspan="2">DS1</td>
+<td valign="top" align="left">Resnet-50</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center">0.70</td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.56</td>
+<td valign="top" align="center"><bold>0.97</bold></td>
+<td valign="top" align="center">0.98</td>
+<td valign="top" align="center">0.70</td>
+<td valign="top" align="center"><bold>0.97</bold></td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center">0.20</td>
+</tr>
+<tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2</td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center">0.97</td>
+<td valign="top" align="center"><bold>0.82</bold></td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.91</bold></td>
+<td valign="top" align="center">0.91</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.84</bold></td>
+<td valign="top" align="center">0.84</td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center"><bold>0.66</bold></td>
+</tr></tbody>
+</table>
+<table-wrap-foot>
+<p>Scores shown in bold represent the highest performance.</p>
+</table-wrap-foot>
+</table-wrap>
+<fig id="F13" position="float">
+<label>Figure 13</label>
+<caption><p>Comparison of OCT-SelfNet-SwinV2 classifier results with baseline model Resnet-50: In OCT-SelfNet-SwinV2, the encoder is pre-trained on only Train Set 1 and later supervised training was done on DS1, evaluated on Test Set 1, Test Set 2, and Test Set 3.</p></caption>
+<alt-text>Bar chart comparing OCT-SelfNet-SwinV2 Classifier Results with Baseline Model Resnet-50. In OCT-SelfNet-SwinV2, the Encoder is Pre-Trained on only Train Set 1 and later supervised training was done on DS1, Evaluated on Test Set 1, Test Set 2, and Test Set 3.</alt-text>
+<graphic mimetype="image" mime-subtype="tiff" xlink:href="fdata-08-1609124-g0013.tif"/>
+</fig>
+</sec>
+<sec>
+<title>5.4.5 Performance comparison in limited data settings</title>
+<p>In this ablation study, the training set was intentionally reduced to 50%, and subsequent training was conducted for each dataset with the augmentation techniques. The objective was to assess the performance of the OCT-SelfNet classifier in comparison to the baseline model under insufficient data conditions.</p>
+<p>Examination of <xref ref-type="fig" rid="F7">Table 7</xref> indicates that, even with a reduction in training data, the proposed method consistently outperforms the baseline model. Specifically, the discrepancy among the scores of unseen test sets compared to the trained dataset&#x00027;s test set is considerable for the baseline model. In contrast, the self-supervised training approach exhibits minimal gaps, showcasing better generalization capabilities. When trained on the reduced DS1 training set, the OCT- SelfNet-SwinV2 model exhibited AUC-ROC scores of 0.96, 0.99, 0.93, and AUC-PR of 0.89, 0.99, 0.83 on Test Set-1, Test Set-2, and Test Set-3, respectively. In comparison, the baseline model achieved AUC-ROC scores of 0.98, 0.99, and 0.55, accompanied by AUC-PR of 0.97, 0.98, and 0.70 on the same test sets. This consistent pattern extended to other datasets, as summarized in <xref ref-type="table" rid="T7">Table 7</xref>.</p>
+<table-wrap position="float" id="T7">
+<label>Table 7</label>
+<caption><p>Comparison of our work with the baseline methods (ResNet-50) on test sets from three datasets, using only 50% of the training data in training.</p></caption>
+<table frame="box" rules="all">
+<thead>
+<tr style="background-color:#919498;color:#ffffff">
+<th valign="top" align="left" rowspan="2"><bold>Train set</bold></th>
+<th valign="top" align="left" rowspan="2"><bold>Classifier name</bold></th>
+<th valign="top" align="center" colspan="3"><bold>Accuracy</bold></th>
+<th valign="top" align="center" colspan="3"><bold>AUC-ROC</bold></th>
+<th valign="top" align="center" colspan="3"><bold>AUC-PR</bold></th>
+<th valign="top" align="center" colspan="3"><bold>F1-score</bold></th>
+</tr>
+<tr style="background-color:#919498;color:#ffffff">
+<th valign="top" align="center"><bold>Test-1</bold></th>
+<th valign="top" align="center"><bold>Test-2</bold></th>
+<th valign="top" align="center"><bold>Test-3</bold></th>
+<th valign="top" align="center"><bold>Test-1</bold></th>
+<th valign="top" align="center"><bold>Test-2</bold></th>
+<th valign="top" align="center"><bold>Test-3</bold></th>
+<th valign="top" align="center"><bold>Test-1</bold></th>
+<th valign="top" align="center"><bold>Test-2</bold></th>
+<th valign="top" align="center"><bold>Test-3</bold></th>
+<th valign="top" align="center"><bold>Test-1</bold></th>
+<th valign="top" align="center"><bold>Test-2</bold></th>
+<th valign="top" align="center"><bold>Test-3</bold></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top" align="left" rowspan="4">DS1</td>
+<td valign="top" align="left">Resnet50</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.70</td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.55</td>
+<td valign="top" align="center"><bold>0.97</bold></td>
+<td valign="top" align="center">0.98</td>
+<td valign="top" align="center">0.70</td>
+<td valign="top" align="center"><bold>0.97</bold></td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center">0.17</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-ViT</td>
+<td valign="top" align="center">0.94</td>
+<td valign="top" align="center">0.94</td>
+<td valign="top" align="center">0.76</td>
+<td valign="top" align="center">0.94</td>
+<td valign="top" align="center">0.98</td>
+<td valign="top" align="center">0.85</td>
+<td valign="top" align="center">0.84</td>
+<td valign="top" align="center">0.97</td>
+<td valign="top" align="center">0.79</td>
+<td valign="top" align="center">0.74</td>
+<td valign="top" align="center">0.91</td>
+<td valign="top" align="center">0.46</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-Swinlarge</td>
+<td valign="top" align="center">0.95</td>
+<td valign="top" align="center">0.97</td>
+<td valign="top" align="center"><bold>0.78</bold></td>
+<td valign="top" align="center">0.94</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.86</td>
+<td valign="top" align="center">0.85</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.75</td>
+<td valign="top" align="center">0.77</td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center"><bold>0.61</bold></td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2</td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center">0.97</td>
+<td valign="top" align="center"><bold>0.78</bold></td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.93</bold></td>
+<td valign="top" align="center">0.89</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.83</bold></td>
+<td valign="top" align="center">0.82</td>
+<td valign="top" align="center">0.95</td>
+<td valign="top" align="center">0.54</td>
+</tr>
+<tr>
+<td valign="top" align="left" rowspan="4">DS2</td>
+<td valign="top" align="left">Resnet50</td>
+<td valign="top" align="center"><bold>0.79</bold></td>
+<td valign="top" align="center">0.85</td>
+<td valign="top" align="center">0.33</td>
+<td valign="top" align="center">0.56</td>
+<td valign="top" align="center">0.78</td>
+<td valign="top" align="center">0.50</td>
+<td valign="top" align="center">0.28</td>
+<td valign="top" align="center">0.85</td>
+<td valign="top" align="center">0.66</td>
+<td valign="top" align="center">0.23</td>
+<td valign="top" align="center">0.71</td>
+<td valign="top" align="center">0.50</td>
+</tr>
+<tr>
+<td valign="top" align="left">OCT-SelfNet-ViT</td>
+<td valign="top" align="center">0.70</td>
+<td valign="top" align="center">0.87</td>
+<td valign="top" align="center"><bold>0.49</bold></td>
+<td valign="top" align="center">0.73</td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center"><bold>0.83</bold></td>
+<td valign="top" align="center">0.28</td>
+<td valign="top" align="center">0.94</td>
+<td valign="top" align="center"><bold>0.67</bold></td>
+<td valign="top" align="center">0.35</td>
+<td valign="top" align="center">0.83</td>
+<td valign="top" align="center"><bold>0.57</bold></td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-Swinlarge</td>
+<td valign="top" align="center">0.68</td>
+<td valign="top" align="center">0.93</td>
+<td valign="top" align="center">0.47</td>
+<td valign="top" align="center">0.70</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.71</td>
+<td valign="top" align="center">0.26</td>
+<td valign="top" align="center">0.96</td>
+<td valign="top" align="center">0.55</td>
+<td valign="top" align="center">0.32</td>
+<td valign="top" align="center"><bold>0.91</bold></td>
+<td valign="top" align="center">0.55</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2</td>
+<td valign="top" align="center">0.72</td>
+<td valign="top" align="center"><bold>0.94</bold></td>
+<td valign="top" align="center">0.34</td>
+<td valign="top" align="center"><bold>0.76</bold></td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.63</td>
+<td valign="top" align="center"><bold>0.31</bold></td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center">0.41</td>
+<td valign="top" align="center"><bold>0.37</bold></td>
+<td valign="top" align="center"><bold>0.91</bold></td>
+<td valign="top" align="center">0.50</td>
+</tr>
+<tr>
+<td valign="top" align="left" rowspan="4">DS3</td>
+<td valign="top" align="left">Resnet50</td>
+<td valign="top" align="center">0.77</td>
+<td valign="top" align="center"><bold>0.87</bold></td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center"><bold>0.75</bold></td>
+<td valign="top" align="center">0.89</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center"><bold>0.54</bold></td>
+<td valign="top" align="center">0.85</td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center"><bold>0.45</bold></td>
+<td valign="top" align="center"><bold>0.83</bold></td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-ViT</td>
+<td valign="top" align="center"><bold>0.88</bold></td>
+<td valign="top" align="center">0.79</td>
+<td valign="top" align="center">0.95</td>
+<td valign="top" align="center"><bold>0.75</bold></td>
+<td valign="top" align="center">0.92</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.41</td>
+<td valign="top" align="center">0.86</td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center">0.32</td>
+<td valign="top" align="center">0.58</td>
+<td valign="top" align="center">0.92</td>
+</tr>
+ <tr>
+<td valign="top" align="left">OCT-SelfNet-Swinlarge</td>
+<td valign="top" align="center"><bold>0.88</bold></td>
+<td valign="top" align="center">0.78</td>
+<td valign="top" align="center">0.95</td>
+<td valign="top" align="center">0.72</td>
+<td valign="top" align="center">0.87</td>
+<td valign="top" align="center"><bold>0.99</bold></td>
+<td valign="top" align="center">0.41</td>
+<td valign="top" align="center">0.79</td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center">0.28</td>
+<td valign="top" align="center">0.55</td>
+<td valign="top" align="center">0.92</td>
+</tr>
+<tr>
+<td valign="top" align="left">OCT-SelfNet-SwinV2</td>
+<td valign="top" align="center"><bold>0.88</bold></td>
+<td valign="top" align="center">0.79</td>
+<td valign="top" align="center">0.95</td>
+<td valign="top" align="center">0.64</td>
+<td valign="top" align="center"><bold>0.96</bold></td>
+<td valign="top" align="center">0.98</td>
+<td valign="top" align="center">0.33</td>
+<td valign="top" align="center"><bold>0.93</bold></td>
+<td valign="top" align="center"><bold>0.98</bold></td>
+<td valign="top" align="center">0.29</td>
+<td valign="top" align="center">0.55</td>
+<td valign="top" align="center">0.92</td>
+</tr></tbody>
+</table>
+<table-wrap-foot>
+<p>The evaluation focuses on binary classification accuracy, AUC-ROC, AUC-PR, and F1-score. Scores shown in bold represent the highest performance.</p>
+</table-wrap-foot>
+</table-wrap>
+<p>In the bar chart shown in <xref ref-type="fig" rid="F14">Figure 14</xref>, AUC-ROC scores for each test set are compared across different classifiers for this experiment, clearly demonstrating how our proposed methodology surpasses the baseline performances.</p>
+<fig id="F14" position="float">
+<label>Figure 14</label>
+<caption><p>Comparison of AUC-ROC scores between our method (OCT-SelfNet-SwinV2) and baseline (ResNet-50) on test sets from three datasets, when only 50% of training data has been used for training.</p></caption>
+<alt-text>Bar chart showing Comparison of AUC-ROC Scores Between OCT-SelfNet- SwinV2 and Baseline ResNet-50 on Test Sets from Three Datasets, when only 50% of Training Data has been used for training.</alt-text>
+<graphic mimetype="image" mime-subtype="tiff" xlink:href="fdata-08-1609124-g0014.tif"/>
+</fig>
+<p>This finding underscores the robustness and improved adaptability of the proposed methodology, particularly in scenarios with limited training data.</p>
+</sec>
+</sec>
+<sec>
+<title>5.5 Evaluating the influence of reconstruction quality on the classifier&#x00027;s performance</title>
+<p>In this ablation study, a side-by-side comparison was conducted to visually illustrate whether the reconstruction quality during the SSL training phase affects the performance of the trained classifier. By comparing the images from both phases, we aim to observe the relationship between the fidelity of reconstructed images and the subsequent accuracy of classifications made by the model after training.</p>
+<p><xref ref-type="fig" rid="F15">Figure 15</xref> presents a comparative series of images for visual analysis. <xref ref-type="fig" rid="F15">Figure 15a</xref> represents the ground truth image. <xref ref-type="fig" rid="F15">Figure 15b</xref>, depicts the reconstructed output generated by the OCT-SelfNet-SwinV2 model in the self-supervised pre-training phase, showcasing its capability to approximate the original image. <xref ref-type="fig" rid="F15">Figure 15c</xref> illustrates the classification result produced by the OCT-SelfNet-SwinV2 Classifier. The prediction labels are color-coded: green indicates the right prediction while red indicates a wrong prediction. To comprehensively evaluate the impact of reconstruction quality on classification, samples are provided for true-positive, true-negative, false-positive, and false-negative cases. This approach allows us to observe and analyze whether the quality of the reconstructed images influences the accuracy of the classification results. Through this qualitative analysis, it is evident that during the SSL phase, the model adeptly learns the image representation. Despite some minor blurriness in the reconstructed image, these slight imperfections have no impact on the supervised stage. During training, the classifier model effectively uses the weights obtained from the SSL stage to achieve accurate classifications.</p>
+<fig id="F15" position="float">
+<label>Figure 15</label>
+<caption><p>Comparative analysis of <bold>(a</bold>) ground truth, <bold>(b)</bold> reconstructed, and <bold>(c)</bold> classified images by the OCT-SelfNet-SwinV2 model, illustrating the effect of the SSL&#x00027;s performance in accurately classifying the image.</p></caption>
+<alt-text>Three rows of images compare retinal scans. Column (a) shows the ground truth scans. Column (b) presents reconstructed images from SSL pre-training. Column (c) displays classifier outputs with predictions and ground truths. Text indicates accuracy: green for correct predictions, red for errors.</alt-text>
+<graphic mimetype="image" mime-subtype="tiff" xlink:href="fdata-08-1609124-g0015.tif"/>
+</fig>
+</sec>
+</sec>
+<sec id="s6">
+<title>6 Summary</title>
+<p>In this work, we propose a two-phase deep learning framework for detecting eye diseases from OCT images using a SwinV2 backbone. The methodology includes self-supervised pre-training on unlabeled data, followed by supervised training on labeled data. The model is pre-trained using unlabeled OCT images to learn feature representations, addressing data scarcity in medical domains. Using multi-source datasets exposes the model to diverse variations, enhancing generalization. In the training phase, the pre-trained model is adapted for disease classification using labeled OCT images. This phase improves performance while leveraging the learned features, minimizing the need for large labeled datasets. The two-phase approach allows us to address the key limitations in medical AI, such as data scarcity and the need for models that can generalize across diverse clinical environments. Self-supervised learning reduces the dependency on large labeled datasets, which are difficult to obtain in medical imaging. The use of multi-source datasets ensures that the model is exposed to variations in patient demographics, OCT devices, and imaging protocols, thus enhancing its scalability and adaptability for real-world clinical applications.</p>
+<p>Our experiments, conducted across three diverse datasets with cross-evaluation and an extensive ablation study with different encoder networks, yield promising results. The performance analysis of the self-supervised training approach against the baseline model reveals significant improvements across various evaluation metrics, notably AUC-ROC and AUC-PR. The consistent outperformance of the SwinV2-based classifier underscores its robustness and suitability for automated ophthalmic diagnosis, specifically in distinguishing normal cases from AMD using OCT images. In our study, we conducted an ablation analysis to assess the impact of self-supervised pre-training on model performance, highlighting its crucial role. It shows a significant decrease in scores for smaller datasets without self-supervised pre-training, emphasizing the framework&#x00027;s effectiveness in enhancing generalization and prediction accuracy, even with smaller datasets. This finding is especially relevant in clinical settings where extensive labeled data acquisition isn&#x00027;t always feasible. Another ablation study was conducted to assess performance under limited data conditions by reducing the sample size to 50%, which further corroborates the robustness and improved adaptability of our methodology for smaller datasets. Despite a reduction in training data, our self-supervised training approach showcases its ability to generalize effectively and maintain performance stability across diverse test sets. The ablation study of unseen datasets settings, where only DS1 was used in the pre-training and test sets from DS2 and DS3 were used for the evaluation, further validates the proposed method&#x00027;s efficacy and generalization abilities for new datasets, showcasing its practical applicability and resilience in handling diverse and complex data in real-world clinical contexts.</p>
+<p>Our study acknowledges the potential limitations of the proposed framework that may impact its generalizability and applicability during clinical deployment. One key challenge is the possibility of unwanted biases arising during data fusion, such as imbalances in demographic representation or the prevalence of specific disease categories, which can limit the model&#x00027;s performance. In clinical settings, the model will need to be retrained or trained periodically as new data becomes available. Furthermore, given the high stakes of medical diagnoses, a human-in-the-loop validation process is necessary for low-confidence results to ensure the reliability of the predictions. Our future directions include expanding the dataset to encompass a broader range of patients while addressing and mitigating biases. Additionally, the focus of our current work on binary classification (Normal vs. AMD) limits the scope of the model&#x00027;s practical utility, as real-world clinical settings often involve patients with multiple conditions. We aim to extend the framework to multi-class classification and incorporate human-in-the-loop, making it suitable and reliable for widespread application in ophthalmic diagnostics.</p>
+</sec>
+<sec sec-type="conclusions" id="s7">
+<title>7 Conclusion</title>
+<p>In this article, we have demonstrated the effectiveness of a self-supervised deep learning framework using the SwinV2 backbone for detecting eye diseases from OCT images. While the shifted window-based transformer model has gained attention in research, its application and self-supervised methodology in OCT analysis have yet to be explored. This article presents a comprehensive two-phase framework that learns feature representations during the pre-training stage from a multi-source dataset and leverages these learned weights for the downstream classification task. Our method reduces the need for large labeled datasets by utilizing unlabeled data in the self-supervised pre-training stage. This approach not only minimizes the dependency on a single data source but also enables the model to learn from the variations across different data settings from multiple sources, improving its generalization capability.</p>
+<p>The performance evaluation of our proposed methodology, OCT-SelfNet-SwinV2, through several experiments and scenarios consistently demonstrates its superiority over the baseline model in terms of generalization, showcasing its potential for broader clinical AI applications in automated ophthalmic diagnosis. Our findings highlight the critical importance of self-supervised pre-training, and data fusion in achieving better performance and generalization capabilities. However, our study recognizes potential limitations, including biases from data fusion and the binary classification focus, which may affect generalizability. Future work will address these challenges by expanding the dataset, incorporating multi-class classification, and integrating human-in-the-loop validation for enhanced reliability in clinical applications.</p>
+</sec>
+</body>
+<back>
+<sec sec-type="data-availability" id="s8">
+<title>Data availability statement</title>
+<p>Publicly available datasets were analyzed in this study. This data can be found at: 1. <ext-link ext-link-type="uri" xlink:href="https://data.mendeley.com/datasets/rscbjbr9sj/2?__hstc=25856994.50884f215aa05251fa08928315486661.1744243773329.1744243773329.1744243773329.1&#x00026;__hssc=25856994.1.1744243773329&#x00026;__hsfp=1174180583">https://data.mendeley.com/datasets/rscbjbr9sj/2?__hstc=25856994.50884f215aa05251fa08928315486661.1744243773329.1744243773329.1744243773329.1&#x00026;__hssc=25856994.1.1744243773329&#x00026;__hsfp=1174180583</ext-link>; 2. <ext-link ext-link-type="uri" xlink:href="https://people.duke.edu/&#x0007E;sf59/Srinivasan_BOE_2014_dataset.htm">https://people.duke.edu/&#x0007E;sf59/Srinivasan_BOE_2014_dataset.htm</ext-link>; 3. <ext-link ext-link-type="uri" xlink:href="https://ieee-dataport.org/open-access/octa-500">https://ieee-dataport.org/open-access/octa-500</ext-link>.</p>
+</sec>
+<sec sec-type="author-contributions" id="s9">
+<title>Author contributions</title>
+<p>FJ: Writing &#x02013; review &#x00026; editing, Writing &#x02013; original draft. SG: Formal analysis, Writing &#x02013; original draft. MA: Resources, Conceptualization, Supervision, Writing &#x02013; review &#x00026; editing. HT: Conceptualization, Resources, Writing &#x02013; review &#x00026; editing, Investigation, Supervision, Methodology.</p>
+</sec>
+<sec sec-type="funding-information" id="s10">
+<title>Funding</title>
+<p>The author(s) declare that no financial support was received for the research and/or publication of this article.</p>
+</sec>
+<sec sec-type="COI-statement" id="conf1">
+<title>Conflict of interest</title>
+<p>The authors declare that the research was conducted in the absence of any commercial or financial relationships that could be construed as a potential conflict of interest.</p>
+</sec>
+<sec sec-type="ai-statement" id="s11">
+<title>Generative AI statement</title>
+<p>The author(s) declare that Gen AI was used in the creation of this manuscript. To check grammatical errors.</p>
+</sec>
+<sec sec-type="disclaimer" id="s12">
+<title>Publisher&#x00027;s note</title>
+<p>All claims expressed in this article are solely those of the authors and do not necessarily represent those of their affiliated organizations, or those of the publisher, the editors and the reviewers. Any product that may be evaluated in this article, or claim that may be made by its manufacturer, is not guaranteed or endorsed by the publisher.</p>
+</sec>
+<ref-list>
+<title>References</title>
+<ref id="B1">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Alam</surname> <given-names>M.</given-names></name> <name><surname>Zhang</surname> <given-names>Y.</given-names></name> <name><surname>Lim</surname> <given-names>J. I.</given-names></name> <name><surname>Chan</surname> <given-names>R.</given-names></name> <name><surname>Yang</surname> <given-names>M.</given-names></name> <name><surname>Yao</surname> <given-names>X.</given-names></name> <etal/></person-group>. (<year>2020</year>). <article-title>Quantitative OCT angiography features for objective classification and staging of diabetic retinopathy</article-title>. <source>Retina</source> <volume>40</volume>, <fpage>322</fpage>&#x02013;<lpage>332</lpage>. <pub-id pub-id-type="doi">10.1097/IAE.0000000000002373</pub-id><pub-id pub-id-type="pmid">30326063</pub-id></citation></ref>
+<ref id="B2">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Alshammari</surname> <given-names>H.</given-names></name> <name><surname>Gasmi</surname> <given-names>K.</given-names></name> <name><surname>Ben Ltaifa</surname> <given-names>I.</given-names></name> <name><surname>Krichen</surname> <given-names>M.</given-names></name> <name><surname>Ben Ammar</surname> <given-names>L.</given-names></name> <name><surname>Mahmood</surname> <given-names>M. A.</given-names></name> <etal/></person-group>. (<year>2022</year>). <article-title>Olive disease classification based on vision transformer and CNN models</article-title>. <source>Comput. Intell. Neurosci</source>. <volume>2022</volume>:<fpage>3998193</fpage>. <pub-id pub-id-type="doi">10.1155/2022/3998193</pub-id><pub-id pub-id-type="pmid">35958771</pub-id></citation></ref>
+<ref id="B3">
+<citation citation-type="book"><person-group person-group-type="author"><name><surname>Awais</surname> <given-names>M.</given-names></name> <name><surname>M&#x000FC;ller</surname> <given-names>H.</given-names></name> <name><surname>Tang</surname> <given-names>T. B.</given-names></name> <name><surname>Meriaudeau</surname> <given-names>F.</given-names></name></person-group> (<year>2017</year>). <article-title>&#x0201C;Classification OF SD-OCT images using a deep learning approach,&#x0201D;</article-title> in <source>2017 IEEE International Conference on Signal and Image Processing Applications (ICSIPA)</source> (<publisher-loc>Kuching</publisher-loc>: <publisher-name>IEEE</publisher-name>), <fpage>489</fpage>&#x02013;<lpage>492</lpage>. <pub-id pub-id-type="doi">10.1109/ICSIPA.2017.8120661</pub-id></citation>
+</ref>
+<ref id="B4">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Ayana</surname> <given-names>G.</given-names></name> <name><surname>Dese</surname> <given-names>K.</given-names></name> <name><surname>Dereje</surname> <given-names>Y.</given-names></name> <name><surname>Kebede</surname> <given-names>Y.</given-names></name> <name><surname>Barki</surname> <given-names>H.</given-names></name> <name><surname>Amdissa</surname> <given-names>D.</given-names></name> <etal/></person-group>. (<year>2023</year>). <article-title>Vision-transformer-based transfer learning for mammogram classification</article-title>. <source>Diagnostics</source> <volume>13</volume>:<fpage>178</fpage>. <pub-id pub-id-type="doi">10.3390/diagnostics13020178</pub-id><pub-id pub-id-type="pmid">36672988</pub-id></citation></ref>
+<ref id="B5">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Bao</surname> <given-names>H.</given-names></name> <name><surname>Dong</surname> <given-names>L.</given-names></name> <name><surname>Piao</surname> <given-names>S.</given-names></name> <name><surname>Wei</surname> <given-names>F.</given-names></name></person-group> (<year>2021</year>). <article-title>Beit: Bert pre-training of image transformers</article-title>. <source>arXiv</source> [Preprint]. arXiv:2106.08254. <pub-id pub-id-type="doi">10.48550/arXiv.2106.08254</pub-id><pub-id pub-id-type="pmid">39164302</pub-id></citation></ref>
+<ref id="B6">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Devlin</surname> <given-names>J.</given-names></name> <name><surname>Chang</surname> <given-names>M.-W.</given-names></name> <name><surname>Lee</surname> <given-names>K.</given-names></name> <name><surname>Toutanova</surname> <given-names>K.</given-names></name></person-group> (<year>2018</year>). <article-title>Bert: pre-training of deep bidirectional transformers for language understanding</article-title>. <source>arXiv</source> [Preprint]. arXiv:1810.04805. <pub-id pub-id-type="doi">10.48550/arXiv:1810.04805</pub-id></citation>
+</ref>
+<ref id="B7">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Dosovitskiy</surname> <given-names>A.</given-names></name> <name><surname>Beyer</surname> <given-names>L.</given-names></name> <name><surname>Kolesnikov</surname> <given-names>A.</given-names></name> <name><surname>Weissenborn</surname> <given-names>D.</given-names></name> <name><surname>Zhai</surname> <given-names>X.</given-names></name> <name><surname>Unterthiner</surname> <given-names>T.</given-names></name> <etal/></person-group>. (<year>2020</year>). <article-title>An image is worth 16x16 words: transformers for image recognition at scale</article-title>. <source>arXiv</source> [Preprint]. arXiv:2010.11929. <pub-id pub-id-type="doi">10.48550/arXiv.2010.11929</pub-id></citation>
+</ref>
+<ref id="B8">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Fang</surname> <given-names>L.</given-names></name> <name><surname>Guo</surname> <given-names>J.</given-names></name> <name><surname>He</surname> <given-names>X.</given-names></name> <name><surname>Li</surname> <given-names>M.</given-names></name></person-group> (<year>2022</year>). <article-title>Self-supervised patient-specific features learning for OCT image classification</article-title>. <source>Med. Biol. Eng. Comput</source>. <volume>60</volume>, <fpage>2851</fpage>&#x02013;<lpage>2863</lpage>. <pub-id pub-id-type="doi">10.1007/s11517-022-02627-8</pub-id><pub-id pub-id-type="pmid">35931872</pub-id></citation></ref>
+<ref id="B9">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Friberg</surname> <given-names>T. R.</given-names></name> <name><surname>Bilonick</surname> <given-names>R. A.</given-names></name> <name><surname>Brennen</surname> <given-names>P. M.</given-names></name></person-group> (<year>2011</year>). <article-title>Analysis of the relationship between drusen size and drusen area in eyes with age-related macular degeneration</article-title>. <source>Ophthalmic Surg. Lasers Imaging Retina</source> <volume>42</volume>, <fpage>369</fpage>&#x02013;<lpage>375</lpage>. <pub-id pub-id-type="doi">10.3928/15428877-20110812-01</pub-id><pub-id pub-id-type="pmid">21899243</pub-id></citation></ref>
+<ref id="B10">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Gholami</surname> <given-names>S.</given-names></name> <name><surname>Lim</surname> <given-names>J. I.</given-names></name> <name><surname>Leng</surname> <given-names>T.</given-names></name> <name><surname>Ong</surname> <given-names>S. S. Y.</given-names></name> <name><surname>Thompson</surname> <given-names>A. C.</given-names></name> <name><surname>Alam</surname> <given-names>M. N.</given-names></name> <etal/></person-group>. (<year>2023</year>). <article-title>Federated learning for diagnosis of age-related macular degeneration</article-title>. <source>Front. Med</source>. <volume>10</volume>:<fpage>1259017</fpage>. <pub-id pub-id-type="doi">10.3389/fmed.2023.1259017</pub-id><pub-id pub-id-type="pmid">37901412</pub-id></citation></ref>
+<ref id="B11">
+<citation citation-type="book"><person-group person-group-type="author"><name><surname>He</surname> <given-names>K.</given-names></name> <name><surname>Chen</surname> <given-names>X.</given-names></name> <name><surname>Xie</surname> <given-names>S.</given-names></name> <name><surname>Li</surname> <given-names>Y.</given-names></name> <name><surname>Doll&#x000E1;r</surname> <given-names>P.</given-names></name> <name><surname>Girshick</surname> <given-names>R.</given-names></name></person-group> (<year>2022</year>). <article-title>&#x0201C;Masked autoencoders are scalable vision learners,&#x0201D;</article-title> in <source>Proceedings of the IEEE/CVF Conference on Computer vision and Pattern Recognition</source> (<publisher-loc>New Orleans, LA</publisher-loc>: <publisher-name>IEEE</publisher-name>), <fpage>16000</fpage>&#x02013;<lpage>16009</lpage>. <pub-id pub-id-type="doi">10.1109/CVPR52688.2022.01553</pub-id><pub-id pub-id-type="pmid">38715952</pub-id></citation></ref>
+<ref id="B12">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>He</surname> <given-names>K.</given-names></name> <name><surname>Zhang</surname> <given-names>X.</given-names></name> <name><surname>Ren</surname> <given-names>S.</given-names></name> <name><surname>Sun</surname> <given-names>J.</given-names></name></person-group> (<year>2015</year>). <article-title>Deep residual learning for image recognition</article-title>. <source>arXiv</source> [Preprint]. arXiv:1512.03385. <pub-id pub-id-type="doi">10.48550/arXiv.1512.03385</pub-id></citation>
+</ref>
+<ref id="B13">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>He</surname> <given-names>Y.</given-names></name> <name><surname>Zhu</surname> <given-names>D.</given-names></name> <name><surname>Chen</surname> <given-names>H.</given-names></name> <name><surname>Fan</surname> <given-names>T.</given-names></name> <name><surname>Xiao</surname> <given-names>X.</given-names></name> <name><surname>Cai</surname> <given-names>Y.</given-names></name> <etal/></person-group>. (<year>2023</year>). <article-title>Longitudinal deep network for consistent oct layer segmentation</article-title>. <source>Biomed. Optics Express</source> <volume>14</volume>, <fpage>1874</fpage>&#x02013;<lpage>1893</lpage>. <pub-id pub-id-type="doi">10.1364/BOE.487518</pub-id><pub-id pub-id-type="pmid">37206119</pub-id></citation></ref>
+<ref id="B14">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Jing</surname> <given-names>L.</given-names></name> <name><surname>Tian</surname> <given-names>Y.</given-names></name></person-group> (<year>2020</year>). <article-title>Self-supervised visual feature learning with deep neural networks: a survey</article-title>. <source>IEEE Trans. Pattern Anal. Mach. Intell</source>. <volume>43</volume>, <fpage>4037</fpage>&#x02013;<lpage>4058</lpage>. <pub-id pub-id-type="doi">10.1109/TPAMI.2020.2992393</pub-id><pub-id pub-id-type="pmid">32386141</pub-id></citation></ref>
+<ref id="B15">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Kermany</surname> <given-names>D. S.</given-names></name> <name><surname>Goldbaum</surname> <given-names>M.</given-names></name> <name><surname>Cai</surname> <given-names>W.</given-names></name> <name><surname>Valentim</surname> <given-names>C. C.</given-names></name> <name><surname>Liang</surname> <given-names>H.</given-names></name> <name><surname>Baxter</surname> <given-names>S. L.</given-names></name> <etal/></person-group>. (<year>2018</year>). <article-title>Identifying medical diagnoses and treatable diseases by image-based deep learning</article-title>. <source>Cell</source> <volume>172</volume>, <fpage>1122</fpage>&#x02013;<lpage>1131</lpage>. <pub-id pub-id-type="doi">10.1016/j.cell.2018.02.010</pub-id><pub-id pub-id-type="pmid">29474911</pub-id></citation></ref>
+<ref id="B16">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Kihara</surname> <given-names>Y.</given-names></name> <name><surname>Shen</surname> <given-names>M.</given-names></name> <name><surname>Shi</surname> <given-names>Y.</given-names></name> <name><surname>Jiang</surname> <given-names>X.</given-names></name> <name><surname>Wang</surname> <given-names>L.</given-names></name> <name><surname>Laiginhas</surname> <given-names>R.</given-names></name> <etal/></person-group>. (<year>2022</year>). <article-title>Detection of nonexudative macular neovascularization on structural OCT images using vision transformers</article-title>. <source>Ophthalmol. Sci</source>. <volume>2</volume>:<fpage>100197</fpage>. <pub-id pub-id-type="doi">10.1016/j.xops.2022.100197</pub-id><pub-id pub-id-type="pmid">36531577</pub-id></citation></ref>
+<ref id="B17">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Leandro</surname> <given-names>I.</given-names></name> <name><surname>Lorenzo</surname> <given-names>B.</given-names></name> <name><surname>Aleksandar</surname> <given-names>M.</given-names></name> <name><surname>Rosa</surname> <given-names>G.</given-names></name> <name><surname>Agostino</surname> <given-names>A.</given-names></name> <name><surname>Daniele</surname> <given-names>T.</given-names></name> <etal/></person-group>. (<year>2023</year>). <article-title>Oct-based deep-learning models for the identification of retinal key signs</article-title>. <source>Sci. Rep</source>. <volume>13</volume>:<fpage>14628</fpage>. <pub-id pub-id-type="doi">10.1038/s41598-023-41362-4</pub-id><pub-id pub-id-type="pmid">37670066</pub-id></citation></ref>
+<ref id="B18">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Lee</surname> <given-names>C.</given-names></name> <name><surname>Baughman</surname> <given-names>D.</given-names></name> <name><surname>Lee</surname> <given-names>A.</given-names></name></person-group> (<year>2017</year>). <article-title>Deep learning is effective for the classification of OCT images of normal versus age-related macular degeneration</article-title>. <source>Ophthalmol. Retina</source> <volume>1</volume>, <fpage>322</fpage>&#x02013;<lpage>327</lpage>. <pub-id pub-id-type="doi">10.1016/j.oret.2016.12.009</pub-id><pub-id pub-id-type="pmid">30693348</pub-id></citation></ref>
+<ref id="B19">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Leingang</surname> <given-names>O.</given-names></name> <name><surname>Riedl</surname> <given-names>S.</given-names></name> <name><surname>Mai</surname> <given-names>J.</given-names></name> <name><surname>Reiter</surname> <given-names>G. S.</given-names></name> <name><surname>Faustmann</surname> <given-names>G.</given-names></name> <name><surname>Fuchs</surname> <given-names>P.</given-names></name> <etal/></person-group>. (<year>2023</year>). <article-title>Automated deep learning-based AMD detection and staging in real-world OCT datasets (pinnacle study report 5)</article-title>. <source>Sci. Rep</source>. <volume>13</volume>:<fpage>19545</fpage>. <pub-id pub-id-type="doi">10.1038/s41598-023-46626-7</pub-id><pub-id pub-id-type="pmid">37945665</pub-id></citation></ref>
+<ref id="B20">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Li</surname> <given-names>L.</given-names></name> <name><surname>Zhang</surname> <given-names>T.</given-names></name> <name><surname>Zhang</surname> <given-names>X.</given-names></name> <name><surname>Liu</surname> <given-names>J.</given-names></name> <name><surname>Ma</surname> <given-names>B.</given-names></name> <name><surname>Luo</surname> <given-names>Y.</given-names></name> <etal/></person-group>. (<year>2024</year>). <article-title>Medflip: medical vision-and-language self-supervised fast pre-training with masked autoencoder</article-title>. <source>arXiv preprint</source> arXiv:2403.04626.</citation>
+</ref>
+<ref id="B21">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Li</surname> <given-names>M.</given-names></name> <name><surname>Huang</surname> <given-names>K.</given-names></name> <name><surname>Xu</surname> <given-names>Q.</given-names></name> <name><surname>Yang</surname> <given-names>J.</given-names></name> <name><surname>Zhang</surname> <given-names>Y.</given-names></name> <name><surname>Ji</surname> <given-names>Z.</given-names></name> <etal/></person-group>. (<year>2020</year>). <article-title>Octa-500: a retinal dataset for optical coherence tomography angiography study</article-title>. <source>arXiv</source> [Preprint] arXiv:2012.07261. <pub-id pub-id-type="doi">10.48550/arXiv.2012.07261</pub-id></citation>
+</ref>
+<ref id="B22">
+<citation citation-type="book"><person-group person-group-type="author"><name><surname>Liu</surname> <given-names>Z.</given-names></name> <name><surname>Hu</surname> <given-names>H.</given-names></name> <name><surname>Lin</surname> <given-names>Y.</given-names></name> <name><surname>Yao</surname> <given-names>Z.</given-names></name> <name><surname>Xie</surname> <given-names>Z.</given-names></name> <name><surname>Wei</surname> <given-names>Y.</given-names></name> <etal/></person-group>. (<year>2022</year>). <article-title>&#x0201C;Swin transformer v2: scaling up capacity and resolution,&#x0201D;</article-title> in <source>Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</source> (<publisher-loc>New Orleans, LA</publisher-loc>: <publisher-name>IEEE</publisher-name>), <fpage>12009</fpage>&#x02013;<lpage>12019</lpage>. <pub-id pub-id-type="doi">10.1109/CVPR52688.2022.01170</pub-id></citation>
+</ref>
+<ref id="B23">
+<citation citation-type="book"><person-group person-group-type="author"><name><surname>Liu</surname> <given-names>Z.</given-names></name> <name><surname>Lin</surname> <given-names>Y.</given-names></name> <name><surname>Cao</surname> <given-names>Y.</given-names></name> <name><surname>Hu</surname> <given-names>H.</given-names></name> <name><surname>Wei</surname> <given-names>Y.</given-names></name> <name><surname>Zhang</surname> <given-names>Z.</given-names></name> <etal/></person-group>. (<year>2021</year>). <article-title>&#x0201C;Swin transformer: Hierarchical vision transformer using shifted windows,&#x0201D;</article-title> in <source>Proceedings of the IEEE/CVF International Conference on Computer Vision</source> (<publisher-loc>Montreal, QC</publisher-loc>: <publisher-name>IEEE</publisher-name>), <fpage>10012</fpage>&#x02013;<lpage>10022</lpage>. <pub-id pub-id-type="doi">10.1109/ICCV48922.2021.00986</pub-id></citation>
+</ref>
+<ref id="B24">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Loshchilov</surname> <given-names>I.</given-names></name> <name><surname>Hutter</surname> <given-names>F.</given-names></name></person-group> (<year>2017</year>). <article-title>Decoupled weight decay regularization</article-title>. <source>arXiv preprint</source> arXiv:1711.05101.<pub-id pub-id-type="pmid">38536692</pub-id></citation></ref>
+<ref id="B25">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Lu</surname> <given-names>W.</given-names></name> <name><surname>Tong</surname> <given-names>Y.</given-names></name> <name><surname>Yu</surname> <given-names>Y.</given-names></name> <name><surname>Xing</surname> <given-names>Y.</given-names></name> <name><surname>Chen</surname> <given-names>C.</given-names></name> <name><surname>Shen</surname> <given-names>Y.</given-names></name> <etal/></person-group>. (<year>2018</year>). <article-title>Deep learning-based automated classification of multi-categorical abnormalities from optical coherence tomography images</article-title>. <source>Transl. Vis. Sci. Technol</source>. <volume>7</volume>, <fpage>41</fpage>&#x02013;<lpage>41</lpage>. <pub-id pub-id-type="doi">10.1167/tvst.7.6.41</pub-id><pub-id pub-id-type="pmid">30619661</pub-id></citation></ref>
+<ref id="B26">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Mukherjee</surname> <given-names>S.</given-names></name> <name><surname>Girard</surname> <given-names>T.</given-names></name> <name><surname>Welfer</surname> <given-names>D.</given-names></name> <name><surname>Seabra</surname> <given-names>J. C.</given-names></name> <name><surname>Aubert</surname> <given-names>V.</given-names></name> <name><surname>Vall&#x000E8;s-Saiz</surname> <given-names>L.</given-names></name> <etal/></person-group>. (<year>2022a</year>). <article-title>Retinal layer segmentation in optical coherence tomography (OCT) using a 3D deep-convolutional regression network for patients with age-related macular degeneration</article-title>. <source>Biomed. Optics Express</source> <volume>13</volume>, <fpage>3195</fpage>&#x02013;<lpage>3210</lpage>. <pub-id pub-id-type="doi">10.1364/BOE.450193</pub-id><pub-id pub-id-type="pmid">35781941</pub-id></citation></ref>
+<ref id="B27">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Mukherjee</surname> <given-names>S.</given-names></name> <name><surname>Silva</surname> <given-names>T. D.</given-names></name> <name><surname>Jayakar</surname> <given-names>G.</given-names></name> <name><surname>Grisso</surname> <given-names>P.</given-names></name> <name><surname>Wiley</surname> <given-names>H.</given-names></name> <name><surname>Keenan</surname> <given-names>T.</given-names></name> <etal/></person-group>. (<year>2022b</year>). <article-title>&#x0201C;Retinal layer segmentation for age-related macular degeneration patients with 3D-UNet,&#x0201D;</article-title> in <source>Medical Imaging 2022: Computer-Aided Diagnosis, Volume 12033</source>, eds. K. Drukker, and K. M. Iftekharuddin (San Diego, CA: International Society for Optics and Photonics, SPIE), 12033J. <pub-id pub-id-type="doi">10.1117/12.2612991</pub-id></citation>
+</ref>
+<ref id="B28">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Okolo</surname> <given-names>G. I.</given-names></name> <name><surname>Katsigiannis</surname> <given-names>S.</given-names></name> <name><surname>Ramzan</surname> <given-names>N.</given-names></name></person-group> (<year>2022</year>). <article-title>Ievit: an enhanced vision transformer architecture for chest X-ray image classification</article-title>. <source>Comput. Methods Programs Biomed</source>. <volume>226</volume>:<fpage>107141</fpage>. <pub-id pub-id-type="doi">10.1016/j.cmpb.2022.107141</pub-id><pub-id pub-id-type="pmid">36162246</pub-id></citation></ref>
+<ref id="B29">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Qiu</surname> <given-names>J.</given-names></name> <name><surname>Sun</surname> <given-names>Y.</given-names></name></person-group> (<year>2019</year>). <article-title>Self-supervised iterative refinement learning for macular OCT volumetric data classification</article-title>. <source>Comput. Biol. Med</source>. <volume>111</volume>:<fpage>103327</fpage>. <pub-id pub-id-type="doi">10.1016/j.compbiomed.2019.103327</pub-id><pub-id pub-id-type="pmid">31302456</pub-id></citation></ref>
+<ref id="B30">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Schmidt-Erfurth</surname> <given-names>U.</given-names></name> <name><surname>Waldstein</surname> <given-names>S. M.</given-names></name> <name><surname>Klimscha</surname> <given-names>S.</given-names></name> <name><surname>Sadeghipour</surname> <given-names>A.</given-names></name> <name><surname>Hu</surname> <given-names>X.</given-names></name> <name><surname>Gerendas</surname> <given-names>B. S.</given-names></name> <etal/></person-group>. (<year>2018</year>). <article-title>Prediction of individual disease conversion in early amd using artificial intelligence</article-title>. <source>Invest. Ophthalmol. Vis. Sci</source>. <volume>59</volume>, <fpage>3199</fpage>&#x02013;<lpage>3208</lpage>. <pub-id pub-id-type="doi">10.1167/iovs.18-24106</pub-id><pub-id pub-id-type="pmid">29971444</pub-id></citation></ref>
+<ref id="B31">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Scott</surname> <given-names>A. W.</given-names></name> <name><surname>Bressler</surname> <given-names>S. B.</given-names></name></person-group> (<year>2013</year>). <article-title>Long-term follow-up of vascular endothelial growth factor inhibitor therapy for neovascular age-related macular degeneration</article-title>. <source>Curr. Opin. Ophthalmol</source>. <volume>24</volume>, <fpage>190</fpage>&#x02013;<lpage>196</lpage>. <pub-id pub-id-type="doi">10.1097/ICU.0b013e32835fefee</pub-id><pub-id pub-id-type="pmid">23492430</pub-id></citation></ref>
+<ref id="B32">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Sotoudeh-Paima</surname> <given-names>S.</given-names></name> <name><surname>Jodeiri</surname> <given-names>A.</given-names></name> <name><surname>Hajizadeh</surname> <given-names>F.</given-names></name> <name><surname>Soltanian-Zadeh</surname> <given-names>H.</given-names></name></person-group> (<year>2022</year>). <article-title>Multi-scale convolutional neural network for automated AMD classification using retinal OCT images. <italic>Comput</italic></article-title>. <source>Biol. Med</source>. <volume>144</volume>:<fpage>105368</fpage>. <pub-id pub-id-type="doi">10.1016/j.compbiomed.2022.105368</pub-id><pub-id pub-id-type="pmid">35259614</pub-id></citation></ref>
+<ref id="B33">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Srinivasan</surname> <given-names>P. P.</given-names></name> <name><surname>Kim</surname> <given-names>L. A.</given-names></name> <name><surname>Mettu</surname> <given-names>P. S.</given-names></name> <name><surname>Cousins</surname> <given-names>S. W.</given-names></name> <name><surname>Comer</surname> <given-names>G. M.</given-names></name> <name><surname>Izatt</surname> <given-names>J. A.</given-names></name> <etal/></person-group>. (<year>2014</year>). <article-title>Fully automated detection of diabetic macular edema and dry age-related macular degeneration from optical coherence tomography images</article-title>. <source>Biomed. Optics Express</source> <volume>5</volume>, <fpage>3568</fpage>&#x02013;<lpage>3577</lpage>. <pub-id pub-id-type="doi">10.1364/BOE.5.003568</pub-id><pub-id pub-id-type="pmid">25360373</pub-id></citation></ref>
+<ref id="B34">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Tsuji</surname> <given-names>T.</given-names></name> <name><surname>Hirose</surname> <given-names>Y.</given-names></name> <name><surname>Fujimori</surname> <given-names>K.</given-names></name> <name><surname>Hirose</surname> <given-names>T.</given-names></name> <name><surname>Oyama</surname> <given-names>A.</given-names></name> <name><surname>Saikawa</surname> <given-names>Y.</given-names></name> <etal/></person-group>. (<year>2020</year>). <article-title>Classification of optical coherence tomography images using a capsule network</article-title>. <source>BMC Ophthalmol</source>. <volume>20</volume>, <fpage>1</fpage>&#x02013;<lpage>9</lpage>. <pub-id pub-id-type="doi">10.1186/s12886-020-01382-4</pub-id><pub-id pub-id-type="pmid">32192460</pub-id></citation></ref>
+<ref id="B35">
+<citation citation-type="web"><person-group person-group-type="author"><name><surname>Vaswani</surname> <given-names>A.</given-names></name> <name><surname>Shazeer</surname> <given-names>N.</given-names></name> <name><surname>Parmar</surname> <given-names>N.</given-names></name> <name><surname>Uszkoreit</surname> <given-names>J.</given-names></name> <name><surname>Jones</surname> <given-names>L.</given-names></name> <name><surname>Gomez</surname> <given-names>A. N.</given-names></name> <name><surname>Kaiser</surname> <given-names>L.</given-names></name> <name><surname>Polosukhin</surname> <given-names>I.</given-names></name></person-group> (<year>2017</year>). <article-title>Attention is all you need</article-title>. <source>arXiv preprint</source> arXiv:1706.03762. Available online at: <ext-link ext-link-type="uri" xlink:href="https://arxiv.org/abs/1706.03762">https://arxiv.org/abs/1706.03762</ext-link></citation>
+</ref>
+<ref id="B36">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Wang</surname> <given-names>Q.</given-names></name> <name><surname>Xiong</surname> <given-names>Y.</given-names></name> <name><surname>Zhu</surname> <given-names>H.</given-names></name> <name><surname>Mu</surname> <given-names>X.</given-names></name> <name><surname>Zhang</surname> <given-names>Y.</given-names></name> <name><surname>Ma</surname> <given-names>Y.</given-names></name> <etal/></person-group>. (<year>2024</year>). <article-title>Cervical OCT image classification using contrastive masked autoencoders with swin transformer</article-title>. <source>Computerized Med. Imaging Graph</source>. <volume>118</volume>:<fpage>102469</fpage>. <pub-id pub-id-type="doi">10.1016/j.compmedimag.2024.102469</pub-id><pub-id pub-id-type="pmid">39577206</pub-id></citation></ref>
+<ref id="B37">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Wang</surname> <given-names>W.</given-names></name> <name><surname>Gawlik</surname> <given-names>K.</given-names></name> <name><surname>Lopez</surname> <given-names>J.</given-names></name> <name><surname>Wen</surname> <given-names>C.</given-names></name> <name><surname>Zhu</surname> <given-names>J.</given-names></name> <name><surname>Wu</surname> <given-names>F.</given-names></name> <etal/></person-group>. (<year>2016</year>). <article-title>Genetic and environmental factors strongly influence risk, severity and progression of age-related macular degeneration</article-title>. <source>Signal Transduct. Target. Ther</source>. <volume>1</volume>, <fpage>1</fpage>&#x02013;<lpage>6</lpage>. <pub-id pub-id-type="doi">10.1038/sigtrans.2016.23</pub-id><pub-id pub-id-type="pmid">29266102</pub-id></citation></ref>
+<ref id="B38">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Wang</surname> <given-names>W.</given-names></name> <name><surname>Jiang</surname> <given-names>R.</given-names></name> <name><surname>Cui</surname> <given-names>N.</given-names></name> <name><surname>Li</surname> <given-names>Q.</given-names></name> <name><surname>Yuan</surname> <given-names>F.</given-names></name> <name><surname>Xiao</surname> <given-names>Z.</given-names></name> <etal/></person-group>. (<year>2022</year>). <article-title>Semi-supervised vision transformer with adaptive token sampling for breast cancer classification</article-title>. <source>Front. Pharmacol</source>. <volume>13</volume>:<fpage>929755</fpage>. <pub-id pub-id-type="doi">10.3389/fphar.2022.929755</pub-id><pub-id pub-id-type="pmid">35935827</pub-id></citation></ref>
+<ref id="B39">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Wolf</surname> <given-names>D.</given-names></name> <name><surname>Payer</surname> <given-names>T.</given-names></name> <name><surname>Lisson</surname> <given-names>C. S.</given-names></name> <name><surname>Lisson</surname> <given-names>C. G.</given-names></name> <name><surname>Beer</surname> <given-names>M.</given-names></name> <name><surname>G&#x000F6;tz</surname> <given-names>M.</given-names></name> <etal/></person-group>. (<year>2023</year>). <article-title>Self-supervised pre-training with contrastive and masked autoencoder methods for dealing with small datasets in deep learning for medical imaging</article-title>. <source>Sci. Rep.</source> <volume>13</volume>:<fpage>20260</fpage>. <pub-id pub-id-type="doi">10.1038/s41598-023-46433-0</pub-id><pub-id pub-id-type="pmid">37985685</pub-id></citation></ref>
+<ref id="B40">
+<citation citation-type="book"><person-group person-group-type="author"><collab>World Health Organization</collab></person-group> (<year>2023</year>). <source>Blindness and Visual Impairment</source>. <publisher-loc>Geneva</publisher-loc>: <publisher-name>WHO</publisher-name>.</citation>
+</ref>
+<ref id="B41">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Xu</surname> <given-names>W.</given-names></name> <name><surname>Fu</surname> <given-names>Y.-L.</given-names></name> <name><surname>Zhu</surname> <given-names>D.</given-names></name></person-group> (<year>2023</year>). <article-title>Resnet and its application to medical image processing: research progress and challenges</article-title>. <source>Comput. Methods Programs Biomed.</source> <volume>240</volume>:<fpage>107660</fpage>. <pub-id pub-id-type="doi">10.1016/j.cmpb.2023.107660</pub-id><pub-id pub-id-type="pmid">37320940</pub-id></citation></ref>
+<ref id="B42">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Yi</surname> <given-names>K.</given-names></name> <name><surname>Mujat</surname> <given-names>M.</given-names></name> <name><surname>Park</surname> <given-names>B. H.</given-names></name> <name><surname>Sun</surname> <given-names>W.</given-names></name> <name><surname>Miller</surname> <given-names>J. W.</given-names></name> <name><surname>Seddon</surname> <given-names>J. M. T</given-names></name> <etal/></person-group>. (<year>2009</year>). <article-title>Spectral domain optical coherence tomography for quantitative evaluation of drusen and associated structural changes in non-neovascular age-related macular degeneration</article-title>. <source>Br. J. Ophthalmol.</source>, <volume>93</volume>, <fpage>176</fpage>&#x02013;<lpage>181</lpage>. <pub-id pub-id-type="doi">10.1136/bjo.2008.137356</pub-id><pub-id pub-id-type="pmid">18697811</pub-id></citation></ref>
+<ref id="B43">
+<citation citation-type="journal"><person-group person-group-type="author"><name><surname>Zhou</surname> <given-names>L.</given-names></name> <name><surname>Liu</surname> <given-names>H.</given-names></name> <name><surname>Bae</surname> <given-names>J.</given-names></name> <name><surname>He</surname> <given-names>J.</given-names></name> <name><surname>Samaras</surname> <given-names>D.</given-names></name> <name><surname>Prasanna</surname> <given-names>P.</given-names></name> <etal/></person-group>. (<year>2023</year>). <article-title>&#x0201C;Self pre-training with masked autoencoders for medical image classification and segmentation,&#x0201D;</article-title> in <source>2023 IEEE 20th International Symposium on Biomedical Imaging (ISBI)</source>. (Cartagena: IEEE). <pub-id pub-id-type="doi">10.1109/ISBI53787.2023.10230477</pub-id></citation>
+</ref>
+</ref-list>
+</back>
+</article>
