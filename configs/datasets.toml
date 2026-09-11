@@ -1,0 +1,20 @@
+# Roots intentionally use the repository's datasets/ symlinks, not their resolved targets.
+# Add OCTID and Paima/NEH here when mounted, along with source adapters for their layouts.
+
+[[datasets]]
+name = "duke"
+source = "duke"
+root = "datasets/duke1"
+available_labels = ["normal", "amd", "dme"]
+
+[[datasets]]
+name = "kermany"
+source = "kermany"
+root = "datasets/kermany"
+available_labels = ["normal", "amd", "dme"]
+
+[[datasets]]
+name = "octdl"
+source = "octdl"
+root = "datasets/octdl"
+available_labels = ["normal", "amd", "dme"]

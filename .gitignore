@@ -10,3 +10,6 @@ wheels/
 .venv
 
 datasets/
+
+# Generated dataset inventories, manifests, checkpoints, and reports
+artifacts/
