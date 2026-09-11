@@ -34,3 +34,13 @@ uv run oct-classify validate-splits
 ```
 
 The manifest command writes ignored JSONL files to `artifacts/manifests/` by default.
+
+## Audit Contract
+
+`oct-classify audit` writes JSON reports under `artifacts/audits/`. It profiles decoded image format,
+mode, resolution, aspect ratio, and grayscale intensity statistics. It also reports image files that
+are present below a dataset root but not emitted by the source adapter.
+
+The audit detects byte-identical images and perceptually similar images using pHashes. It fails when
+either kind crosses a supplied split or has conflicting unified labels. Similar images within a known
+patient/volume group remain a reported observation rather than a failure.

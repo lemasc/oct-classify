@@ -19,10 +19,59 @@ def _records_for_spec(spec_path: Path):
 
 
 def _audit(args: argparse.Namespace) -> None:
-    for spec, records in _records_for_spec(args.config):
-        report = audit_records(spec.root, records).to_dict()
-        report["dataset"] = spec.name
-        print(json.dumps(report, indent=2, sort_keys=True))
+    reports: list[dict[str, object]] = []
+    failures: list[str] = []
+    hash_timing_log = None
+    if args.hash_timing_log is not None:
+        args.hash_timing_log.parent.mkdir(parents=True, exist_ok=True)
+        hash_timing_log = args.hash_timing_log.open("w", encoding="utf-8", buffering=1)
+        hash_timing_log.write("source\tpath\tphash_seconds\n")
+    try:
+        for spec, records in _records_for_spec(args.config):
+            audit_report = audit_records(
+                spec.root,
+                records,
+                perceptual_hashes=not args.no_perceptual_hashes,
+                max_hash_distance=args.max_hash_distance,
+                hash_timing_log=hash_timing_log,
+            )
+            report = audit_report.to_dict()
+            report["dataset"] = spec.name
+            output_path = args.output / f"{spec.name}.json"
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(
+                json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+            )
+            reports.append(report)
+            failures.extend(
+                f"{spec.name}: {failure}" for failure in audit_report.integrity_failures
+            )
+            print(
+                json.dumps(
+                    {
+                        "dataset": spec.name,
+                        "image_count": audit_report.image_count,
+                        "invalid_images": len(audit_report.invalid_images),
+                        "unmanifested_images": len(audit_report.unmanifested_images),
+                        "exact_duplicate_clusters": len(audit_report.exact_duplicates),
+                        "near_duplicate_clusters": len(audit_report.near_duplicates),
+                    },
+                    sort_keys=True,
+                )
+            )
+    finally:
+        if hash_timing_log is not None:
+            hash_timing_log.close()
+
+    summary_path = args.output / "summary.json"
+    summary_path.write_text(
+        json.dumps({"datasets": reports, "integrity_failures": failures}, indent=2, sort_keys=True)
+        + "\n",
+        encoding="utf-8",
+    )
+    print(f"Wrote audit reports to {args.output}")
+    if failures:
+        raise SystemExit("Audit integrity failures: " + "; ".join(failures))
 
 
 def _manifest(args: argparse.Namespace) -> None:
@@ -60,6 +109,11 @@ def main() -> None:
     ):
         command_parser = subparsers.add_parser(command, help=help_text)
         command_parser.add_argument("--config", type=Path, default=Path("configs/datasets.toml"))
+        if command == "audit":
+            command_parser.add_argument("--output", type=Path, default=Path("artifacts/audits"))
+            command_parser.add_argument("--no-perceptual-hashes", action="store_true")
+            command_parser.add_argument("--max-hash-distance", type=int, default=5)
+            command_parser.add_argument("--hash-timing-log", type=Path)
         if command == "manifest":
             command_parser.add_argument("--output", type=Path, default=Path("artifacts/manifests"))
         command_parser.set_defaults(handler=handler)
