@@ -10,6 +10,7 @@ name = "octid"
 source = "octid"
 root = "datasets/octid"
 available_labels = ["normal", "amd"]
+enabled = false
 
 [[datasets]]
 name = "paima"

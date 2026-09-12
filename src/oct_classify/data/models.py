@@ -13,6 +13,7 @@ class DatasetSpec:
     source: str
     root: Path
     available_labels: frozenset[UnifiedLabel]
+    enabled: bool = True
 
 
 @dataclass(frozen=True, slots=True)

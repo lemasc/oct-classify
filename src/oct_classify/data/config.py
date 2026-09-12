@@ -20,6 +20,7 @@ def load_dataset_specs(path: Path) -> list[DatasetSpec]:
                     source=value["source"],
                     root=Path(value["root"]),
                     available_labels=parse_labels(value["available_labels"]),
+                    enabled=value.get("enabled", True),
                 )
             )
         except (KeyError, TypeError, ValueError) as error:

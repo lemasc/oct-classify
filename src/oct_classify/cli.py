@@ -18,6 +18,8 @@ from oct_classify.data.splits import validate_supplied_splits
 
 def _records_for_spec(spec_path: Path):
     for spec in load_dataset_specs(spec_path):
+        if not spec.enabled:
+            continue
         if not spec.root.is_dir():
             raise FileNotFoundError(f"Dataset root does not exist: {spec.root}")
         yield spec, list(get_source(spec.source).records(spec))
