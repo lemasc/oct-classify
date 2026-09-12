@@ -5,7 +5,11 @@ import imagehash
 import numpy as np
 from PIL import Image
 
-from oct_classify.data.audit import _perceptual_duplicate_pairs, audit_records
+from oct_classify.data.audit import (
+    _perceptual_duplicate_pairs,
+    audit_cross_source_records,
+    audit_records,
+)
 from oct_classify.data.models import ImageRecord
 from oct_classify.data.taxonomy import ALL_LABELS, UnifiedLabel
 
@@ -78,3 +82,27 @@ def test_audit_writes_per_image_phash_timings(tmp_path: Path) -> None:
     source, path, seconds = timing_log.getvalue().strip().split("\t")
     assert (source, path) == ("source", "image.png")
     assert float(seconds) >= 0
+
+
+def test_cross_source_audit_reports_only_cross_source_duplicates(tmp_path: Path) -> None:
+    first_root = tmp_path / "first"
+    second_root = tmp_path / "second"
+    first_root.mkdir()
+    second_root.mkdir()
+    Image.new("L", (8, 4), color=64).save(first_root / "image.png")
+    Image.new("L", (8, 4), color=64).save(second_root / "image.png")
+
+    first = _record("image.png", "patient-1")
+    second = ImageRecord(
+        path="image.png",
+        source="other",
+        raw_label="NORMAL",
+        label=UnifiedLabel.NORMAL,
+        available_labels=ALL_LABELS,
+        group_id="patient-2",
+    )
+    report = audit_cross_source_records([(first_root, [first]), (second_root, [second])])
+
+    assert report.invalid_images == []
+    assert report.exact_duplicates[0]["crosses_sources"] is True
+    assert report.near_duplicates[0]["distance"] == 0

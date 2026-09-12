@@ -44,3 +44,21 @@ are present below a dataset root but not emitted by the source adapter.
 The audit detects byte-identical images and perceptually similar images using pHashes. It fails when
 either kind crosses a supplied split or has conflicting unified labels. Similar images within a known
 patient/volume group remain a reported observation rather than a failure.
+
+`audit` also writes `cross-source.json`, which compares all configured sources. It reports only
+duplicate candidates that span source roots; pHash findings remain candidates unless the locked policy
+below defines an exclusion.
+
+## Locked Processing Decisions
+
+- Process the repository's configured dataset snapshots rather than substituting a third-party cleaned
+  release. Source images remain immutable; all exclusions and deduplication happen in derived manifests.
+- When a same-label exact-duplicate component is retained once, select its canonical member by
+  lexicographically smallest `source:path`.
+- Preserve Kermany's supplied test partition for evaluation. Its filename-derived group identifier is
+  useful for leakage checks but is not treated as verified clinical patient provenance.
+- Exclude OCTDL ERM files from the Normal/AMD/DME task. Their omission is intentional and is reported
+  by the audit.
+- Quarantine exact duplicate components with label conflicts and pHash-distance-zero components that
+  conflict in label or supplied split. Treat other pHash results, including distances 2 and 4, as review
+  candidates rather than automatic exclusions.

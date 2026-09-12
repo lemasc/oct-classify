@@ -61,6 +61,17 @@ class AuditReport:
         return failures
 
 
+@dataclass(frozen=True, slots=True)
+class CrossSourceAuditReport:
+    image_count: int
+    invalid_images: list[str]
+    exact_duplicates: list[dict[str, object]]
+    near_duplicates: list[dict[str, object]]
+
+    def to_dict(self) -> dict[str, object]:
+        return asdict(self)
+
+
 def _distribution(values: list[float]) -> dict[str, float | int] | None:
     if not values:
         return None
@@ -236,6 +247,67 @@ def audit_records(
         if image_means
         else None,
         unmanifested_images=unmanifested_images,
+        exact_duplicates=exact_duplicates,
+        near_duplicates=near_duplicates,
+    )
+
+
+def audit_cross_source_records(
+    record_sets: Iterable[tuple[Path, Iterable[ImageRecord]]],
+    *,
+    perceptual_hashes: bool = True,
+    max_hash_distance: int = 5,
+    hash_timing_log: TextIO | None = None,
+) -> CrossSourceAuditReport:
+    """Report duplicate candidates shared by distinct configured dataset roots."""
+    if max_hash_distance < 0:
+        raise ValueError("The perceptual hash distance must be non-negative.")
+
+    locations = [
+        (root / record.path, record) for root, records in record_sets for record in records
+    ]
+    records = [record for _, record in locations]
+    invalid_images: list[str] = []
+    exact_hashes: dict[str, list[int]] = {}
+    perceptual_hash_values: dict[int, imagehash.ImageHash] = {}
+
+    for index, (image_path, record) in enumerate(locations):
+        try:
+            with Image.open(image_path) as image:
+                image.load()
+                if perceptual_hashes:
+                    hash_start = perf_counter()
+                    perceptual_hash_values[index] = imagehash.phash(image)
+                    if hash_timing_log is not None:
+                        hash_timing_log.write(
+                            f"{record.source}\t{record.path}\t{perf_counter() - hash_start:.6f}\n"
+                        )
+        except (OSError, UnidentifiedImageError):
+            invalid_images.append(f"{record.source}:{record.path}")
+        else:
+            with image_path.open("rb") as handle:
+                digest = hashlib.blake2b(handle.read(), digest_size=16).hexdigest()
+            exact_hashes.setdefault(digest, []).append(index)
+
+    exact_duplicates = [
+        _duplicate_summary(records, indices)
+        for indices in exact_hashes.values()
+        if len(indices) > 1 and len({records[index].source for index in indices}) > 1
+    ]
+    near_duplicates = (
+        [
+            duplicate
+            for duplicate in _perceptual_duplicate_pairs(
+                records, perceptual_hash_values, max_hash_distance
+            )
+            if duplicate["crosses_sources"]
+        ]
+        if perceptual_hashes
+        else []
+    )
+    return CrossSourceAuditReport(
+        image_count=len(records),
+        invalid_images=invalid_images,
         exact_duplicates=exact_duplicates,
         near_duplicates=near_duplicates,
     )

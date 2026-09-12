@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
-from oct_classify.data.audit import audit_records
+from oct_classify.data.audit import audit_cross_source_records, audit_records
 from oct_classify.data.config import load_dataset_specs
 from oct_classify.data.manifest import write_jsonl
 from oct_classify.data.sources import get_source
@@ -21,13 +21,14 @@ def _records_for_spec(spec_path: Path):
 def _audit(args: argparse.Namespace) -> None:
     reports: list[dict[str, object]] = []
     failures: list[str] = []
+    record_sets = list(_records_for_spec(args.config))
     hash_timing_log = None
     if args.hash_timing_log is not None:
         args.hash_timing_log.parent.mkdir(parents=True, exist_ok=True)
         hash_timing_log = args.hash_timing_log.open("w", encoding="utf-8", buffering=1)
         hash_timing_log.write("source\tpath\tphash_seconds\n")
     try:
-        for spec, records in _records_for_spec(args.config):
+        for spec, records in record_sets:
             audit_report = audit_records(
                 spec.root,
                 records,
@@ -59,13 +60,44 @@ def _audit(args: argparse.Namespace) -> None:
                     sort_keys=True,
                 )
             )
+        cross_source_report = audit_cross_source_records(
+            ((spec.root, records) for spec, records in record_sets),
+            perceptual_hashes=not args.no_perceptual_hashes,
+            max_hash_distance=args.max_hash_distance,
+            hash_timing_log=hash_timing_log,
+        )
+        cross_source = cross_source_report.to_dict()
+        cross_source_path = args.output / "cross-source.json"
+        cross_source_path.write_text(
+            json.dumps(cross_source, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        print(
+            json.dumps(
+                {
+                    "dataset": "cross-source",
+                    "image_count": cross_source_report.image_count,
+                    "invalid_images": len(cross_source_report.invalid_images),
+                    "exact_duplicate_clusters": len(cross_source_report.exact_duplicates),
+                    "near_duplicate_clusters": len(cross_source_report.near_duplicates),
+                },
+                sort_keys=True,
+            )
+        )
     finally:
         if hash_timing_log is not None:
             hash_timing_log.close()
 
     summary_path = args.output / "summary.json"
     summary_path.write_text(
-        json.dumps({"datasets": reports, "integrity_failures": failures}, indent=2, sort_keys=True)
+        json.dumps(
+            {
+                "cross_source": cross_source,
+                "datasets": reports,
+                "integrity_failures": failures,
+            },
+            indent=2,
+            sort_keys=True,
+        )
         + "\n",
         encoding="utf-8",
     )
