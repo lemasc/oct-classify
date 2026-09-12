@@ -4,7 +4,12 @@ import argparse
 import json
 from pathlib import Path
 
-from oct_classify.data.audit import audit_cross_source_records, audit_records
+from oct_classify.data.audit import (
+    audit_cross_source_records,
+    audit_records,
+    load_perceptual_hash_cache,
+    write_perceptual_hash_cache,
+)
 from oct_classify.data.config import load_dataset_specs
 from oct_classify.data.manifest import write_jsonl
 from oct_classify.data.sources import get_source
@@ -23,6 +28,11 @@ def _audit(args: argparse.Namespace) -> None:
     failures: list[str] = []
     record_sets = list(_records_for_spec(args.config))
     computed_perceptual_hashes = {}
+    perceptual_hash_cache = (
+        load_perceptual_hash_cache(args.perceptual_hash_cache)
+        if not args.no_perceptual_hashes
+        else None
+    )
     hash_timing_log = None
     if args.hash_timing_log is not None:
         args.hash_timing_log.parent.mkdir(parents=True, exist_ok=True)
@@ -37,6 +47,7 @@ def _audit(args: argparse.Namespace) -> None:
                 max_hash_distance=args.max_hash_distance,
                 hash_timing_log=hash_timing_log,
                 computed_perceptual_hashes=computed_perceptual_hashes,
+                perceptual_hash_cache=perceptual_hash_cache,
             )
             report = audit_report.to_dict()
             report["dataset"] = spec.name
@@ -68,6 +79,7 @@ def _audit(args: argparse.Namespace) -> None:
             max_hash_distance=args.max_hash_distance,
             hash_timing_log=hash_timing_log,
             computed_perceptual_hashes=computed_perceptual_hashes,
+            perceptual_hash_cache=perceptual_hash_cache,
         )
         cross_source = cross_source_report.to_dict()
         cross_source_path = args.output / "cross-source.json"
@@ -89,6 +101,9 @@ def _audit(args: argparse.Namespace) -> None:
     finally:
         if hash_timing_log is not None:
             hash_timing_log.close()
+
+    if perceptual_hash_cache is not None:
+        write_perceptual_hash_cache(args.perceptual_hash_cache, perceptual_hash_cache)
 
     summary_path = args.output / "summary.json"
     summary_path.write_text(
@@ -149,6 +164,11 @@ def main() -> None:
             command_parser.add_argument("--no-perceptual-hashes", action="store_true")
             command_parser.add_argument("--max-hash-distance", type=int, default=5)
             command_parser.add_argument("--hash-timing-log", type=Path)
+            command_parser.add_argument(
+                "--perceptual-hash-cache",
+                type=Path,
+                default=Path("artifacts/audits/phash-cache.json"),
+            )
         if command == "manifest":
             command_parser.add_argument("--output", type=Path, default=Path("artifacts/manifests"))
         command_parser.set_defaults(handler=handler)

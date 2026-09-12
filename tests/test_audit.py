@@ -9,6 +9,8 @@ from oct_classify.data.audit import (
     _perceptual_duplicate_pairs,
     audit_cross_source_records,
     audit_records,
+    load_perceptual_hash_cache,
+    write_perceptual_hash_cache,
 )
 from oct_classify.data.models import ImageRecord
 from oct_classify.data.taxonomy import ALL_LABELS, UnifiedLabel
@@ -82,6 +84,33 @@ def test_audit_writes_per_image_phash_timings(tmp_path: Path) -> None:
     source, path, seconds = timing_log.getvalue().strip().split("\t")
     assert (source, path) == ("source", "image.png")
     assert float(seconds) >= 0
+
+
+def test_audit_reuses_content_keyed_perceptual_hash_cache(tmp_path: Path) -> None:
+    image_path = tmp_path / "image.png"
+    Image.new("L", (8, 4), color=64).save(image_path)
+    cache: dict[str, str] = {}
+    audit_records(tmp_path, [_record("image.png", "patient-1")], perceptual_hash_cache=cache)
+    timing_log = StringIO()
+
+    audit_records(
+        tmp_path,
+        [_record("image.png", "patient-1")],
+        hash_timing_log=timing_log,
+        perceptual_hash_cache=cache,
+    )
+
+    assert len(cache) == 1
+    assert timing_log.getvalue() == ""
+
+
+def test_perceptual_hash_cache_round_trip(tmp_path: Path) -> None:
+    cache_path = tmp_path / "phash-cache.json"
+    hashes = {"digest": "0123456789abcdef"}
+
+    write_perceptual_hash_cache(cache_path, hashes)
+
+    assert load_perceptual_hash_cache(cache_path) == hashes
 
 
 def test_cross_source_audit_reports_only_cross_source_duplicates(tmp_path: Path) -> None:
