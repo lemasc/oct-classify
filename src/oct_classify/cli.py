@@ -22,6 +22,7 @@ def _audit(args: argparse.Namespace) -> None:
     reports: list[dict[str, object]] = []
     failures: list[str] = []
     record_sets = list(_records_for_spec(args.config))
+    computed_perceptual_hashes = {}
     hash_timing_log = None
     if args.hash_timing_log is not None:
         args.hash_timing_log.parent.mkdir(parents=True, exist_ok=True)
@@ -35,6 +36,7 @@ def _audit(args: argparse.Namespace) -> None:
                 perceptual_hashes=not args.no_perceptual_hashes,
                 max_hash_distance=args.max_hash_distance,
                 hash_timing_log=hash_timing_log,
+                computed_perceptual_hashes=computed_perceptual_hashes,
             )
             report = audit_report.to_dict()
             report["dataset"] = spec.name
@@ -65,6 +67,7 @@ def _audit(args: argparse.Namespace) -> None:
             perceptual_hashes=not args.no_perceptual_hashes,
             max_hash_distance=args.max_hash_distance,
             hash_timing_log=hash_timing_log,
+            computed_perceptual_hashes=computed_perceptual_hashes,
         )
         cross_source = cross_source_report.to_dict()
         cross_source_path = args.output / "cross-source.json"

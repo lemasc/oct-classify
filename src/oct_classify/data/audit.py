@@ -146,6 +146,7 @@ def audit_records(
     perceptual_hashes: bool = True,
     max_hash_distance: int = 5,
     hash_timing_log: TextIO | None = None,
+    computed_perceptual_hashes: dict[Path, imagehash.ImageHash] | None = None,
 ) -> AuditReport:
     if max_hash_distance < 0:
         raise ValueError("The perceptual hash distance must be non-negative.")
@@ -184,7 +185,10 @@ def audit_records(
                 image_p99s.append(float(np.percentile(pixels, 99)))
                 if perceptual_hashes:
                     hash_start = perf_counter()
-                    perceptual_hash_values[index] = imagehash.phash(image)
+                    perceptual_hash = imagehash.phash(image)
+                    perceptual_hash_values[index] = perceptual_hash
+                    if computed_perceptual_hashes is not None:
+                        computed_perceptual_hashes[image_path] = perceptual_hash
                     if hash_timing_log is not None:
                         hash_timing_log.write(
                             f"{record.source}\t{record.path}\t{perf_counter() - hash_start:.6f}\n"
@@ -258,6 +262,7 @@ def audit_cross_source_records(
     perceptual_hashes: bool = True,
     max_hash_distance: int = 5,
     hash_timing_log: TextIO | None = None,
+    computed_perceptual_hashes: dict[Path, imagehash.ImageHash] | None = None,
 ) -> CrossSourceAuditReport:
     """Report duplicate candidates shared by distinct configured dataset roots."""
     if max_hash_distance < 0:
@@ -276,12 +281,19 @@ def audit_cross_source_records(
             with Image.open(image_path) as image:
                 image.load()
                 if perceptual_hashes:
-                    hash_start = perf_counter()
-                    perceptual_hash_values[index] = imagehash.phash(image)
-                    if hash_timing_log is not None:
-                        hash_timing_log.write(
-                            f"{record.source}\t{record.path}\t{perf_counter() - hash_start:.6f}\n"
-                        )
+                    perceptual_hash = (
+                        computed_perceptual_hashes.get(image_path)
+                        if computed_perceptual_hashes is not None
+                        else None
+                    )
+                    if perceptual_hash is None:
+                        hash_start = perf_counter()
+                        perceptual_hash = imagehash.phash(image)
+                        if hash_timing_log is not None:
+                            hash_timing_log.write(
+                                f"{record.source}\t{record.path}\t{perf_counter() - hash_start:.6f}\n"
+                            )
+                    perceptual_hash_values[index] = perceptual_hash
         except (OSError, UnidentifiedImageError):
             invalid_images.append(f"{record.source}:{record.path}")
         else:

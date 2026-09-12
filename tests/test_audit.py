@@ -106,3 +106,36 @@ def test_cross_source_audit_reports_only_cross_source_duplicates(tmp_path: Path)
     assert report.invalid_images == []
     assert report.exact_duplicates[0]["crosses_sources"] is True
     assert report.near_duplicates[0]["distance"] == 0
+
+
+def test_cross_source_audit_reuses_computed_perceptual_hashes(tmp_path: Path) -> None:
+    first_root = tmp_path / "first"
+    second_root = tmp_path / "second"
+    first_root.mkdir()
+    second_root.mkdir()
+    first_path = first_root / "image.png"
+    second_path = second_root / "image.png"
+    Image.new("L", (8, 4), color=64).save(first_path)
+    Image.new("L", (8, 4), color=64).save(second_path)
+    first = _record("image.png", "patient-1")
+    second = ImageRecord(
+        path="image.png",
+        source="other",
+        raw_label="NORMAL",
+        label=UnifiedLabel.NORMAL,
+        available_labels=ALL_LABELS,
+        group_id="patient-2",
+    )
+    computed_hashes = {
+        first_path: imagehash.phash(Image.open(first_path)),
+        second_path: imagehash.phash(Image.open(second_path)),
+    }
+    timing_log = StringIO()
+
+    audit_cross_source_records(
+        [(first_root, [first]), (second_root, [second])],
+        hash_timing_log=timing_log,
+        computed_perceptual_hashes=computed_hashes,
+    )
+
+    assert timing_log.getvalue() == ""
