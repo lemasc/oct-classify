@@ -2,8 +2,10 @@
 
 ## 2026-09-12: Configured Source Snapshot
 
-**Scope:** Duke, Kermany, OCTDL, OCTID, and PAIMA from `configs/datasets.toml`. This is a snapshot of the
-repository's configured `datasets/...` symlinks, not a substituted or third-party cleaned release.
+**Scope:** Enabled Duke, Kermany, OCTDL, and PAIMA sources from `configs/datasets.toml`. OCTID is
+configured but disabled for the first training pass because it has no group identifiers for the
+required group-safe split. This is a snapshot of the repository's configured `datasets/...` symlinks,
+not a substituted or third-party cleaned release.
 
 **Command:**
 
@@ -11,7 +13,7 @@ repository's configured `datasets/...` symlinks, not a substituted or third-part
 uv run oct-classify audit --hash-timing-log artifacts/audits/phash-timings-with-cross-source.tsv
 ```
 
-The command audited 131,333 manifest records. All decoded successfully. It exited with status 1
+The command audited 131,072 manifest records. All decoded successfully. It exited with status 1
 because the per-source audit identifies label conflicts and Kermany supplied-split pHash candidates;
 see the ignored reports under `artifacts/audits/` for the full record-level output.
 
@@ -20,22 +22,20 @@ see the ignored reports under `artifacts/audits/` for the full record-level outp
 | Source | Manifest images | Invalid | Unmanifested | Exact clusters | pHash clusters | Integrity result |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
 | Duke | 3,231 | 0 | 0 | 0 | 795 | 4 cross-label pHash candidates |
-| OCTID | 261 | 0 | 311 excluded CSR, DR, and MH files | 0 | 4 | 1 cross-label pHash candidate |
 | PAIMA | 16,822 | 0 | 0 | 137 | 18,065 | 3 exact and 4,571 pHash cross-label candidates |
 | Kermany | 109,309 | 0 | 0 | 7,092 | 38,253 | Exact and pHash cross-label candidates; pHash split candidates |
 | OCTDL | 1,710 | 0 | 354 ERM files | 1 | 134 | 2 cross-label pHash candidates |
 
-All 354 unmanifested OCTDL files are ERM images and all 311 unmanifested OCTID files are CSR, DR,
-or MH images; both sets are intentionally excluded under the locked Normal/AMD/DME task policy.
-The exact and pHash cluster counts are candidate counts, not independent image counts: a file may
-participate in multiple pHash pairs.
+All 354 unmanifested OCTDL files are ERM images and are intentionally excluded under the locked
+Normal/AMD/DME task policy. The exact and pHash cluster counts are candidate counts, not independent
+image counts: a file may participate in multiple pHash pairs.
 
 ### Cross-Source Leakage Result
 
 - Exact-content duplicate clusters: 0.
 - pHash-distance-zero clusters: 1.
 - pHash-distance-two candidate clusters: 129.
-- pHash-distance-four candidate clusters: 2,493.
+- pHash-distance-four candidate clusters: 2,457.
 
 The distance-zero pHash cluster is `paima:CNV/126/025_CNV.tif` and
 `kermany:train/CNV/CNV-135126-18.jpeg` (both unified AMD). Manual review found that these are not the
