@@ -17,4 +17,13 @@ formats, dimensions, intensity distributions, manifest coverage, and exact/perce
 findings. Use `--no-perceptual-hashes` for a quicker inventory-only run, or adjust the near-duplicate
 threshold with `--max-hash-distance`. `--hash-timing-log path.tsv` records each pHash duration.
 
+Open the interactive audit-result browser with:
+
+```bash
+uv run marimo edit notebooks/audit_results.py
+```
+
+It summarizes the generated audit reports and displays the source images in each selected exact or
+pHash duplicate cluster.
+
 Generated manifests and reports belong under ignored `artifacts/`. See `docs/data-contract.md` for the unified-label and patient/volume split contract.
