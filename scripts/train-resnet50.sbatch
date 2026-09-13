@@ -15,7 +15,7 @@ repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
 mkdir -p artifacts/slurm
 
-exec uv run oct-classify train \
+exec uv run oct-classify train baseline \
     --source "$source_name" \
     --run-name "slurm-${SLURM_ARRAY_JOB_ID}-${SLURM_ARRAY_TASK_ID}" \
     --device cuda \

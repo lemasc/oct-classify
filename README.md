@@ -9,10 +9,10 @@ active configuration covers Duke, Kermany, OCTDL, and Paima; OCTID is disabled p
 group-safe split.
 
 ```bash
-uv run oct-classify audit
-uv run oct-classify manifest
-uv run oct-classify validate-splits
-uv run oct-classify splits
+uv run oct-classify data audit
+uv run oct-classify data manifest
+uv run oct-classify data validate-splits
+uv run oct-classify data splits
 ```
 
 `audit` writes per-source reports and an aggregate summary to `artifacts/audits/`. It inventories
@@ -41,13 +41,13 @@ The supervised baseline is ImageNet-pretrained ResNet-50 trained separately per 
 end-to-end local flow check before a full experiment:
 
 ```bash
-uv run oct-classify train --source duke --run-name smoke --epochs 1 --max-train-batches 2 --max-eval-batches 2
-uv run oct-classify evaluate --checkpoint artifacts/runs/duke/resnet50/smoke/checkpoint-best.pt --source paima --max-eval-batches 2
+uv run oct-classify train baseline --source duke --run-name smoke --epochs 1 --max-train-batches 2 --max-eval-batches 2
+uv run oct-classify train evaluate --checkpoint artifacts/runs/duke/resnet50/smoke/checkpoint-best.pt --source paima --max-eval-batches 2
 ```
 
-`train` consumes the derived source split, calculates normalization from its training records only, and
+`train baseline` consumes the derived source split, calculates normalization from its training records only, and
 writes configuration, normalization, checkpoints, history, metrics, and predictions under
-`artifacts/runs/`. `evaluate` uses the class intersection between the checkpoint and target source, so
+`artifacts/runs/`. `train evaluate` uses the class intersection between the checkpoint and target source, so
 a three-class model is evaluated on Paima's Normal/AMD test examples only.
 Metrics from capped smoke runs are flow-validation evidence only, not experimental results.
 

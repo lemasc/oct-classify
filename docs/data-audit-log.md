@@ -15,7 +15,7 @@ to derived manifests.
 ### Source-Snapshot Audit
 
 ```bash
-uv run oct-classify audit --workers 4
+uv run oct-classify data audit --workers 4
 ```
 
 The audit decoded all 131,072 source-manifest records successfully. It exits with status 1 by design:
@@ -50,7 +50,7 @@ records enter quarantine from this audit.
 ### Derived Manifest Result
 
 ```bash
-uv run oct-classify manifest --workers 4
+uv run oct-classify data manifest --workers 4
 ```
 
 The manifest command quarantines every member of an eligible component, retains only the lexical

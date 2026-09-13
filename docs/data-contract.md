@@ -26,7 +26,7 @@ Splits must be created at the `source:group_id` level. A group may appear in one
 pHash-distance-zero candidates spanning groups are linked into one split-assignment unit. Kermany
 filenames follow `CLASS-GROUP_ID-BSCAN_INDEX.jpeg`; the adapter extracts the middle token as the grouping
 key. The release copy has no sidecar metadata files, so demographic, eye, and acquisition metadata are
-unavailable. `oct-classify validate-splits` verifies that no extracted group crosses its supplied train/test
+unavailable. `oct-classify data validate-splits` verifies that no extracted group crosses its supplied train/test
 split.
 
 The tracked `configs/splits/v1.json` is the authoritative assignment. It records the seed, source split
@@ -40,10 +40,10 @@ remain ignored under `artifacts/splits/`.
 Run from the repository root:
 
 ```bash
-uv run oct-classify audit
-uv run oct-classify manifest
-uv run oct-classify validate-splits
-uv run oct-classify splits
+uv run oct-classify data audit
+uv run oct-classify data manifest
+uv run oct-classify data validate-splits
+uv run oct-classify data splits
 ```
 
 The manifest command writes ignored JSONL files to `artifacts/manifests/` by default. It applies the
@@ -51,7 +51,7 @@ locked quarantine policy and retains only the lexical canonical path for same-la
 
 ## Audit Contract
 
-`oct-classify audit` writes JSON reports under `artifacts/audits/`. It profiles decoded image format,
+`oct-classify data audit` writes JSON reports under `artifacts/audits/`. It profiles decoded image format,
 mode, resolution, aspect ratio, and grayscale intensity statistics. It also reports image files that
 are present below a dataset root but not emitted by the source adapter.
 
