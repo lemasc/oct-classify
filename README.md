@@ -50,3 +50,15 @@ writes configuration, normalization, checkpoints, history, metrics, and predicti
 `artifacts/runs/`. `evaluate` uses the class intersection between the checkpoint and target source, so
 a three-class model is evaluated on Paima's Normal/AMD test examples only.
 Metrics from capped smoke runs are flow-validation evidence only, not experimental results.
+
+## Cluster Baseline
+
+Submit the four per-dataset ResNet-50 runs as a SLURM job array:
+
+```bash
+sbatch scripts/train-resnet50.sbatch
+```
+
+Each array task requests one 10 GB MIG GPU slice, four CPUs, 32 GB memory, and up to 12 hours. It
+trains Duke, Kermany, OCTDL, or Paima with `configs/training/resnet50.toml`; output runs are
+uniquely named by their SLURM job and task IDs, and task logs are written to `artifacts/slurm/`.
