@@ -150,6 +150,48 @@ def test_audit_writes_per_image_phash_timings(tmp_path: Path) -> None:
     assert float(seconds) >= 0
 
 
+def test_multiprocess_audit_matches_sequential_results_and_order(tmp_path: Path) -> None:
+    Image.new("L", (8, 4), color=64).save(tmp_path / "first.png")
+    Image.new("L", (8, 4), color=64).save(tmp_path / "second.png")
+    (tmp_path / "broken.png").write_text("not an image", encoding="utf-8")
+    records = [
+        _record("first.png", "patient-1", "train"),
+        _record("broken.png", "patient-2"),
+        _record("second.png", "patient-3", "test"),
+    ]
+    sequential_cache = {}
+    parallel_cache = {}
+    sequential_log = StringIO()
+    parallel_log = StringIO()
+
+    sequential = audit_records(
+        tmp_path,
+        records,
+        workers=1,
+        computed_images=sequential_cache,
+        hash_timing_log=sequential_log,
+    )
+    parallel = audit_records(
+        tmp_path,
+        records,
+        workers=2,
+        computed_images=parallel_cache,
+        hash_timing_log=parallel_log,
+    )
+
+    assert parallel == sequential
+    assert parallel_cache == sequential_cache
+    assert [line.split("\t")[1] for line in parallel_log.getvalue().splitlines()] == [
+        "first.png",
+        "second.png",
+    ]
+
+
+def test_audit_rejects_invalid_worker_count(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="worker count"):
+        audit_records(tmp_path, [], workers=0)
+
+
 def test_cross_source_audit_reports_only_cross_source_duplicates(tmp_path: Path) -> None:
     first_root = tmp_path / "first"
     second_root = tmp_path / "second"

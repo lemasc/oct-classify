@@ -42,6 +42,7 @@ def _audit(args: argparse.Namespace) -> None:
                 max_hash_distance=args.max_hash_distance,
                 hash_timing_log=hash_timing_log,
                 computed_images=computed_images,
+                workers=args.workers,
             )
             report = audit_report.to_dict()
             report["dataset"] = spec.name
@@ -73,6 +74,7 @@ def _audit(args: argparse.Namespace) -> None:
             max_hash_distance=args.max_hash_distance,
             hash_timing_log=hash_timing_log,
             computed_images=computed_images,
+            workers=args.workers,
         )
         cross_source = cross_source_report.to_dict()
         cross_source_path = args.output / "cross-source.json"
@@ -154,6 +156,11 @@ def main() -> None:
             command_parser.add_argument("--no-perceptual-hashes", action="store_true")
             command_parser.add_argument("--max-hash-distance", type=int, default=5)
             command_parser.add_argument("--hash-timing-log", type=Path)
+            command_parser.add_argument(
+                "--workers",
+                type=int,
+                help="Image-analysis processes; defaults to all available CPU cores.",
+            )
         if command == "manifest":
             command_parser.add_argument("--output", type=Path, default=Path("artifacts/manifests"))
         command_parser.set_defaults(handler=handler)

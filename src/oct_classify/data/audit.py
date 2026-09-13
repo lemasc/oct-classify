@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import hashlib
 import itertools
+import multiprocessing
+import os
 from collections import Counter
 from collections.abc import Iterable
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from time import perf_counter
@@ -92,6 +95,90 @@ class CrossSourceAuditReport:
 class ComputedImageAudit:
     file_digest: str
     perceptual_hash: imagehash.ImageHash | None
+
+
+@dataclass(frozen=True, slots=True)
+class _ImageAnalysis:
+    index: int
+    image_path: Path
+    valid: bool
+    file_digest: str | None = None
+    perceptual_hash: imagehash.ImageHash | None = None
+    width: int | None = None
+    height: int | None = None
+    image_format: str | None = None
+    image_mode: str | None = None
+    mean: float | None = None
+    stdev: float | None = None
+    p01: float | None = None
+    p99: float | None = None
+    phash_seconds: float | None = None
+
+
+def _analyze_image(
+    job: tuple[int, Path, bool, bool],
+) -> _ImageAnalysis:
+    """Analyze one file in a subprocess; report aggregation remains in the parent."""
+    index, image_path, perceptual_hashes, profile_statistics = job
+    try:
+        digest = _file_digest(image_path)
+        with Image.open(image_path) as image:
+            image.load()
+            width, height = image.size
+            image_format = image.format or "<unknown>"
+            image_mode = image.mode
+            perceptual_hash = None
+            phash_seconds = None
+            if profile_statistics:
+                pixels = np.asarray(image.convert("L"), dtype=np.float32)
+                mean = float(pixels.mean())
+                stdev = float(pixels.std())
+                p01 = float(np.percentile(pixels, 1))
+                p99 = float(np.percentile(pixels, 99))
+            else:
+                mean = stdev = p01 = p99 = None
+            if perceptual_hashes:
+                hash_start = perf_counter()
+                perceptual_hash = imagehash.phash(image)
+                phash_seconds = perf_counter() - hash_start
+    except (OSError, UnidentifiedImageError):
+        return _ImageAnalysis(index=index, image_path=image_path, valid=False)
+    return _ImageAnalysis(
+        index=index,
+        image_path=image_path,
+        valid=True,
+        file_digest=digest,
+        perceptual_hash=perceptual_hash,
+        width=width,
+        height=height,
+        image_format=image_format,
+        image_mode=image_mode,
+        mean=mean,
+        stdev=stdev,
+        p01=p01,
+        p99=p99,
+        phash_seconds=phash_seconds,
+    )
+
+
+def _analyze_images(
+    jobs: Iterable[tuple[int, Path, bool, bool]], *, workers: int | None
+) -> list[_ImageAnalysis]:
+    if workers is not None and workers < 1:
+        raise ValueError("The audit worker count must be at least one.")
+    jobs = list(jobs)
+    if not jobs:
+        return []
+    if workers == 1:
+        return [_analyze_image(job) for job in jobs]
+
+    worker_count = workers or os.cpu_count() or 1
+    chunksize = max(1, len(jobs) // (worker_count * 4))
+    with ProcessPoolExecutor(
+        max_workers=worker_count,
+        mp_context=multiprocessing.get_context("spawn"),
+    ) as executor:
+        return list(executor.map(_analyze_image, jobs, chunksize=chunksize))
 
 
 def _distribution(values: list[float]) -> dict[str, float | int] | None:
@@ -195,6 +282,7 @@ def audit_records(
     max_hash_distance: int = 5,
     hash_timing_log: TextIO | None = None,
     computed_images: dict[Path, ComputedImageAudit] | None = None,
+    workers: int | None = None,
 ) -> AuditReport:
     if max_hash_distance < 0:
         raise ValueError("The perceptual hash distance must be non-negative.")
@@ -217,41 +305,46 @@ def audit_records(
     exact_hashes: dict[str, list[int]] = {}
     perceptual_hash_values: dict[int, imagehash.ImageHash] = {}
 
-    for index, record in enumerate(records):
+    for record in records:
         suffixes[Path(record.path).suffix.lower() or "<none>"] += 1
-        image_path = root / record.path
-        try:
-            digest = _file_digest(image_path)
-            with Image.open(image_path) as image:
-                image.load()
-                width, height = image.size
-                formats[image.format or "<unknown>"] += 1
-                modes[image.mode] += 1
-                pixels = np.asarray(image.convert("L"), dtype=np.float32)
-                image_means.append(float(pixels.mean()))
-                image_stdevs.append(float(pixels.std()))
-                image_p01s.append(float(np.percentile(pixels, 1)))
-                image_p99s.append(float(np.percentile(pixels, 99)))
-                if perceptual_hashes:
-                    hash_start = perf_counter()
-                    perceptual_hash = imagehash.phash(image)
-                    perceptual_hash_values[index] = perceptual_hash
-                    if hash_timing_log is not None:
-                        hash_timing_log.write(
-                            f"{record.source}\t{record.path}\t{perf_counter() - hash_start:.6f}\n"
-                        )
-            if computed_images is not None:
-                computed_images[image_path] = ComputedImageAudit(
-                    file_digest=digest,
-                    perceptual_hash=perceptual_hash if perceptual_hashes else None,
-                )
-        except (OSError, UnidentifiedImageError):
+    analyses = _analyze_images(
+        ((index, root / record.path, perceptual_hashes, True) for index, record in enumerate(records)),
+        workers=workers,
+    )
+    for analysis in analyses:
+        record = records[analysis.index]
+        if not analysis.valid:
             invalid_images.append(record.path)
-        else:
-            widths.append(width)
-            heights.append(height)
-            aspect_ratios.append(width / height)
-            exact_hashes.setdefault(digest, []).append(index)
+            continue
+        assert analysis.file_digest is not None
+        assert analysis.width is not None and analysis.height is not None
+        assert analysis.image_format is not None and analysis.image_mode is not None
+        formats[analysis.image_format] += 1
+        modes[analysis.image_mode] += 1
+        widths.append(analysis.width)
+        heights.append(analysis.height)
+        aspect_ratios.append(analysis.width / analysis.height)
+        assert analysis.mean is not None
+        assert analysis.stdev is not None
+        assert analysis.p01 is not None and analysis.p99 is not None
+        image_means.append(analysis.mean)
+        image_stdevs.append(analysis.stdev)
+        image_p01s.append(analysis.p01)
+        image_p99s.append(analysis.p99)
+        exact_hashes.setdefault(analysis.file_digest, []).append(analysis.index)
+        if perceptual_hashes:
+            assert analysis.perceptual_hash is not None
+            perceptual_hash_values[analysis.index] = analysis.perceptual_hash
+            if hash_timing_log is not None:
+                assert analysis.phash_seconds is not None
+                hash_timing_log.write(
+                    f"{record.source}\t{record.path}\t{analysis.phash_seconds:.6f}\n"
+                )
+        if computed_images is not None:
+            computed_images[analysis.image_path] = ComputedImageAudit(
+                file_digest=analysis.file_digest,
+                perceptual_hash=analysis.perceptual_hash if perceptual_hashes else None,
+            )
 
     manifest_paths = {record.path for record in records}
     unmanifested_images = sorted(
@@ -317,6 +410,7 @@ def audit_cross_source_records(
     max_hash_distance: int = 5,
     hash_timing_log: TextIO | None = None,
     computed_images: dict[Path, ComputedImageAudit] | None = None,
+    workers: int | None = None,
 ) -> CrossSourceAuditReport:
     """Report duplicate candidates shared by distinct configured dataset roots."""
     if max_hash_distance < 0:
@@ -330,34 +424,42 @@ def audit_cross_source_records(
     exact_hashes: dict[str, list[int]] = {}
     perceptual_hash_values: dict[int, imagehash.ImageHash] = {}
 
-    for index, (image_path, record) in enumerate(locations):
-        try:
-            computed_image = (
-                computed_images.get(image_path) if computed_images is not None else None
-            )
-            if computed_image is not None and (
-                not perceptual_hashes or computed_image.perceptual_hash is not None
-            ):
-                digest = computed_image.file_digest
-                perceptual_hash = computed_image.perceptual_hash
-            else:
-                digest = _file_digest(image_path)
-                with Image.open(image_path) as image:
-                    image.load()
-                    if perceptual_hashes:
-                        hash_start = perf_counter()
-                        perceptual_hash = imagehash.phash(image)
-                        if hash_timing_log is not None:
-                            hash_timing_log.write(
-                                f"{record.source}\t{record.path}\t{perf_counter() - hash_start:.6f}\n"
-                            )
-            if perceptual_hashes:
-                assert perceptual_hash is not None
-                perceptual_hash_values[index] = perceptual_hash
-        except (OSError, UnidentifiedImageError):
-            invalid_images.append(f"{record.source}:{record.path}")
+    cached_images: dict[int, ComputedImageAudit] = {}
+    jobs = []
+    for index, (image_path, _) in enumerate(locations):
+        computed_image = computed_images.get(image_path) if computed_images is not None else None
+        if computed_image is not None and (
+            not perceptual_hashes or computed_image.perceptual_hash is not None
+        ):
+            cached_images[index] = computed_image
         else:
-            exact_hashes.setdefault(digest, []).append(index)
+            jobs.append((index, image_path, perceptual_hashes, False))
+    analyses = {analysis.index: analysis for analysis in _analyze_images(jobs, workers=workers)}
+
+    for index, (image_path, record) in enumerate(locations):
+        computed_image = cached_images.get(index)
+        analysis = analyses.get(index)
+        if analysis is not None and not analysis.valid:
+            invalid_images.append(f"{record.source}:{record.path}")
+            continue
+        if computed_image is not None:
+            digest = computed_image.file_digest
+            perceptual_hash = computed_image.perceptual_hash
+        else:
+            assert analysis is not None and analysis.file_digest is not None
+            digest = analysis.file_digest
+            perceptual_hash = analysis.perceptual_hash
+            if computed_images is not None:
+                computed_images[image_path] = ComputedImageAudit(digest, perceptual_hash)
+            if perceptual_hashes and hash_timing_log is not None:
+                assert analysis.phash_seconds is not None
+                hash_timing_log.write(
+                    f"{record.source}\t{record.path}\t{analysis.phash_seconds:.6f}\n"
+                )
+        if perceptual_hashes:
+            assert perceptual_hash is not None
+            perceptual_hash_values[index] = perceptual_hash
+        exact_hashes.setdefault(digest, []).append(index)
 
     exact_duplicates = _classify_duplicates(
         [
