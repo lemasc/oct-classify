@@ -16,3 +16,5 @@ artifacts/
 
 **/__marimo__/
 .marimo.toml
+
+.scratchpad
