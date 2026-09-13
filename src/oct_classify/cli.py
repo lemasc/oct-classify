@@ -10,6 +10,7 @@ import torch
 from torch import nn
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 
 from oct_classify.data.audit import (
     audit_cross_source_records,
@@ -343,6 +344,19 @@ def _checkpoint_metadata(
     }
 
 
+def _log_tensorboard_metrics(
+    writer: SummaryWriter,
+    split: str,
+    loss: float,
+    metrics: dict[str, float | list[list[int]] | None],
+    step: int,
+) -> None:
+    writer.add_scalar(f"{split}/loss", loss, step)
+    for name, value in metrics.items():
+        if isinstance(value, float):
+            writer.add_scalar(f"{split}/{name}", value, step)
+
+
 def _train(args: argparse.Namespace) -> None:
     config = load_training_config(args.training_config)
     if args.epochs is not None:
@@ -473,6 +487,8 @@ def _train(args: argparse.Namespace) -> None:
         )
         write_json(run_directory / "normalization.json", metadata["normalization"])
     history_path = run_directory / "history.jsonl"
+    writer = SummaryWriter(log_dir=str(run_directory / "events"))
+    last_epoch = start_epoch - 1
     with history_path.open("a", encoding="utf-8") as history:
         for epoch in range(start_epoch, config.optimization.epochs):
             train_result = run_epoch(
@@ -502,6 +518,14 @@ def _train(args: argparse.Namespace) -> None:
             }
             history.write(json.dumps(epoch_result, allow_nan=False) + "\n")
             history.flush()
+            _log_tensorboard_metrics(
+                writer, "train", train_result.loss, train_result.evaluation.metrics, epoch
+            )
+            _log_tensorboard_metrics(
+                writer, "validation", val_result.loss, val_result.evaluation.metrics, epoch
+            )
+            writer.flush()
+            last_epoch = epoch
             macro_f1 = float(val_result.evaluation.metrics["macro_f1"])
             if macro_f1 > best_macro_f1:
                 best_macro_f1 = macro_f1
@@ -551,6 +575,14 @@ def _train(args: argparse.Namespace) -> None:
         run_directory / "metrics-test.json",
         {"loss": test_result.loss, **test_result.evaluation.metrics},
     )
+    _log_tensorboard_metrics(
+        writer,
+        "test",
+        test_result.loss,
+        test_result.evaluation.metrics,
+        last_epoch + 1,
+    )
+    writer.close()
     write_predictions(
         run_directory / "predictions-test.csv",
         test_result.paths,

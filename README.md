@@ -62,3 +62,13 @@ sbatch scripts/train-resnet50.sbatch
 Each array task requests one 10 GB MIG GPU slice, four CPUs, 32 GB memory, and up to 12 hours. It
 trains Duke, Kermany, OCTDL, or Paima with `configs/training/resnet50.toml`; output runs are
 uniquely named by their SLURM job and task IDs, and task logs are written to `artifacts/slurm/`.
+
+Monitor the remote runs by starting TensorBoard from the repository root:
+
+```bash
+uv run tensorboard --logdir artifacts/runs
+```
+
+Training writes scalar loss, accuracy, balanced accuracy, macro-F1, and macro-AUROC to each run's
+`events/` directory. Use SSH port forwarding rather than exposing TensorBoard directly to the
+network.
