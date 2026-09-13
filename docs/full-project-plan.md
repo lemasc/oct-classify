@@ -29,7 +29,8 @@ Mirroring your papers' structure, adapted for 4 sources and partial labels:
 
 | Stage | What | Backbone(s) |
 |---|---|---|
-| **Baseline** | ImageNet-pretrained, no SSL, fine-tuned per-dataset + once on fused labeled set | ResNet-50, ViT-B |
+| **Baseline** | ImageNet-pretrained, no SSL, fine-tuned independently per dataset; establish within- and cross-source grids before fusion | ResNet-50 first; ViT-B follows through the same pipeline |
+| **Fused supervised** | Train once on all labeled sources using a masked loss for Paima/NEH, only after the independent baseline and cross-source duplicate review are complete | ResNet-50 |
 | **Proposed (SSL)** | MAE pretraining on fused *unlabeled* images from all 4 active sources → fine-tune per dataset (masked/one-vs-rest loss) → cross-dataset eval | SwinV2 (matches your papers), consider ViT-B as a second run if time allows |
 | **Stretch: new architecture** | See §6 | TBD, gated on results from above |
 
@@ -44,7 +45,7 @@ Your bottleneck isn't total compute, it's **queue time on the 7g.80gb slices**. 
 | Resource | Use it for | Why |
 |---|---|---|
 | **RTX 3060 (local)** | Data pipeline dev/debugging, preprocessing, small sanity-check training runs, writing eval/plotting scripts, a *tiny* pilot MAE run (low-res, 1-epoch, subsampled) to catch bugs | Fast iteration, no queue, but not enough VRAM for full MAE pretraining at target resolution/batch size |
-| **1g.10gb MIG slices** | Baseline ResNet-50/ViT-B fine-tuning (per dataset, in parallel across slices), linear-probe evaluation of SSL-pretrained encoders, hyperparameter sweeps, inference/eval jobs | Low memory but no queue wait — good for many small parallel jobs |
+| **1g.10gb MIG slices** | Future parallel baseline fine-tuning, linear-probe evaluation of SSL-pretrained encoders, hyperparameter sweeps, inference/eval jobs | Low memory but no queue wait — good for many small parallel jobs |
 | **7g.80gb (queued)** | MAE self-supervised pretraining on the fused dataset (needs large batch size + memory), full fine-tuning of the largest runs | This is your scarce resource — debug elsewhere first, submit here only once the job is verified to run end-to-end |
 
 **Practical rule:** never let a job's first-ever execution be on the queued 7g.80gb slice. Validate the exact training script on the 3060 or a MIG slice at reduced scale first.
@@ -55,11 +56,11 @@ Your bottleneck isn't total compute, it's **queue time on the 7g.80gb slices**. 
 
 | Week | Focus | Compute | Milestone |
 |---|---|---|---|
-| **1** | Data audit: inventory image counts/resolutions/formats per dataset; build unified label map; patient-level split design; preprocessing pipeline (resize, normalize, intensity harmonization). Build the fused unlabeled pool. **Submit a pilot (reduced) MAE job to the 7g.80gb queue as soon as the fused pool exists**, even before it's polished — you want a slot reserved and bugs surfaced early. | 3060 + 1g.10gb | Clean, harmonized, split datasets; MAE pilot job queued |
-| **2** | Baseline supervised training: ResNet-50 & ViT-B (ImageNet-pretrained), fine-tuned per-dataset. Build the cross-dataset eval harness (on-domain/off-domain grid, masked-metric logic for DME-missing datasets). | 1g.10gb (parallel per-dataset jobs) | Baseline per-dataset models + first cross-eval numbers |
-| **3** | Fused-supervised baseline (all 4 active datasets combined, masked-loss/one-vs-rest head). Debug + relaunch full-scale MAE pretraining job on 7g.80gb once pilot confirms correctness. Monitor queue. | 1g.10gb + 7g.80gb (queued) | Fused baseline done; full MAE pretraining running |
-| **4** | While MAE trains: build fine-tuning scripts (linear probe + full fine-tune variants), statistical testing utilities (bootstrap CIs), embedding visualization tooling. Buffer for MAE training/queue delays. | 3060 + 1g.10gb | Fine-tuning pipeline ready to go the moment pretraining checkpoints land |
-| **5** | Fine-tune SSL-pretrained encoder per dataset (masked loss), run full cross-dataset grid (2-class 4×4 + 3-class subset). Compare against baseline. | 1g.10gb (parallel), occasional 7g.80gb for full fine-tune if linear probe underperforms | SSL vs baseline comparison table complete |
+| **1** | Dataset audit and split work is complete. Implement the supervised image loader, ResNet-50 model factory, checkpointing, and evaluation harness. Run a capped Duke train/validate/test flow locally on the RTX 3060, then resume it and evaluate the checkpoint against Paima using the Normal/AMD intersection. | 3060 | Reproducible local flow check; no SLURM submission |
+| **2** | Run ImageNet-pretrained ResNet-50 independently for Duke, Kermany, OCTDL, and Paima. Report each source's held-out test result and preserve predictions. | 3060 | Four independent ResNet-50 baselines |
+| **3** | Run the complete cross-dataset grid: 3-class among Duke/Kermany/OCTDL and a separate Normal/AMD grid including Paima. Add ViT-B through the same model interface only after ResNet results are stable. | 3060 | Baseline cross-evaluation table; optional ViT-B starts |
+| **4** | Review retained cross-source duplicate candidates and decide whether fused training needs an additional manifest version. Then implement source-balanced, masked-loss fused supervised ResNet-50. | 3060 | Defensible fused-supervised baseline |
+| **5** | Compare independent and fused supervised baselines; build bootstrap confidence intervals, error analysis, and embedding tooling. Decide whether measured cross-source gaps justify SSL. | 3060 + 1g.10gb if needed | Baseline decision point |
 | **6** | Error analysis: confusion matrices per dataset, embedding t-SNE/UMAP, per-class AUC-ROC/PR, significance tests. **Decision point:** go/no-go on new architecture based on time remaining and where the SSL model is weak. | 1g.10gb | Results consolidated; go/no-go decision made |
 | **7** | New architecture experiment (see §6) — scoped tightly to *one* idea, not several. | 7g.80gb (queued) for training, 1g.10gb for eval | New architecture results (even if preliminary) |
 | **8** | Final evaluation pass, figures/tables, writeup. This week is also your buffer for any queue delays that pushed earlier weeks back. | 1g.10gb + 3060 | Final deliverable |
@@ -68,7 +69,7 @@ Your bottleneck isn't total compute, it's **queue time on the 7g.80gb slices**. 
 
 ## 5. Risk Mitigation
 
-- **Queue latency is your critical path.** The MAE pretraining run is the one thing everything downstream depends on — front-load it (Week 1 pilot, Week 3 full run) rather than scheduling it mid-project. If it slips, Weeks 5–7 slip with it.
+- **Do not submit to SLURM until the local supervised flow is verified.** The first queued workload is now contingent on the independent and fused supervised baseline table showing a remaining generalization gap.
 - **Checkpoint aggressively.** 7g.80gb jobs that get preempted or interrupted by queue churn should resume, not restart. Save encoder state every N steps.
 - **Class imbalance.** AMD will likely dominate after merging (3 original classes flow into it). Use class-weighted loss or a balanced sampler on top of the masked-loss handling above — these solve different problems and you need both.
 - **Leakage.** Double-check Kermany and Duke in particular for patient/volume-level duplication between train and test; both are known to have this issue if split naively.
