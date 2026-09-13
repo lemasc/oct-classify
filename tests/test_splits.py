@@ -16,7 +16,9 @@ def _record(path: str, group_id: str | None, split: str | None = None) -> ImageR
 
 
 def test_validation_detects_group_leakage() -> None:
-    report = validate_supplied_splits([_record("a.jpg", "1", "train"), _record("b.jpg", "1", "test")])
+    report = validate_supplied_splits(
+        [_record("a.jpg", "1", "train"), _record("b.jpg", "1", "test")]
+    )
 
     assert report.groups_in_multiple_splits == {"octdl:1": ("test", "train")}
     assert not report.is_leakage_safe

@@ -20,7 +20,9 @@ class OctdlSource:
                     continue
                 image_path = spec.root / raw_label / f"{row['file_name']}.jpg"
                 if not image_path.is_file():
-                    raise FileNotFoundError(f"OCTDL metadata references missing image: {image_path}")
+                    raise FileNotFoundError(
+                        f"OCTDL metadata references missing image: {image_path}"
+                    )
                 yield ImageRecord(
                     path=str(image_path.relative_to(spec.root)),
                     source=spec.name,

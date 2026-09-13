@@ -57,9 +57,7 @@ class ImageRecord:
             source=value["source"],
             raw_label=value["raw_label"],
             label=UnifiedLabel(value["label"]),
-            available_labels=frozenset(
-                UnifiedLabel(label) for label in value["available_labels"]
-            ),
+            available_labels=frozenset(UnifiedLabel(label) for label in value["available_labels"]),
             group_id=value.get("group_id"),
             supplied_split=value.get("supplied_split"),
         )

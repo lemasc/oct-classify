@@ -74,5 +74,7 @@ def assign_group_splits(
     assignments: dict[str, str] = {}
     for index, group_id in enumerate(group_ids):
         position = (index + 1) / len(group_ids)
-        assignments[group_id] = next(split for split, boundary in boundaries if position <= boundary)
+        assignments[group_id] = next(
+            split for split, boundary in boundaries if position <= boundary
+        )
     return assignments
