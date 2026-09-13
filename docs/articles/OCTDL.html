@@ -1,0 +1,984 @@
+<div class="main-content">
+    <section data-title="Background &amp; Summary">
+        <div class="c-article-section" id="Sec1-section">
+            <h2 class="c-article-section__title js-section-title js-c-reading-companion-sections-item" id="Sec1">
+                Background &amp; Summary</h2>
+            <div class="c-article-section__content" id="Sec1-content">
+                <p>Optical coherence tomography (OCT) is a non-invasive imaging modality that is of great importance in
+                    clinical ophthalmology<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 1"
+                            title="Duker, J. S., Waheed, N. K. &amp; Goldman, D. Handbook of Retinal OCT: Optical Coherence Tomography E-Book (Elsevier Health Sciences, 2021)."
+                            href="/articles/s41597-024-03182-7#ref-CR1" id="ref-link-section-d201753837e546">1</a>,<a
+                            data-track="click" data-track-action="reference anchor" data-track-label="link"
+                            data-test="citation-ref" aria-label="Reference 2"
+                            title="Zhang, L., Van Dijk, E. H., Borrelli, E., Fragiotta, S. &amp; Breazzano, M. P. Oct and oct angiography update: Clinical application to age-related macular degeneration, central serous chorioretinopathy, macular telangiectasia, and diabetic retinopathy. Diagnostics 13, 232 (2023)."
+                            href="/articles/s41597-024-03182-7#ref-CR2"
+                            id="ref-link-section-d201753837e549">2</a></sup>. OCT is one of the most widely used,
+                    rapidly developing medical imaging technologies. Today, visualization of the neural tissue is not
+                    limited to the macular area as it was at the beginning of OCT<sup><a data-track="click"
+                            data-track-action="reference anchor" data-track-label="link" data-test="citation-ref"
+                            aria-label="Reference 3"
+                            title="Lumbroso, B. &amp; Rispoli, M. Practical handbook of OCT (JP Medical Ltd, 2012)."
+                            href="/articles/s41597-024-03182-7#ref-CR3" id="ref-link-section-d201753837e553">3</a></sup>
+                    but also to the vascular structures as well<sup><a data-track="click"
+                            data-track-action="reference anchor" data-track-label="link" data-test="citation-ref"
+                            aria-label="Reference 4"
+                            title="Coffey, A. M. et al. Optical coherence tomography angiography in primary eye care. Clinical and Experimental Optometry 104, 3–13 (2021)."
+                            href="/articles/s41597-024-03182-7#ref-CR4"
+                            id="ref-link-section-d201753837e557">4</a></sup>. OCT imaging of the retina was first
+                    proposed by Huang <i>et al</i>.<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 5"
+                            title="Huang, D. et al. Optical coherence tomography. science 254, 1178–1181 (1991)."
+                            href="/articles/s41597-024-03182-7#ref-CR5" id="ref-link-section-d201753837e564">5</a></sup>
+                    in 1991. OCT utilizes the basic principle of low coherent light interferometry to detect the
+                    backscattered near-infrared light to reconstruct the depth profile of the biological tissue sample.
+                    The relatively low resolution of the first OCT devices has been gradually improved so that the image
+                    quality is now able to resolve more subtle changes in retinal morphology. Numerous studies have
+                    shown that OCT can be used in monitoring and confirming many common and sight-threatening ocular
+                    conditions, such as glaucoma<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 6"
+                            title="Geevarghese, A., Wollstein, G., Ishikawa, H. &amp; Schuman, J. S. Optical coherence tomography and glaucoma. Annual review of vision science 7, 693–726 (2021)."
+                            href="/articles/s41597-024-03182-7#ref-CR6"
+                            id="ref-link-section-d201753837e569">6</a></sup>, diabetic retinopathy<sup><a
+                            data-track="click" data-track-action="reference anchor" data-track-label="link"
+                            data-test="citation-ref" aria-label="Reference 7"
+                            title="Amoaku, W. M. et al. Diabetic retinopathy and diabetic macular oedema pathways and management: Uk consensus working group. Eye 34, 1–51 (2020)."
+                            href="/articles/s41597-024-03182-7#ref-CR7"
+                            id="ref-link-section-d201753837e573">7</a></sup>, and age-related macular
+                    degeneration<sup><a data-track="click" data-track-action="reference anchor" data-track-label="link"
+                            data-test="citation-ref" aria-label="Reference 8"
+                            title="Flores, R., Carneiro, Â., Tenreiro, S. &amp; Seabra, M. C. Retinal progression biomarkers of early and intermediate age-related macular degeneration. Life 12, 36 (2021)."
+                            href="/articles/s41597-024-03182-7#ref-CR8"
+                            id="ref-link-section-d201753837e577">8</a></sup>.</p>
+                <p>In this work, we present a new open-access OCT dataset for Image-Based Deep Learning Methods (OCTDL)
+                    comprising over 2000 OCT images labeled according to various pathological conditions. The OCTDL
+                    dataset includes macular raster scans of Age-related Macular Degeneration (AMD), Diabetic Macular
+                    Edema (DME), Epiretinal Membrane (ERM), Retinal Artery Occlusion (RAO), Retinal Vein Occlusion
+                    (RVO), and Vitreomacular Interface Disease (VID) with the following pathological conditions: Macular
+                    Neovascular membranes (MNV), Disorganization of Retinal Inner Layers (DRIL), drusen, Macular Edema
+                    (ME), and Macular Hole (MH). We also analyzed OCT scans from existing public datasets and applied
+                    Deep Learning (DL) classification methods to these as well as to the OCTDL dataset and with
+                    combinations of the OCTDL dataset and publicly available datasets. Table&nbsp;<a data-track="click"
+                        data-track-label="link" data-track-action="table anchor"
+                        href="/articles/s41597-024-03182-7#Tab1">1</a> lists a comparative analysis of published OCT
+                    datasets: Kermany<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 9"
+                            title="Kermany, D. S. et al. Identifying medical diagnoses and treatable diseases by image-based deep learning. cell 172, 1122–1131 (2018)."
+                            href="/articles/s41597-024-03182-7#ref-CR9" id="ref-link-section-d201753837e587">9</a></sup>
+                    dataset, published in 2019, remains the most extensive in terms of the number of OCT images. The
+                    second largest OCT image open-access dataset is provided in our new dataset, OCTDL, which is
+                    described in this work. The most represented diseases in the published datasets are AMD (more than
+                    ten times), DME (more than three times), and central serous chorioretinopathy (CSC) (more than three
+                    times). The most common equipment used for capturing OCT images was the Heidelberg Engineering
+                    Spectralis and Zeiss Cirrus systems, as these OCT systems provide high-resolution and wide-spectrum
+                    eye images for diagnosing various ocular conditions.</p>
+                <div class="c-article-table" data-test="inline-table" data-container-section="table" id="table-1">
+                    <figure>
+                        <figcaption class="c-article-table__figcaption"><b id="Tab1" data-test="table-caption">Table 1
+                                Comparative analysis of published OCT datasets.</b></figcaption>
+                        <div class="u-text-right u-hide-print"><a class="c-article__pill-button" data-test="table-link"
+                                data-track="click" data-track-action="view table" data-track-label="button"
+                                rel="nofollow" href="/articles/s41597-024-03182-7/tables/1"
+                                aria-label="Full size table 1"><span>Full size table</span><svg width="16" height="16"
+                                    focusable="false" role="img" aria-hidden="true" class="u-icon">
+                                    <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                                        xlink:href="#icon-eds-i-chevron-right-small"></use>
+                                </svg></a></div>
+                    </figure>
+                </div>
+                <h3 class="c-article__sub-heading" id="Sec2">Open-access datasets</h3>
+                <p>The RETOUCH<sup><a data-track="click" data-track-action="reference anchor" data-track-label="link"
+                            data-test="citation-ref" aria-label="Reference 10"
+                            title="Bogunović, H. et al. Retouch: The retinal oct fluid detection and segmentation benchmark and challenge. IEEE transactions on medical imaging 38, 1858–1874 (2019)."
+                            href="/articles/s41597-024-03182-7#ref-CR10"
+                            id="ref-link-section-d201753837e1315">10</a></sup> dataset was sourced from the retinal OCT
+                    fluid challenge of MICCAI 2017. This dataset features 70 OCT volumes labeled for retinal fluid types
+                    — intra-retinal fluid (IRF), sub-retinal fluid (SRF), and pigment epithelial detachment (PED),
+                    related to ME secondary to AMD and RVO. The training data incorporated varying volumes from
+                    different OCT systems (Cirrus, Triton, Spectralis) labeled for different types of fluid manually by
+                    experienced human graders. The B-scans were annotated at the Medical University of Vienna and
+                    Radboud University Medical Center. The RETOUCH dataset is widely utilized in multiple studies
+                    related to retinal fluid classification and segmentation<sup><a data-track="click"
+                            data-track-action="reference anchor" data-track-label="link" data-test="citation-ref"
+                            aria-label="Reference 11"
+                            title="Rasti, R., Biglari, A., Rezapourian, M., Yang, Z. &amp; Farsiu, S. Retifluidnet: A self-adaptive and multi-attention deep convolutional network for retinal oct fluid segmentation. IEEE Transactions on Medical Imaging (2022)."
+                            href="/articles/s41597-024-03182-7#ref-CR11"
+                            id="ref-link-section-d201753837e1319">11</a></sup>.</p>
+                <p>The University of Minnesota (UMN)<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 12"
+                            title="Rashno, A. et al. Fully automated segmentation of fluid/cyst regions in optical coherence tomography images with diabetic macular edema using neutrosophic sets and graph algorithms. IEEE Transactions on Biomedical Engineering 65, 989–1001 (2017)."
+                            href="/articles/s41597-024-03182-7#ref-CR12"
+                            id="ref-link-section-d201753837e1326">12</a></sup> dataset comprises 600 OCT B-scan images
+                    from exudative AMD subjects. Each subject’s data includes approximately 100 B-scans, with the most
+                    significant area containing fluid chosen for exporting. The dataset includes manual annotation of
+                    IRF, SRF, and PED regions, enabling validation of segmentation algorithms. Challenges include a
+                    large number of fluid regions, making segmentation a complex task.</p>
+                <p>The OPTIMA<sup><a data-track="click" data-track-action="reference anchor" data-track-label="link"
+                            data-test="citation-ref" aria-label="Reference 13"
+                            title="Wu, J. et al. Multivendor spectral-domain optical coherence tomography dataset, observer annotation performance evaluation, and standardized evaluation framework for intraretinal cystoid fluid segmentation. Journal of Ophthalmology 2016 (2016)."
+                            href="/articles/s41597-024-03182-7#ref-CR13"
+                            id="ref-link-section-d201753837e1333">13</a></sup> dataset, derived from the MICCAI 2015
+                    cyst segmentation challenge, provides 30 macular volumes collected from different ophthalmic OCT
+                    devices: Cirrus, Spectralis, Topcon, and Nidek. This dataset is primarily used for IRF segmentation
+                    and was annotated by experienced human graders. The dataset was split into training and testing
+                    subsets with the macular scans. The challenge with this dataset is the precise localization of IRF
+                    segmentation areas contained in the volumes obtained from different devices.</p>
+                <p>The Duke<sup><a data-track="click" data-track-action="reference anchor" data-track-label="link"
+                            data-test="citation-ref" aria-label="Reference 14"
+                            title="Chiu, S. J. et al. Kernel regression based segmentation of optical coherence tomography images with diabetic macular edema. Biomedical optics express 6, 1172–1194 (2015)."
+                            href="/articles/s41597-024-03182-7#ref-CR14"
+                            id="ref-link-section-d201753837e1340">14</a></sup> dataset is a public dataset provided by
+                    Duke University, featuring 110 annotated OCT B-scans from patients with severe DME. The scans are
+                    annotated with eight retinal layer boundaries, aiding the training and testing of segmentation
+                    algorithms. Special attention was given to anonymity, enabling public access to the dataset.</p>
+                <p>The healthy controls multiple sclerosis (HCMS)<sup><a data-track="click"
+                            data-track-action="reference anchor" data-track-label="link" data-test="citation-ref"
+                            aria-label="Reference 15"
+                            title="He, Y. et al. Retinal layer parcellation of optical coherence tomography images: Data resource for multiple sclerosis and healthy controls. Data in brief 22, 601–604 (2019)."
+                            href="/articles/s41597-024-03182-7#ref-CR15"
+                            id="ref-link-section-d201753837e1348">15</a></sup> dataset, provided by the Johns Hopkins
+                    University, contains OCT scans of 35 subjects featuring both healthy and multiple sclerosis
+                    subjects. The scans are annotated to limited semantic fluid regions, with additional preprocessing
+                    required to validate segmentation performance.</p>
+                <p>The Kermany<sup><a data-track="click" data-track-action="reference anchor" data-track-label="link"
+                            data-test="citation-ref" aria-label="Reference 9"
+                            title="Kermany, D. S. et al. Identifying medical diagnoses and treatable diseases by image-based deep learning. cell 172, 1122–1131 (2018)."
+                            href="/articles/s41597-024-03182-7#ref-CR9"
+                            id="ref-link-section-d201753837e1355">9</a></sup> dataset, with 207130 OCT B-scan images,
+                    was constructed to categorize conditions including choroidal neovascularization (CNV), DME, drusen,
+                    and normal. Annotations were done by tiered graders, enabling an extensive dataset for retinal fluid
+                    labels in maculopathies.</p>
+                <p>The open-access OCTID<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 16"
+                            title="Gholami, P., Roy, P., Parthasarathy, M. K. &amp; Lakshminarayanan, V. Octid: Optical coherence tomography image database. Computers &amp; Electrical Engineering 81, 106532 (2020)."
+                            href="/articles/s41597-024-03182-7#ref-CR16"
+                            id="ref-link-section-d201753837e1362">16</a></sup> dataset comprises more than 500
+                    high-resolution OCT images categorized across distinct pathological conditions. The dataset
+                    encompasses normal, MH, AMD, Central Serous Retinopathy (CSR), and Diabetic Retinopathy (DR). The
+                    dataset images are from raster scans, with a 2 mm scan length and a resolution of 512 × 1024 pixels.
+                    Moreover, 25 normal OCT images are supplemented with precise delineations for accurate OCT image
+                    segmentation evaluation. The dataset serves as a valuable resource for early diagnosis and
+                    monitoring of retinal diseases.</p>
+                <p>The OCTDL<sup><a data-track="click" data-track-action="reference anchor" data-track-label="link"
+                            data-test="citation-ref" aria-label="Reference 17" title="Kulyabin, M. et al. Octdl: Optical coherence tomography dataset for image-based deep learning methods, Mendeley, 
+                  https://doi.org/10.17632/sncdhf53xc
+                  
+                 (2023)." href="/articles/s41597-024-03182-7#ref-CR17"
+                            id="ref-link-section-d201753837e1369">17</a></sup> dataset, reported here, comprises 2064
+                    images categorized into various diseases and eye conditions. These high-resolution OCT B-scans allow
+                    the visualization of the retinal layers centered on the fovea, the posterior vitreous body, and the
+                    choroidal vessels. This large open-access dataset is provided to aid in the diagnosing and
+                    monitoring of retinal diseases. The dataset was released for research and algorithm development, and
+                    it offers fully labeled images to advance automatic processing and early disease detection. Updates
+                    are planned for ongoing enhancement with additional clinical populations and samples.</p>
+                <h3 class="c-article__sub-heading" id="Sec3">Limited access datasets</h3>
+                <p>Schlegl <i>et al</i>.<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 18"
+                            title="Schlegl, T. et al. Fully automated detection and quantification of macular fluid in oct using deep learning. Ophthalmology 125, 549–558 (2018)."
+                            href="/articles/s41597-024-03182-7#ref-CR18"
+                            id="ref-link-section-d201753837e1384">18</a></sup> dataset contains 1200 OCT B-scan volumes
+                    associated with AMD, DME, and Retinal Vein Occlusions, segmented by two experienced retinal
+                    specialists, to enable quantification of macular fluid in these conditions.</p>
+                <p>Gao <i>et al</i>.<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 19"
+                            title="Gao, K. et al. Double-branched and area-constraint fully convolutional networks for automated serous retinal detachment segmentation in sd-oct images. Computer methods and programs in biomedicine 176, 69–80 (2019)."
+                            href="/articles/s41597-024-03182-7#ref-CR19"
+                            id="ref-link-section-d201753837e1394">19</a></sup> provides 52 B-scan volumes that of
+                    Central Serous Chorioretinopathy (CSC). Their work introduced a deep learning model, double-branched
+                    and area-constraint fully convolutional networks (DA-FCN), which provides substantial high
+                    performance in segmenting subretinal fluid.</p>
+                <p>Lee <i>et al</i>.<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 20"
+                            title="Lee, C. S. et al. Deep-learning based, automated segmentation of macular edema in optical coherence tomography. Biomedical optics express 8, 3440–3448 (2017)."
+                            href="/articles/s41597-024-03182-7#ref-CR20"
+                            id="ref-link-section-d201753837e1404">20</a></sup> dataset features 1289 B-scan images,
+                    which were provided to aid in the automated segmentation of ME using a convolutional neural network
+                    (CNN) to demonstrate high concordance between machine learning and expert human segmentation of the
+                    OCT scans.</p>
+                <p>Rao <i>et al</i>.<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 21"
+                            title="Rao, T. N., Girish, G., Kothari, A. R. &amp; Rajan, J. Deep learning based sub-retinal fluid segmentation in central serous chorioretinopathy optical coherence tomography scans. In 2019 41st Annual International Conference of the IEEE Engineering in Medicine and Biology Society (EMBC), 978–981 (IEEE, 2019)."
+                            href="/articles/s41597-024-03182-7#ref-CR21"
+                            id="ref-link-section-d201753837e1414">21</a></sup> OCT dataset consists of 150 macular
+                    volumes for retinal fluid segmentation that were used to study the effects of signal noise and
+                    motion artifacts in segmenting sub-retinal fluid.</p>
+                <p>Yang <i>et al</i>.<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 22"
+                            title="Yang, J. et al. Rmppnet: residual multiple pyramid pooling network for subretinal fluid segmentation in sd-oct images. OSA Continuum 3, 1751–1769 (2020)."
+                            href="/articles/s41597-024-03182-7#ref-CR22"
+                            id="ref-link-section-d201753837e1425">22</a></sup> dataset has 103 OCT volumes that were
+                    used for the automatic assessment of neurosensory retinal detachment and introduced the residual
+                    multiple pyramid pooling network (RMPPNet) to address segmentation challenges in Spectral Domain OCT
+                    images.</p>
+                <p>Bao <i>et al</i>.<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 23"
+                            title="Bao, D., Cheng, X., Zhu, W., Shi, F. &amp; Chen, X. Attention multi-scale network for pigment epithelial detachment segmentation in oct images. In Medical Imaging 2020: Image Processing, vol. 11313, 793–798 (SPIE, 2020)."
+                            href="/articles/s41597-024-03182-7#ref-CR23"
+                            id="ref-link-section-d201753837e1435">23</a></sup> dataset comprised 240 B-scans for PED
+                    segmentation. The attention multi-scale network (AM-Net) architecture was used to address the uneven
+                    sizes of PED and achieved accurate segmentation in the OCT-B scans.</p>
+                <p>Pawan <i>et al</i>.<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 24"
+                            title="Pawan, S. et al. Capsule network–based architectures for the segmentation of sub-retinal serous fluid in optical coherence tomography images of central serous chorioretinopathy. Medical &amp; Biological Engineering &amp; Computing 59, 1245–1259 (2021)."
+                            href="/articles/s41597-024-03182-7#ref-CR24"
+                            id="ref-link-section-d201753837e1445">24</a></sup> dataset of 25 macular volumes aimed at
+                    segmenting SRF from central serous chorioretinopathy (CSCR) OCT images, and employed an enhanced
+                    SegCaps architecture, termed DRIP-Caps that provided an advanced alternative to existing models in
+                    segmentation of fluid in CSCR.</p>
+                <p>Hu <i>et al</i>.<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 25"
+                            title="Hu, J., Chen, Y. &amp; Yi, Z. Automated segmentation of macular edema in oct using deep neural networks. Medical image analysis 55, 216–227 (2019)."
+                            href="/articles/s41597-024-03182-7#ref-CR25"
+                            id="ref-link-section-d201753837e1455">25</a></sup> dataset comprised 70 training, 15
+                    testing, and 15 cases containing 126 scans each to segment SRF and PED lesions, using deep neural
+                    networks together with Atrous Spatial Pyramid Pooling (ASPP).</p>
+                <p>Venhuizen <i>et al</i>.<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 26"
+                            title="Venhuizen, F. G. et al. Deep learning approach for the detection and quantification of intraretinal cystoid fluid in multivendor optical coherence tomography. Biomedical optics express 9, 1545–1569 (2018)."
+                            href="/articles/s41597-024-03182-7#ref-CR26"
+                            id="ref-link-section-d201753837e1465">26</a></sup> collected 221 OCT volumes (6158 B-scans)
+                    to segment intraretinal cystoid fluid (IRC) using a neural network cascade that significantly
+                    boosted performance by incorporating prior anatomical information.</p>
+            </div>
+        </div>
+    </section>
+    <section data-title="Methods">
+        <div class="c-article-section" id="Sec4-section">
+            <h2 class="c-article-section__title js-section-title js-c-reading-companion-sections-item" id="Sec4">Methods
+            </h2>
+            <div class="c-article-section__content" id="Sec4-content">
+                <p>The B-scan OCT images were acquired using a raster scanning protocol with dynamic scan length and
+                    image resolution and obtained with an Optovue Avanti RTVue XR. Each retinal scan was taken after
+                    centering the scan area over the macular fossa (fovea) and further interpreted and cataloged by an
+                    experienced retinal specialist. Axial and transverse resolutions were 5 <i>μ</i>m and 15 <i>μ</i>m,
+                    respectively. A superluminescent diode (SLD) with a wavelength of 840 nm served as the optical
+                    source. A beam of light directed toward the tissues forms an interference pattern with
+                    back-reflected light from the retina. This occurs due to the interaction of waves reflected from the
+                    tissue surface and waves that have traveled deeper into the tissue. The back-reflected waves travel
+                    back to the beam splitter, where interference occurs. The interference fringes are detected by a
+                    detector that records the phase difference between the back-reflected waves. By measuring the
+                    difference in the time delay of interference fringes as a function of depth in the tissue, a 2D
+                    image of the internal structures of the retina is created. This method produces detailed,
+                    high-resolution images of the eye’s internal structures. Each image pixel’s light intensity
+                    corresponds to the wave reflected from a certain depth. Grey scale images are formed based on
+                    different intensities of reflected light from various retina structures supra- and underlying
+                    tissues. Figure&nbsp;<a data-track="click" data-track-label="link" data-track-action="figure anchor"
+                        href="/articles/s41597-024-03182-7#Fig1">1</a> shows an OCT image of a healthy normal retina of
+                    the fovea with retinal and choroidal structures. In Fig.&nbsp;<a data-track="click"
+                        data-track-label="link" data-track-action="figure anchor"
+                        href="/articles/s41597-024-03182-7#Fig1">1</a>, darker areas (hyporeflective: 2, 8, 9, 16) may
+                    correspond to places where light is absorbed or scattered, and lighter (hyperreflective: 1, 3, 13,
+                    14, 15) areas to places where back reflection occurs. Thus, the grey scale images visualize tissue
+                    structures and layers based on their optical properties and differences in the intensity of light
+                    reflected from different depths.</p>
+                <div class="c-article-section__figure js-c-reading-companion-figures-item" data-test="figure"
+                    data-container-section="figure" id="figure-1" data-title="Fig. 1">
+                    <figure>
+                        <figcaption><b id="Fig1" class="c-article-section__figure-caption"
+                                data-test="figure-caption-text">Fig. 1</b></figcaption>
+                        <div class="c-article-section__figure-content">
+                            <div class="c-article-section__figure-item">
+                                <picture class="c-article-section__figure-picture">
+                                    <source type="image/webp"
+                                        srcset="//media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41597-024-03182-7/MediaObjects/41597_2024_3182_Fig1_HTML.png?as=webp">
+                                    <img aria-describedby="figure-1-desc"
+                                        src="//media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41597-024-03182-7/MediaObjects/41597_2024_3182_Fig1_HTML.png"
+                                        alt="Fig. 1" loading="lazy" width="685" height="279">
+                                </picture>
+                                <div class="c-article-section__figure-link"><a class="c-article__pill-button"
+                                        data-test="article-link" data-track="click" data-track-label="button"
+                                        data-track-action="view figure" href="/articles/s41597-024-03182-7/figures/1"
+                                        data-track-dest="link:Figure1 Full size image"
+                                        aria-label="Full size image figure 1" rel="nofollow"><span>Full size
+                                            image</span><svg width="16" height="16" focusable="false" role="img"
+                                            aria-hidden="true" class="u-icon">
+                                            <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                                                xlink:href="#icon-eds-i-chevron-right-small"></use>
+                                        </svg></a></div>
+                            </div>
+                            <div class="c-article-section__figure-description" data-test="bottom-caption"
+                                id="figure-1-desc">
+                                <p>Structure of the posterior segment of the eye as visualized with OCT B-scan and
+                                    labelled accordingly from inner to outer retina. 1 - Posterior Hyaloid Membrane; 2 -
+                                    preretinal space; 3 - retinal nerve fiber layer and inner limiting membrane; 4 -
+                                    ganglion cell layer; 5 - inner plexiform layer; 6 - inner nuclear layer; 7 - outer
+                                    plexiform layer; 8 - outer nuclear layer; 9 - Henle’s nerve fiber layer; 10 -
+                                    external limiting membrane; 11 - myoid zone of the photoreceptors; 12 - ellipsoid
+                                    zone of the photoreceptors; 13 - outer segments of the photoreceptors; 14 -
+                                    interdigitation zone of the photoreceptors; 15 - retinal pigment epithelium and
+                                    Bruch’s membrane; 16 - choriocapillarises.</p>
+                            </div>
+                        </div>
+                    </figure>
+                </div>
+                <p>The dataset labeling procedure for this study was performed in several steps:</p>
+                <ul class="u-list-style-bullet">
+                    <li>
+                        <p>Assigning a group of 7 medical students for initial image labeling. Each student was trained
+                            in retinal pathology detection. Students performed independent labeling of an entire
+                            dataset. Where disagreement occurred, a discussion on the differences in their labels was
+                            undertaken until consensus agreement on each case. Patients with ambiguous diagnoses were
+                            screened out for further peer review.</p>
+                    </li>
+                    <li>
+                        <p>Two experienced clinical specialists (A.S. and A.K.) then performed independent labeling with
+                            any disagreements resolved through consensus agreement for each case.</p>
+                    </li>
+                    <li>
+                        <p>The head of the clinic experts (A.N.) confirmed the final diagnosis for all patients.</p>
+                    </li>
+                </ul>
+                <p>Students performed labeling on at most 100 images per session and experienced experts on at most 200
+                    images per session. Sessions were limited to one per day to prevent fatigue and to sustain
+                    concentration.</p>
+                <p>In this section, we provide a brief description of each of the disease groups.</p>
+                <h3 class="c-article__sub-heading" id="Sec5">Age-related macular degeneration</h3>
+                <p>AMD is an acquired retinal degeneration that causes significant central vision impairment resulting
+                    from a combination of non-neovascular drusiform and abnormalities of the retinal pigment epithelium
+                    (RPE) and neovascular abnormalities (neovascular choroidal membrane formation). Disease progression
+                    may include focal areas of RPE loss, subretinal (sub-RPE) hemorrhages or serous fluid, and
+                    subretinal fibrosis<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 27"
+                            title="Pandit, S. A. et al. Real-world outcomes of faricimab in patients with previously treated neovascular age-related macular degeneration. Ophthalmology Retina (2023)."
+                            href="/articles/s41597-024-03182-7#ref-CR27"
+                            id="ref-link-section-d201753837e1544">27</a></sup>. Clinically, these late changes manifest
+                    with loss of central vision, ranging from low vision to blindness<sup><a data-track="click"
+                            data-track-action="reference anchor" data-track-label="link" data-test="citation-ref"
+                            aria-label="Reference 28"
+                            title="Thomas, C. J., Mirza, R. G. &amp; Gill, M. K. Age-related macular degeneration. Medical Clinics 105, 473–491 (2021)."
+                            href="/articles/s41597-024-03182-7#ref-CR28"
+                            id="ref-link-section-d201753837e1548">28</a></sup>.</p>
+                <p>AMD is defined by specific changes in the macular, particularly the deposition of focal yellow
+                    extracellular deposits known as drusen, Fig.&nbsp;<a data-track="click" data-track-label="link"
+                        data-track-action="figure anchor" href="/articles/s41597-024-03182-7#Fig2">2a</a>. On OCT,
+                    drusen appear as rounded mounds in the space between Bruch’s membrane and the basolateral membrane
+                    of the RPE and have a homogeneous reflectivity. Drusen are indicators of RPE stress and may be
+                    monitored for changes periodically by a medical retinal specialist<sup><a data-track="click"
+                            data-track-action="reference anchor" data-track-label="link" data-test="citation-ref"
+                            aria-label="Reference 29"
+                            title="Han, X. et al. A systematic review of clinical practice guidelines for age-related macular degeneration. Ophthalmic Epidemiology 30, 213–220 (2023)."
+                            href="/articles/s41597-024-03182-7#ref-CR29"
+                            id="ref-link-section-d201753837e1558">29</a></sup>.</p>
+                <div class="c-article-section__figure js-c-reading-companion-figures-item" data-test="figure"
+                    data-container-section="figure" id="figure-2" data-title="Fig. 2">
+                    <figure>
+                        <figcaption><b id="Fig2" class="c-article-section__figure-caption"
+                                data-test="figure-caption-text">Fig. 2</b></figcaption>
+                        <div class="c-article-section__figure-content">
+                            <div class="c-article-section__figure-item">
+                                <picture class="c-article-section__figure-picture">
+                                    <source type="image/webp"
+                                        srcset="//media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41597-024-03182-7/MediaObjects/41597_2024_3182_Fig2_HTML.png?as=webp">
+                                    <img aria-describedby="figure-2-desc"
+                                        src="//media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41597-024-03182-7/MediaObjects/41597_2024_3182_Fig2_HTML.png"
+                                        alt="Fig. 2" loading="lazy" width="685" height="155">
+                                </picture>
+                                <div class="c-article-section__figure-link"><a class="c-article__pill-button"
+                                        data-test="article-link" data-track="click" data-track-label="button"
+                                        data-track-action="view figure" href="/articles/s41597-024-03182-7/figures/2"
+                                        data-track-dest="link:Figure2 Full size image"
+                                        aria-label="Full size image figure 2" rel="nofollow"><span>Full size
+                                            image</span><svg width="16" height="16" focusable="false" role="img"
+                                            aria-hidden="true" class="u-icon">
+                                            <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                                                xlink:href="#icon-eds-i-chevron-right-small"></use>
+                                        </svg></a></div>
+                            </div>
+                            <div class="c-article-section__figure-description" data-test="bottom-caption"
+                                id="figure-2-desc">
+                                <p>Age-related Macular Degeneration (AMD). Initial stage (<b>a</b>) with an arrow
+                                    indicating a solitary hard drusen deposit on Bruch’s membrane below the basolateral
+                                    membrane of the retinal pigment epithelium; Intermediate stage (<b>b</b>) with
+                                    medium-sized cuticular drusen which gives a ribbon-like or saw-tooth pattern of
+                                    hyperreflectivity on OCT indicated by the arrow; Intermediate stage (<b>c</b>) with
+                                    drusenoid detachment of retinal pigment epithelium with hyporeflective subretinal
+                                    space filled with fluid and the retinal pigment epithelium detached from Bruch’s
+                                    membrane.</p>
+                            </div>
+                        </div>
+                    </figure>
+                </div>
+                <p>As the disease progresses, the number of drusen becomes more extensive, and they tend to fuse and
+                    enlarge, becoming confluent. Cuticular drusen<sup><a data-track="click"
+                            data-track-action="reference anchor" data-track-label="link" data-test="citation-ref"
+                            aria-label="Reference 30"
+                            title="Fragiotta, S., Fernández-Avellaneda, P., Breazzano, M. P. &amp; Scuderi, G. Clinical manifestations of cuticular drusen: current perspectives. Clinical Ophthalmology 3877–3887 (2021)."
+                            href="/articles/s41597-024-03182-7#ref-CR30"
+                            id="ref-link-section-d201753837e1592">30</a></sup> are drusen that cluster at the macular
+                    region and have a characteristic saw tooth and double layer appearance on OCT, Fig.&nbsp;<a
+                        data-track="click" data-track-label="link" data-track-action="figure anchor"
+                        href="/articles/s41597-024-03182-7#Fig2">2b</a>. One possible complication is drusenoid retinal
+                    pigment epithelium<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 31"
+                            title="Shijo, T. et al. Incidence and risk of advanced age-related macular degeneration in eyes with drusenoid pigment epithelial detachment. Scientific Reports 12, 4715 (2022)."
+                            href="/articles/s41597-024-03182-7#ref-CR31"
+                            id="ref-link-section-d201753837e1599">31</a></sup>, Fig.&nbsp;<a data-track="click"
+                        data-track-label="link" data-track-action="figure anchor"
+                        href="/articles/s41597-024-03182-7#Fig2">2c</a>. Both conditions do not indicate starting
+                    treatment but require more frequent reviews and may require additional diagnostic methods to exclude
+                    the presence of any neovascularization in the choroid or sub-retinal space such as angiography.</p>
+                <p>Figure&nbsp;<a data-track="click" data-track-label="link" data-track-action="figure anchor"
+                        href="/articles/s41597-024-03182-7#Fig3">3</a> shows examples of AMD: the retinal profile is
+                    deformed, and the normal foveal architecture is disrupted. In Fig.&nbsp;<a data-track="click"
+                        data-track-label="link" data-track-action="figure anchor"
+                        href="/articles/s41597-024-03182-7#Fig3">3a</a> the inner retinal layers are thinned and contain
+                    outer retinal tubulations or cystic spaces, highlighted with number 1. Subfoveolarly, a
+                    hyporeflective region is visible beneath the RPE - in Fig.&nbsp;<a data-track="click"
+                        data-track-label="link" data-track-action="figure anchor"
+                        href="/articles/s41597-024-03182-7#Fig3">3a</a> highlighted with number 2. Hyperreflective
+                    coloration of the choriocapilaris below the RPE layer atrophy is apparent. Local and diffuse
+                    decreases in the thickness of the choriocapillaris layer. Figure&nbsp;<a data-track="click"
+                        data-track-label="link" data-track-action="figure anchor"
+                        href="/articles/s41597-024-03182-7#Fig3">3b</a> shows different fluid-filled spaces in the
+                    macular that may accompany the clinical features of AMD:</p>
+                <ul class="u-list-style-bullet">
+                    <li>
+                        <p>Subretinal fluid - space between the RPE and the neurosensory retina, in Fig.&nbsp;<a
+                                data-track="click" data-track-label="link" data-track-action="figure anchor"
+                                href="/articles/s41597-024-03182-7#Fig3">3b</a> is shown with number 1.</p>
+                    </li>
+                    <li>
+                        <p>Intraretinal fluid, a kind of hyperreflective cyst - a cyst in the inner retina, but the
+                            content differs in reflectivity - with a granular appearance indicating the presence of more
+                            reflective elements that may be cellular debris or protein that has leaked into the space,
+                            in Fig.&nbsp;<a data-track="click" data-track-label="link" data-track-action="figure anchor"
+                                href="/articles/s41597-024-03182-7#Fig3">3b</a> is shown with number 2.</p>
+                    </li>
+                    <li>
+                        <p>Sub-retinal pigment epithelial fluid - a hyporeflective space between Bruch’s membrane and
+                            the basolateral membrane of the RPE in Fig.&nbsp;<a data-track="click"
+                                data-track-label="link" data-track-action="figure anchor"
+                                href="/articles/s41597-024-03182-7#Fig3">3b</a> is shown with number 3. This may be due
+                            to the breakdown of fluid regulation by the ion channels of the RPE<sup><a
+                                    data-track="click" data-track-action="reference anchor" data-track-label="link"
+                                    data-test="citation-ref" aria-label="Reference 32"
+                                    title="Wimmers, S., Karl, M. O. &amp; Strauss, O. Ion channels in the rpe. Progress in retinal and eye research 26, 263–301 (2007)."
+                                    href="/articles/s41597-024-03182-7#ref-CR32"
+                                    id="ref-link-section-d201753837e1648">32</a></sup>.</p>
+                    </li>
+                </ul>
+                <div class="c-article-section__figure js-c-reading-companion-figures-item" data-test="figure"
+                    data-container-section="figure" id="figure-3" data-title="Fig. 3">
+                    <figure>
+                        <figcaption><b id="Fig3" class="c-article-section__figure-caption"
+                                data-test="figure-caption-text">Fig. 3</b></figcaption>
+                        <div class="c-article-section__figure-content">
+                            <div class="c-article-section__figure-item">
+                                <picture class="c-article-section__figure-picture">
+                                    <source type="image/webp"
+                                        srcset="//media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41597-024-03182-7/MediaObjects/41597_2024_3182_Fig3_HTML.png?as=webp">
+                                    <img aria-describedby="figure-3-desc"
+                                        src="//media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41597-024-03182-7/MediaObjects/41597_2024_3182_Fig3_HTML.png"
+                                        alt="Fig. 3" loading="lazy" width="685" height="159">
+                                </picture>
+                                <div class="c-article-section__figure-link"><a class="c-article__pill-button"
+                                        data-test="article-link" data-track="click" data-track-label="button"
+                                        data-track-action="view figure" href="/articles/s41597-024-03182-7/figures/3"
+                                        data-track-dest="link:Figure3 Full size image"
+                                        aria-label="Full size image figure 3" rel="nofollow"><span>Full size
+                                            image</span><svg width="16" height="16" focusable="false" role="img"
+                                            aria-hidden="true" class="u-icon">
+                                            <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                                                xlink:href="#icon-eds-i-chevron-right-small"></use>
+                                        </svg></a></div>
+                            </div>
+                            <div class="c-article-section__figure-description" data-test="bottom-caption"
+                                id="figure-3-desc">
+                                <p>Age-related Macular Degeneration (AMD). Markers (<b>a</b>): 1 - outer retinal
+                                    tubulation or cystic spaces; 2 - Subretinal fibrosis causing distortion of the
+                                    macular and hyporeflectivity of the underlying choroid. Types of fluid (<b>b</b>): 1
+                                    - subretinal fluid; 2 - intraretinal fluid; 3 - sub-retinal pigment epithelial fluid
+                                    accumulation.</p>
+                            </div>
+                        </div>
+                    </figure>
+                </div>
+                <h3 class="c-article__sub-heading" id="Sec6">Diabetic macular edema</h3>
+                <p>DME is the most common cause of vision loss in patients with diabetic retinopathy, with an increasing
+                    prevalence associated with the global epidemic of type 2 diabetes mellitus<sup><a data-track="click"
+                            data-track-action="reference anchor" data-track-label="link" data-test="citation-ref"
+                            aria-label="Reference 33"
+                            title="Browning, D. J., Stewart, M. W. &amp; Lee, C. Diabetic macular edema: evidence-based management. Indian journal of ophthalmology 66, 1736 (2018)."
+                            href="/articles/s41597-024-03182-7#ref-CR33" id="ref-link-section-d201753837e1686">33</a>,<a
+                            data-track="click" data-track-action="reference anchor" data-track-label="link"
+                            data-test="citation-ref" aria-label="Reference 34"
+                            title="Huang, H., Jansonius, N. M., Chen, H. &amp; Los, L. I. Hyperreflective dots on oct as a predictor of treatment outcome in diabetic macular edema: a systematic review. Ophthalmology Retina 6, 814–827 (2022)."
+                            href="/articles/s41597-024-03182-7#ref-CR34"
+                            id="ref-link-section-d201753837e1689">34</a></sup>.</p>
+                <ul class="u-list-style-bullet">
+                    <li>
+                        <p>Hard exudates (HE) are defined as deposits of hyperreflective material replacing retinal
+                            tissue without increasing the underlying retinal thickness, and are considered an
+                            unfavorable sign representing the break down of the inner blood-retinal barrier with the
+                            potential to reduce visual acuity - in Fig.&nbsp;<a data-track="click"
+                                data-track-label="link" data-track-action="figure anchor"
+                                href="/articles/s41597-024-03182-7#Fig4">4a</a> is shown with number 1.</p>
+                        <div class="c-article-section__figure js-c-reading-companion-figures-item" data-test="figure"
+                            data-container-section="figure" id="figure-4" data-title="Fig. 4">
+                            <figure>
+                                <figcaption><b id="Fig4" class="c-article-section__figure-caption"
+                                        data-test="figure-caption-text">Fig. 4</b></figcaption>
+                                <div class="c-article-section__figure-content">
+                                    <div class="c-article-section__figure-item">
+                                        <picture class="c-article-section__figure-picture">
+                                            <source type="image/webp"
+                                                srcset="//media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41597-024-03182-7/MediaObjects/41597_2024_3182_Fig4_HTML.png?as=webp">
+                                            <img aria-describedby="figure-4-desc"
+                                                src="//media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41597-024-03182-7/MediaObjects/41597_2024_3182_Fig4_HTML.png"
+                                                alt="Fig. 4" loading="lazy" width="685" height="163">
+                                        </picture>
+                                        <div class="c-article-section__figure-link"><a class="c-article__pill-button"
+                                                data-test="article-link" data-track="click" data-track-label="button"
+                                                data-track-action="view figure"
+                                                href="/articles/s41597-024-03182-7/figures/4"
+                                                data-track-dest="link:Figure4 Full size image"
+                                                aria-label="Full size image figure 4" rel="nofollow"><span>Full size
+                                                    image</span><svg width="16" height="16" focusable="false" role="img"
+                                                    aria-hidden="true" class="u-icon">
+                                                    <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                                                        xlink:href="#icon-eds-i-chevron-right-small"></use>
+                                                </svg></a></div>
+                                    </div>
+                                    <div class="c-article-section__figure-description" data-test="bottom-caption"
+                                        id="figure-4-desc">
+                                        <p>(<b>a</b>) Signs of Diabetic Macular Edema (DME): 1 - Hard exudates (HE), 2 -
+                                            Intraretinal fluid (IRF), 3 - Hyperreflective foci; (<b>b</b>)
+                                            Disorganization of retinal inner layers (DRIL).</p>
+                                    </div>
+                                </div>
+                            </figure>
+                        </div>
+                    </li>
+                    <li>
+                        <p>Intraretinal fluid (IRF) appears as heterogeneous sized cavities with hyporeflective content
+                            due to their fluid content; slight retinal thickening may indicate initial changes of fluid
+                            accumulation with focal retinal edema that may precede the appearance of multiple cystic
+                            spaces - in Fig.&nbsp;<a data-track="click" data-track-label="link"
+                                data-track-action="figure anchor" href="/articles/s41597-024-03182-7#Fig4">4a</a> is
+                            shown with number 2.</p>
+                    </li>
+                </ul>
+                <p>Disorganization of retinal inner layers (DRIL) is an OCT biomarker for retinal integrity, and
+                    indicates a loss of the retinal layer boundaries of the inner retinal layers - in Fig.&nbsp;<a
+                        data-track="click" data-track-label="link" data-track-action="figure anchor"
+                        href="/articles/s41597-024-03182-7#Fig4">4b</a>, DRIL is indicated by number 1. DRIL occurs in
+                    patients with various retinal vascular diseases with prolonged presence of intraretinal fluid, such
+                    as DME, or following a vascular occlusion, such as RVO. The degree of DRIL indicates the severity of
+                    the disease and correlates with the patient’s visual acuity prognosis. DRIL may persist even after
+                    the resolution of edema following treatment or in advanced stages of the disease<sup><a
+                            data-track="click" data-track-action="reference anchor" data-track-label="link"
+                            data-test="citation-ref" aria-label="Reference 35"
+                            title="Suciu, C.-I. et al. Optical coherence tomography (angiography) biomarkers in the assessment and monitoring of diabetic macular edema. Journal of Diabetes Research 2020 (2020)."
+                            href="/articles/s41597-024-03182-7#ref-CR35"
+                            id="ref-link-section-d201753837e1743">35</a></sup>.</p>
+                <h3 class="c-article__sub-heading" id="Sec7">Retinal vein occlusion</h3>
+                <p>Secondary ME is the leading cause of visual loss in patients with central retinal vein occlusion
+                    (CRVO). OCT is the critical imaging modality to diagnose and formulate a treatment plan for cystic
+                    macular edema (CME) of this etiology. In contrast to DME, the ME secondary to a branch or CRVO is
+                    generally cystic and localized to the inner retina following leakage from engorged veins,
+                    Fig.&nbsp;<a data-track="click" data-track-label="link" data-track-action="figure anchor"
+                        href="/articles/s41597-024-03182-7#Fig5">5a</a>. OCT scans also show a higher level of
+                    hyperreflectivity of the inner retina due to ischemia. The long-term prognosis of vein occlusion
+                    will depend on the degree of ischaemic damage to the retinal tissue and the structural damage to the
+                    neural pathways after fluid resorption. The presence and severity of any DRIL is an indicator of
+                    likely visual prognosis<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 36"
+                            title="Ciulla, T. A. et al. Anatomic biomarkers of macular edema associated with retinal vein occlusion. Ophthalmology Retina 6, 1206–1220 (2022)."
+                            href="/articles/s41597-024-03182-7#ref-CR36" id="ref-link-section-d201753837e1758">36</a>,<a
+                            data-track="click" data-track-action="reference anchor" data-track-label="link"
+                            data-test="citation-ref" aria-label="Reference 37"
+                            title="Sen, P. et al. Predictors of visual acuity outcomes after anti–vascular endothelial growth factor treatment for macular edema secondary to central retinal vein occlusion. Ophthalmology Retina 5, 1115–1124 (2021)."
+                            href="/articles/s41597-024-03182-7#ref-CR37"
+                            id="ref-link-section-d201753837e1761">37</a></sup>.</p>
+                <div class="c-article-section__figure js-c-reading-companion-figures-item" data-test="figure"
+                    data-container-section="figure" id="figure-5" data-title="Fig. 5">
+                    <figure>
+                        <figcaption><b id="Fig5" class="c-article-section__figure-caption"
+                                data-test="figure-caption-text">Fig. 5</b></figcaption>
+                        <div class="c-article-section__figure-content">
+                            <div class="c-article-section__figure-item">
+                                <picture class="c-article-section__figure-picture">
+                                    <source type="image/webp"
+                                        srcset="//media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41597-024-03182-7/MediaObjects/41597_2024_3182_Fig5_HTML.png?as=webp">
+                                    <img aria-describedby="figure-5-desc"
+                                        src="//media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41597-024-03182-7/MediaObjects/41597_2024_3182_Fig5_HTML.png"
+                                        alt="Fig. 5" loading="lazy" width="685" height="163">
+                                </picture>
+                                <div class="c-article-section__figure-link"><a class="c-article__pill-button"
+                                        data-test="article-link" data-track="click" data-track-label="button"
+                                        data-track-action="view figure" href="/articles/s41597-024-03182-7/figures/5"
+                                        data-track-dest="link:Figure5 Full size image"
+                                        aria-label="Full size image figure 5" rel="nofollow"><span>Full size
+                                            image</span><svg width="16" height="16" focusable="false" role="img"
+                                            aria-hidden="true" class="u-icon">
+                                            <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                                                xlink:href="#icon-eds-i-chevron-right-small"></use>
+                                        </svg></a></div>
+                            </div>
+                            <div class="c-article-section__figure-description" data-test="bottom-caption"
+                                id="figure-5-desc">
+                                <p>Retinal Vein Occlusion (RVO). Cystic macular edema in central retinal vein
+                                    thrombosis. (<b>a</b>): 1 - Intraretinal fluid (IRF), 2 - hyperreflectivity of the
+                                    inner retinal layers; Signs of Retinal Artery Occlusion (RAO) (<b>a</b>): 1 -
+                                    Increased hyperreflectivity of the inner retina following ischemia, 2 - prominent
+                                    middle limiting membrane (p-MLM).</p>
+                            </div>
+                        </div>
+                    </figure>
+                </div>
+                <h3 class="c-article__sub-heading" id="Sec8">Retinal artery occlusion</h3>
+                <p>Occlusion of the central retinal artery (CRAO) and its branches (BRAO) leads to the formation of
+                    acute tissue ischemia, giving a specific OCT picture - pronounced hyperreflectivity, with loss of
+                    homogeneity, and edema of the inner parts of the retina containing the ganglion cells, Fig.&nbsp;<a
+                        data-track="click" data-track-label="link" data-track-action="figure anchor"
+                        href="/articles/s41597-024-03182-7#Fig5">5b</a>. A further biomarker of acute ischemia is a
+                    prominent middle limiting membrane (p-MLM) - a hyperreflective line or band located in the inner
+                    part of the outer plexiform layer at the border with the outer nuclear layer. It is not ordinarily
+                    visible, which appears in the early period of the pathological damage and is due to opacification of
+                    the middle retinal layers<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 38"
+                            title="Mangla, R. et al. Retinal oct findings in acute central retinal artery occlusion of varying severity at different disease stages–a retrospective, observational study. International Journal of Retina and Vitreous 9, 1–10 (2023)."
+                            href="/articles/s41597-024-03182-7#ref-CR38"
+                            id="ref-link-section-d201753837e1800">38</a></sup>.</p>
+                <h3 class="c-article__sub-heading" id="Sec9">Vitreomacular interface disease</h3>
+                <p>VID is a term used to describe a group of diseases resulting from the pathologic course of the normal
+                    age-associated process of a posterior vitreous detachment. Usually, the process is completed without
+                    retinal deformation. However, vitreo-retinal traction occurs in cases of adhesion between the retina
+                    and vitreous body, which can lead to macular tears, cysts, or holes developing<sup><a
+                            data-track="click" data-track-action="reference anchor" data-track-label="link"
+                            data-test="citation-ref" aria-label="Reference 39"
+                            title="Duker, J. S. et al. The international vitreomacular traction study group classification of vitreomacular adhesion, traction, and macular hole. Ophthalmology 120, 2611–2619 (2013)."
+                            href="/articles/s41597-024-03182-7#ref-CR39"
+                            id="ref-link-section-d201753837e1812">39</a></sup>.</p>
+                <ul class="u-list-style-bullet">
+                    <li>
+                        <p>When pathologic adhesion of the posterior hyaloid to the retinal interface forms, progressive
+                            posterior vitreous detachment causes axial traction of the inner limiting membrane, formed
+                            by Müller cell end feet that deforms the retinal tissue, Fig.&nbsp;<a data-track="click"
+                                data-track-label="link" data-track-action="figure anchor"
+                                href="/articles/s41597-024-03182-7#Fig6">6a</a>.</p>
+                        <div class="c-article-section__figure js-c-reading-companion-figures-item" data-test="figure"
+                            data-container-section="figure" id="figure-6" data-title="Fig. 6">
+                            <figure>
+                                <figcaption><b id="Fig6" class="c-article-section__figure-caption"
+                                        data-test="figure-caption-text">Fig. 6</b></figcaption>
+                                <div class="c-article-section__figure-content">
+                                    <div class="c-article-section__figure-item">
+                                        <picture class="c-article-section__figure-picture">
+                                            <source type="image/webp"
+                                                srcset="//media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41597-024-03182-7/MediaObjects/41597_2024_3182_Fig6_HTML.png?as=webp">
+                                            <img aria-describedby="figure-6-desc"
+                                                src="//media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41597-024-03182-7/MediaObjects/41597_2024_3182_Fig6_HTML.png"
+                                                alt="Fig. 6" loading="lazy" width="685" height="153">
+                                        </picture>
+                                        <div class="c-article-section__figure-link"><a class="c-article__pill-button"
+                                                data-test="article-link" data-track="click" data-track-label="button"
+                                                data-track-action="view figure"
+                                                href="/articles/s41597-024-03182-7/figures/6"
+                                                data-track-dest="link:Figure6 Full size image"
+                                                aria-label="Full size image figure 6" rel="nofollow"><span>Full size
+                                                    image</span><svg width="16" height="16" focusable="false" role="img"
+                                                    aria-hidden="true" class="u-icon">
+                                                    <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                                                        xlink:href="#icon-eds-i-chevron-right-small"></use>
+                                                </svg></a></div>
+                                    </div>
+                                    <div class="c-article-section__figure-description" data-test="bottom-caption"
+                                        id="figure-6-desc">
+                                        <p>Vitreomacular Interface Disease (VID). Vitreomacular traction syndrome
+                                            (<b>a</b>): 1 - Posterior hyaloid membrane, 2 - Vitreomacular adhesion zone,
+                                            3 - Emerging neurosensory retinal defect; Retinal interface disorder
+                                            (<b>b</b>): 1 - intraretinal fluid (IRF), 2 - Edges of the tear, 3 -
+                                            detached posterior hyaloid membrane; Lamellar tear (<b>c</b>).</p>
+                                    </div>
+                                </div>
+                            </figure>
+                        </div>
+                    </li>
+                    <li>
+                        <p>Macular retinal hole is a complete defect in the inner layers of the retina that extends to
+                            the RPE, Fig.&nbsp;<a data-track="click" data-track-label="link"
+                                data-track-action="figure anchor" href="/articles/s41597-024-03182-7#Fig6">6b</a>. IRF
+                            appears as different-sized cavities with hyporeflective contents. In macular retinal tears,
+                            the intraretinal fluid is contained within the borders of the tear<sup><a data-track="click"
+                                    data-track-action="reference anchor" data-track-label="link"
+                                    data-test="citation-ref" aria-label="Reference 40"
+                                    title="Rossi, T. et al. Macular hole closure patterns: an updated classification. Graefe’s Archive for Clinical and Experimental Ophthalmology 258, 2629–2638 (2020)."
+                                    href="/articles/s41597-024-03182-7#ref-CR40"
+                                    id="ref-link-section-d201753837e1861">40</a></sup>.</p>
+                    </li>
+                    <li>
+                        <p>One of the variants of MH with preservation of the integrity of the photoreceptor layer is a
+                            lamellar tear of the neurosensory retina, Fig.&nbsp;<a data-track="click"
+                                data-track-label="link" data-track-action="figure anchor"
+                                href="/articles/s41597-024-03182-7#Fig6">6c</a>. The condition is often asymptomatic and
+                            requires no treatment, but regular monitoring by a medical retina specialist is advised.</p>
+                    </li>
+                </ul>
+                <h4 class="c-article__sub-heading c-article__sub-heading--small" id="Sec10">Epiretinal membrane</h4>
+                <p>ERM can develop idiopathically, secondary to intraocular surgery or inflammation, and are
+                    characterized by the proliferation of glial tissue on the retina’s inner surface in the macular
+                    area, Fig.&nbsp;<a data-track="click" data-track-label="link" data-track-action="figure anchor"
+                        href="/articles/s41597-024-03182-7#Fig7">7</a>. The Pathologic connective tissue overgrowth
+                    results in epiretinal fibrosis (fibrosis of the inner border membrane, epiretinal membrane).
+                    Clinically, the disease is characterized by thickening and wrinkling of the inner limiting membrane,
+                    sometimes called cellophane retinopathy, because of its appearance on fundus examination<sup><a
+                            data-track="click" data-track-action="reference anchor" data-track-label="link"
+                            data-test="citation-ref" aria-label="Reference 41"
+                            title="Alkabes, M. et al. Correlation between new oct parameters and metamorphopsia in advanced stages of epiretinal membranes. Acta Ophthalmologica 98, 780–786 (2020)."
+                            href="/articles/s41597-024-03182-7#ref-CR41"
+                            id="ref-link-section-d201753837e1886">41</a></sup>.</p>
+                <div class="c-article-section__figure js-c-reading-companion-figures-item" data-test="figure"
+                    data-container-section="figure" id="figure-7" data-title="Fig. 7">
+                    <figure>
+                        <figcaption><b id="Fig7" class="c-article-section__figure-caption"
+                                data-test="figure-caption-text">Fig. 7</b></figcaption>
+                        <div class="c-article-section__figure-content">
+                            <div class="c-article-section__figure-item">
+                                <picture class="c-article-section__figure-picture">
+                                    <source type="image/webp"
+                                        srcset="//media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41597-024-03182-7/MediaObjects/41597_2024_3182_Fig7_HTML.png?as=webp">
+                                    <img aria-describedby="figure-7-desc"
+                                        src="//media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41597-024-03182-7/MediaObjects/41597_2024_3182_Fig7_HTML.png"
+                                        alt="Fig. 7" loading="lazy" width="685" height="161">
+                                </picture>
+                                <div class="c-article-section__figure-link"><a class="c-article__pill-button"
+                                        data-test="article-link" data-track="click" data-track-label="button"
+                                        data-track-action="view figure" href="/articles/s41597-024-03182-7/figures/7"
+                                        data-track-dest="link:Figure7 Full size image"
+                                        aria-label="Full size image figure 7" rel="nofollow"><span>Full size
+                                            image</span><svg width="16" height="16" focusable="false" role="img"
+                                            aria-hidden="true" class="u-icon">
+                                            <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                                                xlink:href="#icon-eds-i-chevron-right-small"></use>
+                                        </svg></a></div>
+                            </div>
+                            <div class="c-article-section__figure-description" data-test="bottom-caption"
+                                id="figure-7-desc">
+                                <p>VID by the epiretinal membrane (<b>a</b>); ERM with foveola deformity and Ectopia
+                                    (<b>b</b>): 1 - ERM, 2 - Ectopia.</p>
+                            </div>
+                        </div>
+                    </figure>
+                </div>
+                <p>In ERM maturation, the vireo-retinal traction can deform the retina, reducing visual acuity, cause
+                    metamorphopsia, and can lead to macular tears and holes. In such cases, there is an irreversible
+                    loss of visual function without timely surgical intervention requiring an ERM peel<sup><a
+                            data-track="click" data-track-action="reference anchor" data-track-label="link"
+                            data-test="citation-ref" aria-label="Reference 42"
+                            title="Chua, P. Y., Sandinha, M. T. &amp; Steel, D. H. Idiopathic epiretinal membrane: progression and timing of surgery. Eye 36, 495–503 (2022)."
+                            href="/articles/s41597-024-03182-7#ref-CR42"
+                            id="ref-link-section-d201753837e1917">42</a></sup>.</p>
+                <p>The study was approved by the ethics committee of Ural Federal University Named after the First
+                    President of Russia B. N. Yeltsin (Conclusion No. 1, dated 1 February 2023). Informed written
+                    consent was obtained from all subjects involved in the study.</p>
+            </div>
+        </div>
+    </section>
+    <section data-title="Data Records">
+        <div class="c-article-section" id="Sec11-section">
+            <h2 class="c-article-section__title js-section-title js-c-reading-companion-sections-item" id="Sec11">Data
+                Records</h2>
+            <div class="c-article-section__content" id="Sec11-content">
+                <p>The OCTDL dataset is available at Mendeley<sup><a data-track="click"
+                            data-track-action="reference anchor" data-track-label="link" data-test="citation-ref"
+                            aria-label="Reference 17" title="Kulyabin, M. et al. Octdl: Optical coherence tomography dataset for image-based deep learning methods, Mendeley, 
+                  https://doi.org/10.17632/sncdhf53xc
+                  
+                 (2023)." href="/articles/s41597-024-03182-7#ref-CR17"
+                            id="ref-link-section-d201753837e1934">17</a></sup>. The final release contains 2064 images
+                    of 821 patients. All images are stored in JPG format in separate folders corresponding to the
+                    disease labels. Each file’s name consists of disease label, ID of the patient, and the sequence
+                    number. Thus, the file path looks like ‘<span
+                        class="u-monospace">/OCTDL/[label]/[label]_[patient_id]_[n].jpg</span>’. An additional file,
+                    ‘<span class="u-monospace">OCTDL_labels.csv</span>’ consists of the following columns: ‘<span
+                        class="u-monospace">file_name</span>’, ‘<span class="u-monospace">disease</span>’, ‘<span
+                        class="u-monospace">subcategory</span>’, ‘<span class="u-monospace">condition</span>’, ‘<span
+                        class="u-monospace">patient_id</span>’, ‘<span class="u-monospace">eye</span>’, ‘<span
+                        class="u-monospace">sex</span>’, ‘<span class="u-monospace">year</span>’, ‘<span
+                        class="u-monospace">image_width</span>’, and ‘<span class="u-monospace">image_height</span>’.
+                    Table&nbsp;<a data-track="click" data-track-label="link" data-track-action="table anchor"
+                        href="/articles/s41597-024-03182-7#Tab2">2</a> shows the distribution of images in the dataset.
+                    Data was collected from patients aged 20 to 93 years, with a male-to-female ratio of 3:2 and a mean
+                    age of 63 years, in Yekaterinburg, Russia. Data on age, sex, and eye (right (OD) or left (OS)) are
+                    given for the images for which this information was available for publication.</p>
+                <div class="c-article-table" data-test="inline-table" data-container-section="table" id="table-2">
+                    <figure>
+                        <figcaption class="c-article-table__figcaption"><b id="Tab2" data-test="table-caption">Table 2
+                                Dataset distribution by a corresponding disease.</b></figcaption>
+                        <div class="u-text-right u-hide-print"><a class="c-article__pill-button" data-test="table-link"
+                                data-track="click" data-track-action="view table" data-track-label="button"
+                                rel="nofollow" href="/articles/s41597-024-03182-7/tables/2"
+                                aria-label="Full size table 2"><span>Full size table</span><svg width="16" height="16"
+                                    focusable="false" role="img" aria-hidden="true" class="u-icon">
+                                    <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                                        xlink:href="#icon-eds-i-chevron-right-small"></use>
+                                </svg></a></div>
+                    </figure>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section data-title="Technical Validation">
+        <div class="c-article-section" id="Sec12-section">
+            <h2 class="c-article-section__title js-section-title js-c-reading-companion-sections-item" id="Sec12">
+                Technical Validation</h2>
+            <div class="c-article-section__content" id="Sec12-content">
+                <p>In this work, we tested the performance of the DL architectures VGG16<sup><a data-track="click"
+                            data-track-action="reference anchor" data-track-label="link" data-test="citation-ref"
+                            aria-label="Reference 43"
+                            title="Simonyan, K. &amp; Zisserman, A. Very deep convolutional networks for large-scale image recognition. arXiv 1409.1556 (2014)."
+                            href="/articles/s41597-024-03182-7#ref-CR43"
+                            id="ref-link-section-d201753837e2220">43</a></sup> and ResNet50<sup><a data-track="click"
+                            data-track-action="reference anchor" data-track-label="link" data-test="citation-ref"
+                            aria-label="Reference 44" title="He, K., Zhang, X., Ren, S. &amp; Sun, J. Deep residual learning for image recognition. In 2016 IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 770–778, 
+                  https://doi.org/10.1109/CVPR.2016.90
+                  
+                 (2016)." href="/articles/s41597-024-03182-7#ref-CR44"
+                            id="ref-link-section-d201753837e2224">44</a></sup> on our dataset (OCTDL). VGG16 and
+                    ResNet50 are well-established and widely recognized convolutional neural networks (CNN). They have
+                    been extensively studied and benchmarked on various OCT datasets<sup><a data-track="click"
+                            data-track-action="reference anchor" data-track-label="link" data-test="citation-ref"
+                            title="Subramanian, M., Shanmugavadivel, K., Naren, O. S., Premkumar, K. &amp; Rankish, K. Classification of retinal oct images using deep learning. In 2022 International Conference on Computer Communication and Informatics (ICCCI), 1–7 (IEEE, 2022)."
+                            href="#ref-CR45" id="ref-link-section-d201753837e2228">45</a>,<a data-track="click"
+                            data-track-action="reference anchor" data-track-label="link" data-test="citation-ref"
+                            title="Leandro, I. et al. Oct-based deep-learning models for the identification of retinal key signs. Scientific Reports 13, 14628 (2023)."
+                            href="#ref-CR46" id="ref-link-section-d201753837e2228_1">46</a>,<a data-track="click"
+                            data-track-action="reference anchor" data-track-label="link" data-test="citation-ref"
+                            aria-label="Reference 47"
+                            title="Wang, J. et al. Deep learning for quality assessment of retinal oct images. Biomedical optics express 10, 6057–6072 (2019)."
+                            href="/articles/s41597-024-03182-7#ref-CR47"
+                            id="ref-link-section-d201753837e2231">47</a></sup>. Therefore, We can establish a strong
+                    baseline for the OCTDL dataset’s performance using these architectures. VGG and ResNet are
+                    considered classical architectures. However, they still perform remarkably well on many image
+                    classification problems<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" title="Xu, G. et al. A deep transfer convolutional neural network framework for eeg signal classification. IEEE Access 7, 112767–112776, 
+                  https://doi.org/10.1109/ACCESS.2019.2930958
+                  
+                 (2019)." href="#ref-CR48" id="ref-link-section-d201753837e2235">48</a>,<a data-track="click"
+                            data-track-action="reference anchor" data-track-label="link" data-test="citation-ref" title="Wu, Q.-e., Yu, Y. &amp; Zhang, X. A skin cancer classification method based on discrete wavelet down-sampling feature reconstruction. Electronics 12, 
+                  https://doi.org/10.3390/electronics12092103
+                  
+                 (2023)." href="#ref-CR49" id="ref-link-section-d201753837e2235_1">49</a>,<a data-track="click"
+                            data-track-action="reference anchor" data-track-label="link" data-test="citation-ref"
+                            aria-label="Reference 50" title="Huang, G.-H. et al. Deep transfer learning for the multilabel classification of chest x-ray images. Diagnostics 12, 
+                  https://doi.org/10.3390/diagnostics12061457
+                  
+                 (2022)." href="/articles/s41597-024-03182-7#ref-CR50"
+                            id="ref-link-section-d201753837e2238">50</a></sup>.</p>
+                <p>VGG16 is a 16-layer, relatively extensive DL network with 138 million parameters. However, the
+                    simplicity of the VGG16 architecture is its main attraction. VGG16 has 13 convolutional layers and
+                    three fully connected layers, each followed by a ReLU activation function, five max pooling
+                    operations, and a softmax activation function.</p>
+                <p>ResNet was based on the VGG neural networks. However, a ResNet has fewer filters and is less complex
+                    than a VGG. Using shortcut connections, ResNet provided a novel way to use more convolutional layers
+                    without running into the vanishing gradient problem<sup><a data-track="click"
+                            data-track-action="reference anchor" data-track-label="link" data-test="citation-ref"
+                            aria-label="Reference 51"
+                            title="Hochreiter, S. The vanishing gradient problem during learning recurrent neural nets and problem solutions. International Journal of Uncertainty, Fuzziness and Knowledge-Based Systems 6, 107–116 (1998)."
+                            href="/articles/s41597-024-03182-7#ref-CR51"
+                            id="ref-link-section-d201753837e2248">51</a></sup>. A shortcut connection skips some layers,
+                    converting a regular network to a residual network. The ResNet50 is a 50-layer CNN that consists of
+                    48 convolutional layers, one MaxPool layer, and one average pool layer.</p>
+                <p>The OCTDL dataset was randomly split into training, validation, and test subsets in the proportion of
+                    60:10:20 on a patients level, so that images of one patient can be found in only one of the subsets.
+                    For all experiments, we used the Cross-Entropy loss function and Adaptive Moment Estimation (ADAM)
+                    optimizer with a 0.0005 learning rate. For data augmentation, we used random crop, horizontal and
+                    vertical flips, rotation, translation, and Gaussian blur.</p>
+                <p>We can navigate from the disease to the corresponding pathological condition(s) using a CSV file with
+                    labels for each image. This is necessary, for example, to combine different available datasets.
+                    Thus, for experiments, we combined OCTDL with OCTID and Kermany datasets. DME is a particular case
+                    of DR, and MH is a particular case of VID, so we can combine them into one category for
+                    classification purposes. Drusen and MNV are the early and late stages of AMD, respectfully. OCTDL
+                    and OCTID datasets were mixed and randomly split into subsets. For Kermany, we used OCTDL as a test
+                    subset.</p>
+                <p>The following presents the results of training neural networks exclusively on our dataset and
+                    combining our dataset with the OCTID and Kermany datasets to solve the classification problem.
+                    Confusion matrices for training on ResNet50 and VGG16 with our proposed dataset are presented in
+                    Fig.&nbsp;<a data-track="click" data-track-label="link" data-track-action="figure anchor"
+                        href="/articles/s41597-024-03182-7#Fig8">8</a>. As metrics, we used Accuracy (ACC), F1-score,
+                    Area Under the Curve (AUC), Precision (P), and Recall (R). Table&nbsp;<a data-track="click"
+                        data-track-label="link" data-track-action="table anchor"
+                        href="/articles/s41597-024-03182-7#Tab3">3</a> summarizes the results of the experiments.</p>
+                <div class="c-article-section__figure js-c-reading-companion-figures-item" data-test="figure"
+                    data-container-section="figure" id="figure-8" data-title="Fig. 8">
+                    <figure>
+                        <figcaption><b id="Fig8" class="c-article-section__figure-caption"
+                                data-test="figure-caption-text">Fig. 8</b></figcaption>
+                        <div class="c-article-section__figure-content">
+                            <div class="c-article-section__figure-item">
+                                <picture class="c-article-section__figure-picture">
+                                    <source type="image/webp"
+                                        srcset="//media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41597-024-03182-7/MediaObjects/41597_2024_3182_Fig8_HTML.png?as=webp">
+                                    <img aria-describedby="figure-8-desc"
+                                        src="//media.springernature.com/lw685/springer-static/image/art%3A10.1038%2Fs41597-024-03182-7/MediaObjects/41597_2024_3182_Fig8_HTML.png"
+                                        alt="Fig. 8" loading="lazy" width="685" height="342">
+                                </picture>
+                                <div class="c-article-section__figure-link"><a class="c-article__pill-button"
+                                        data-test="article-link" data-track="click" data-track-label="button"
+                                        data-track-action="view figure" href="/articles/s41597-024-03182-7/figures/8"
+                                        data-track-dest="link:Figure8 Full size image"
+                                        aria-label="Full size image figure 8" rel="nofollow"><span>Full size
+                                            image</span><svg width="16" height="16" focusable="false" role="img"
+                                            aria-hidden="true" class="u-icon">
+                                            <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                                                xlink:href="#icon-eds-i-chevron-right-small"></use>
+                                        </svg></a></div>
+                            </div>
+                            <div class="c-article-section__figure-description" data-test="bottom-caption"
+                                id="figure-8-desc">
+                                <p>Confusion matricies of ResNet50 (<b>a</b>) and VGG16 (<b>b</b>) models, trained on
+                                    OCTDL dataset.</p>
+                            </div>
+                        </div>
+                    </figure>
+                </div>
+                <div class="c-article-table" data-test="inline-table" data-container-section="table" id="table-3">
+                    <figure>
+                        <figcaption class="c-article-table__figcaption"><b id="Tab3" data-test="table-caption">Table 3
+                                Resulting metrics on different combinations of datasets.</b></figcaption>
+                        <div class="u-text-right u-hide-print"><a class="c-article__pill-button" data-test="table-link"
+                                data-track="click" data-track-action="view table" data-track-label="button"
+                                rel="nofollow" href="/articles/s41597-024-03182-7/tables/3"
+                                aria-label="Full size table 3"><span>Full size table</span><svg width="16" height="16"
+                                    focusable="false" role="img" aria-hidden="true" class="u-icon">
+                                    <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                                        xlink:href="#icon-eds-i-chevron-right-small"></use>
+                                </svg></a></div>
+                    </figure>
+                </div>
+                <p>The class-wise balanced accuracy across all categories within our dataset approached 0.979, with the
+                    highest accuracy observed for AMD at 0.963 and the lowest for RVO at 0.633. Similarly, the
+                    class-wise recall demonstrated a comparable pattern, with AMD exhibiting the highest value at 0.975
+                    and RVO displaying the weakest at 0.652. Concatenation of multiple datasets yielded favorable
+                    outcomes: this approach augmented the variety of diseases within open datasets and enabled the
+                    training of neural networks using images acquired from different OCT systems. This strategy holds
+                    the potential to bolster long-term reliability and enhance overall classification accuracy.</p>
+                <p>Further potential applications of the OCTDL dataset include the automated segmentation of OCT image
+                    layers, for which manual segmentation will also be performed. Labels with pathological conditions
+                    are also available in the OCTDL dataset for every image. Training on both disease and pathological
+                    condition labels with further voting ensembles could also increase classification accuracy. Semi-
+                    and Unsupervised anomaly detection<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 52" title="Mou, L., Liang, L., Gao, Z. &amp; Wang, X. A multi-scale anomaly detection framework for retinal oct images based on the bayesian neural network. Biomedical Signal Processing and Control 75, 103619, 
+                  https://doi.org/10.1016/j.bspc.2022.103619
+                  
+                 (2022)." href="/articles/s41597-024-03182-7#ref-CR52"
+                            id="ref-link-section-d201753837e2837">52</a></sup> has also been tested for some diseases
+                    and is a promising direction for developing Artificial Intelligence (AI) in OCT.</p>
+                <p>The results show that the new OCTDL dataset may be used to support and expand the application of AI
+                    in ophthalmology<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 53"
+                            title="Kapoor, R., Walters, S. P. &amp; Al-Aswad, L. A. The current state of artificial intelligence in ophthalmology. Survey of ophthalmology 64, 233–240 (2019)."
+                            href="/articles/s41597-024-03182-7#ref-CR53"
+                            id="ref-link-section-d201753837e2844">53</a></sup>. The dataset will be extended and will
+                    become more balanced with respect to rare conditions, including inherited retinal dystrophies and
+                    retinopathy of prematurity that may assist with diagnosing and managing these and related
+                    sight-threatening conditions<sup><a data-track="click" data-track-action="reference anchor"
+                            data-track-label="link" data-test="citation-ref" aria-label="Reference 54"
+                            title="Daich Varela, M. et al. Artificial intelligence in retinal disease: clinical application, challenges, and future directions. Graefe’s Archive for Clinical and Experimental Ophthalmology 1–15 (2023)."
+                            href="/articles/s41597-024-03182-7#ref-CR54"
+                            id="ref-link-section-d201753837e2848">54</a></sup>.</p>
+            </div>
+        </div>
+    </section>
+</div>
