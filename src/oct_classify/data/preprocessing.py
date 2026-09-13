@@ -77,6 +77,39 @@ def _preprocess_for_normalization(job: tuple[Path, str, PreprocessingSpec]) -> n
         return preprocess_image(image, spec)
 
 
+def _partial_statistics_for_normalization(
+    job: tuple[Path, str, PreprocessingSpec],
+) -> tuple[np.ndarray, np.ndarray, int]:
+    """Reduce one image to its channel sums in the worker process.
+
+    Returning only three floats per channel (instead of the full decoded
+    image) keeps inter-process messages tiny regardless of dataset size --
+    shipping whole preprocessed images back to the main process instead
+    scales its memory use with the number of images processed.
+    """
+    flattened = _preprocess_for_normalization(job).reshape(-1, 3)
+    total = flattened.sum(axis=0, dtype=np.float64)
+    total_squared = np.square(flattened, dtype=np.float64).sum(axis=0)
+    return total, total_squared, flattened.shape[0]
+
+
+def _combine_partial_statistics(
+    partials: Iterable[tuple[np.ndarray, np.ndarray, int]],
+) -> tuple[np.ndarray, np.ndarray]:
+    total = np.zeros(3, dtype=np.float64)
+    total_squared = np.zeros(3, dtype=np.float64)
+    pixel_count = 0
+    for partial_total, partial_total_squared, count in partials:
+        total += partial_total
+        total_squared += partial_total_squared
+        pixel_count += count
+    if pixel_count == 0:
+        raise ValueError("Cannot calculate statistics from no images.")
+    mean = total / pixel_count
+    variance = np.maximum(total_squared / pixel_count - np.square(mean), 0.0)
+    return mean.astype(np.float32), np.sqrt(variance).astype(np.float32)
+
+
 def calculate_normalization(
     root: Path,
     records: Iterable[ImageRecord],
@@ -98,11 +131,11 @@ def calculate_normalization(
         return channel_statistics(_preprocess_for_normalization(job) for job in jobs)
 
     worker_count = workers or os.cpu_count() or 1
-    chunksize = max(1, len(jobs) // (worker_count * 4))
+    chunksize = max(1, min(64, len(jobs) // (worker_count * 4)))
     with ProcessPoolExecutor(
         max_workers=worker_count,
         mp_context=multiprocessing.get_context("spawn"),
     ) as executor:
-        return channel_statistics(
-            executor.map(_preprocess_for_normalization, jobs, chunksize=chunksize)
+        return _combine_partial_statistics(
+            executor.map(_partial_statistics_for_normalization, jobs, chunksize=chunksize)
         )
