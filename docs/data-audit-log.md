@@ -1,87 +1,87 @@
 # Data Audit Log
 
-## 2026-09-12: Configured Source Snapshot
+## 2026-09-13: Consolidated Source Audit And Derived Manifest
 
-**Scope:** Enabled Duke, Kermany, OCTDL, and PAIMA sources from `configs/datasets.toml`. OCTID is
-configured but disabled for the first training pass because it has no group identifiers for the
-required group-safe split. This is a snapshot of the repository's configured `datasets/...` symlinks,
+**Scope:** Duke, PAIMA, Kermany, and OCTDL are enabled in `configs/datasets.toml`. OCTID is
+configured but disabled for the first training pass because it has no group identifiers for the required
+group-safe split. 
+
+This is a snapshot of the repository's configured `datasets/...` symlinks,
 not a substituted or third-party cleaned release.
 
-**Command:**
+Source images are immutable; exclusions and deduplication are applied only
+to derived manifests.
+
+### Source-Snapshot Audit
 
 ```bash
-uv run oct-classify audit --hash-timing-log artifacts/audits/phash-timings-with-cross-source.tsv
+uv run oct-classify audit --workers 4
 ```
 
-The command audited 131,072 manifest records. All decoded successfully. It exited with status 1
-because the per-source audit identifies label conflicts and Kermany supplied-split pHash candidates;
-see the ignored reports under `artifacts/audits/` for the full record-level output.
+The audit decoded all 131,072 source-manifest records successfully. It exits with status 1 by design:
+PAIMA and Kermany contain components eligible for derived-manifest quarantine. All exact and perceptual
+duplicate candidates remain available in the ignored JSON reports under `artifacts/audits/`.
 
-### Per-Source Results
+| Source | Source records | Invalid | Unmanifested | Exact clusters | pHash clusters | Quarantine-eligible exact | Quarantine-eligible pHash-zero |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Duke | 3,231 | 0 | 0 | 0 | 795 | 0 | 0 |
+| PAIMA | 16,822 | 0 | 0 | 137 | 18,065 | 3 | 32 |
+| Kermany | 109,309 | 0 | 0 | 7,092 | 38,253 | 82 | 153 |
+| OCTDL | 1,710 | 0 | 354 ERM files | 1 | 134 | 0 | 0 |
 
-| Source | Manifest images | Invalid | Unmanifested | Exact clusters | pHash clusters | Integrity result |
-| --- | ---: | ---: | ---: | ---: | ---: | --- |
-| Duke | 3,231 | 0 | 0 | 0 | 795 | 4 cross-label pHash candidates |
-| PAIMA | 16,822 | 0 | 0 | 137 | 18,065 | 3 exact and 4,571 pHash cross-label candidates |
-| Kermany | 109,309 | 0 | 0 | 7,092 | 38,253 | Exact and pHash cross-label candidates; pHash split candidates |
-| OCTDL | 1,710 | 0 | 354 ERM files | 1 | 134 | 2 cross-label pHash candidates |
+All 354 unmanifested OCTDL files are ERM images, intentionally excluded from the Normal/AMD/DME task.
+Cluster counts are candidate counts, not independent image counts; a record may participate in multiple
+pHash candidates. Nonzero-distance pHash candidates remain review observations and do not independently
+fail the audit. No pHash-zero component crossed a supplied split in this run.
 
-All 354 unmanifested OCTDL files are ERM images and are intentionally excluded under the locked
-Normal/AMD/DME task policy. The exact and pHash cluster counts are candidate counts, not independent
-image counts: a file may participate in multiple pHash pairs.
-
-### Cross-Source Leakage Result
+### Cross-Source Result
 
 - Exact-content duplicate clusters: 0.
 - pHash-distance-zero clusters: 1.
 - pHash-distance-two candidate clusters: 129.
 - pHash-distance-four candidate clusters: 2,457.
 
-The distance-zero pHash cluster is `paima:CNV/126/025_CNV.tif` and
-`kermany:train/CNV/CNV-135126-18.jpeg` (both unified AMD). Manual review found that these are not the
-same image, so this is a reviewed false positive rather than shared content. Retain both records. On
-each subsequent audit, recheck the distance-zero cluster membership in `artifacts/audits/cross-source.json`
-before applying this disposition; the cluster may change when the configured source snapshots change.
-The distance-two and distance-four candidates remain reported observations, not automatic exclusions.
-No cross-source records enter quarantine from this audit run.
+The distance-zero cluster is `paima:CNV/126/025_CNV.tif` and
+`kermany:train/CNV/CNV-135126-18.jpeg`, both unified AMD. Manual review found that they are not the
+same image, so this is a reviewed false positive. Both records are retained. Recheck this cluster's
+membership in `artifacts/audits/cross-source.json` after any source-snapshot change. No cross-source
+records enter quarantine from this audit.
 
-### Kermany Label And Duplicate Evidence
+### Derived Manifest Result
+
+```bash
+uv run oct-classify manifest --workers 4
+```
+
+The manifest command quarantines every member of an eligible component, retains only the lexical
+`source:path` canonical member of each surviving same-label exact-duplicate component, and collapses
+repeated metadata paths.
+
+| Source | Derived records | Quarantined records | Same-label exact copies removed |
+| --- | ---: | ---: | ---: |
+| Duke | 3,231 | 0 | 0 |
+| PAIMA | 16,601 | 87 | 134 |
+| Kermany | 101,217 | 321 | 7,771 |
+| OCTDL | 1,709 | 0 | 1 |
+
+Auditing the derived manifests found no invalid images or quarantine-eligible components. All four
+derived manifests pass supplied-split validation: no duplicate paths, missing group identifiers, or
+groups crossing supplied splits.
+
+### Evidence And Policy
 
 The locally extracted Kermany article states that each retained OCT image was independently graded by
 ophthalmologists and its final label verified by senior retinal specialists
 (`docs/articles/Kermany.html`, Image Labeling). It also states that the original test partition used
-patients independent of those in training (`docs/articles/Kermany.html`, Transfer Learning Methods).
-Accordingly, exact cross-label copies are treated as incompatible with the intended image-level labels,
-while perceptual matches require review rather than automatic relabeling.
+patients independent of training (`docs/articles/Kermany.html`, Transfer Learning Methods). Exact
+cross-label copies are therefore incompatible with the intended image-level labels, while perceptual
+matches require review rather than automatic relabeling.
 
 The related project article records that the 109,559-image DS1 release contained known identical images
 and that an external cleaning procedure yielded 101,565 images (`docs/articles/OCT-SelfNet.xml`). The
-configured local Kermany source contains 109,309 manifest records, so it is processed as its own
-versioned source snapshot rather than assumed to be that cleaned derivative.
+configured local Kermany source contains 109,309 records and is processed as its own versioned snapshot.
 
-### Locked Decisions
-
-The operative processing decisions are maintained in [the data contract](data-contract.md#locked-processing-decisions):
-use the configured source snapshots, select lexical canonical paths, preserve Kermany's supplied test
-partition, exclude OCTDL ERM from this task, and quarantine only the defined exact/pHash-zero conflict
-components.
-
-## 2026-09-13: Audit Policy Interpretation
-
-Audit reports remain exploratory: every exact and pHash candidate is retained in the JSON reports. Each
-component is annotated with `quarantine_eligible` and `quarantine_reasons` under the locked processing
-policy. The command exits non-zero only for invalid manifest images and quarantine-eligible components;
-nonzero-distance pHash candidates remain visible review observations and do not independently fail the
-audit.
-
-**Post-policy audit result:** `uv run oct-classify audit` decoded all 131,072 manifest records with no
-invalid images.
-
-| Source | Exact label-conflict components | pHash-zero label-conflict components | pHash-zero split-crossing components | Audit status |
-| --- | ---: | ---: | ---: | --- |
-| Duke | 0 | 0 | 0 | Pass; pHash candidates are review-only |
-| PAIMA | 3 | 32 | 0 | Fail; quarantine pending |
-| Kermany | 82 | 153 | 0 | Fail; quarantine pending |
-| OCTDL | 0 | 0 | 0 | Pass; pHash candidates are review-only |
-
-The command exits non-zero only for PAIMA and Kermany pending derived-manifest quarantine.
+The operative rules are maintained in [the data contract](data-contract.md#locked-processing-decisions):
+use configured source snapshots; select lexical canonical paths; preserve Kermany's supplied test
+partition; exclude OCTDL ERM; and quarantine only exact label-conflict or pHash-distance-zero label/split
+conflict components.
