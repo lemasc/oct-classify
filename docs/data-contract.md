@@ -33,7 +33,8 @@ uv run oct-classify manifest
 uv run oct-classify validate-splits
 ```
 
-The manifest command writes ignored JSONL files to `artifacts/manifests/` by default.
+The manifest command writes ignored JSONL files to `artifacts/manifests/` by default. It applies the
+locked quarantine policy and retains only the lexical canonical path for same-label exact duplicates.
 
 ## Audit Contract
 

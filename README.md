@@ -16,6 +16,8 @@ uv run oct-classify validate-splits
 formats, dimensions, intensity distributions, manifest coverage, and exact/perceptual-hash duplicate
 findings. Use `--no-perceptual-hashes` for a quicker inventory-only run, or adjust the near-duplicate
 threshold with `--max-hash-distance`. `--hash-timing-log path.tsv` records each pHash duration.
+`manifest` applies the locked quarantine and same-label exact-deduplication decisions before writing
+derived JSONL manifests.
 
 Open the interactive audit-result browser with:
 

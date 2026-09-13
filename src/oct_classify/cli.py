@@ -9,7 +9,7 @@ from oct_classify.data.audit import (
     audit_records,
 )
 from oct_classify.data.config import load_dataset_specs
-from oct_classify.data.manifest import write_jsonl
+from oct_classify.data.manifest import apply_processing_decisions, write_jsonl
 from oct_classify.data.sources import get_source
 from oct_classify.data.splits import validate_supplied_splits
 
@@ -118,9 +118,18 @@ def _audit(args: argparse.Namespace) -> None:
 
 def _manifest(args: argparse.Namespace) -> None:
     for spec, records in _records_for_spec(args.config):
+        audit_report = audit_records(spec.root, records, workers=args.workers)
+        records, quarantined, deduplicated = apply_processing_decisions(
+            records,
+            exact_duplicates=audit_report.exact_duplicates,
+            near_duplicates=audit_report.near_duplicates,
+        )
         path = args.output / f"{spec.name}.jsonl"
         write_jsonl(path, records)
-        print(f"Wrote {len(records)} records to {path}")
+        print(
+            f"Wrote {len(records)} records to {path} "
+            f"({quarantined} quarantined, {deduplicated} same-label exact duplicates removed)"
+        )
 
 
 def _validate_splits(args: argparse.Namespace) -> None:
@@ -163,6 +172,11 @@ def main() -> None:
             )
         if command == "manifest":
             command_parser.add_argument("--output", type=Path, default=Path("artifacts/manifests"))
+            command_parser.add_argument(
+                "--workers",
+                type=int,
+                help="Image-analysis processes; defaults to all available CPU cores.",
+            )
         command_parser.set_defaults(handler=handler)
 
     args = parser.parse_args()
