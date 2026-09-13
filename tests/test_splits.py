@@ -1,5 +1,11 @@
 from oct_classify.data.models import ImageRecord
-from oct_classify.data.splits import assign_group_splits, validate_supplied_splits
+from oct_classify.data.splits import (
+    apply_derived_splits,
+    assign_group_splits,
+    create_derived_splits,
+    validate_derived_splits,
+    validate_supplied_splits,
+)
 from oct_classify.data.taxonomy import ALL_LABELS, UnifiedLabel
 
 
@@ -39,3 +45,55 @@ def test_assignments_require_a_group_id() -> None:
         assert "group ID" in str(error)
     else:
         raise AssertionError("Expected missing group IDs to prevent split assignment")
+
+
+def test_derived_splits_keep_linked_groups_together_and_are_deterministic() -> None:
+    records = [
+        _record("a.jpg", "1"),
+        _record("b.jpg", "2"),
+        _record("c.jpg", "3"),
+        _record("d.jpg", "4"),
+    ]
+    near_duplicates = [{"distance": 0, "paths": ["octdl:a.jpg", "octdl:b.jpg"]}]
+
+    first = create_derived_splits(records, near_duplicates, {"train": 0.5, "test": 0.5}, seed=3)
+    second = create_derived_splits(records, near_duplicates, {"train": 0.5, "test": 0.5}, seed=3)
+
+    assert first.assignments == second.assignments
+    assert first.assignments["octdl:1"] == first.assignments["octdl:2"]
+    assert (
+        validate_derived_splits(
+            apply_derived_splits(records, first.assignments), first.linked_group_components
+        )
+        == []
+    )
+
+
+def test_derived_splits_preserve_supplied_kermany_test_partition() -> None:
+    records = [
+        _record("train-a.jpg", "1", "train"),
+        _record("train-b.jpg", "2", "train"),
+        _record("test-a.jpg", "3", "test"),
+    ]
+
+    result = create_derived_splits(
+        records,
+        [],
+        {"train": 0.85, "val": 0.15},
+        seed=3,
+        preserve_supplied_test=True,
+    )
+
+    assert result.assignments["octdl:3"] == "test"
+    assert {result.assignments["octdl:1"], result.assignments["octdl:2"]} <= {"train", "val"}
+
+
+def test_derived_split_validation_rejects_linked_groups_in_different_splits() -> None:
+    records = apply_derived_splits(
+        [_record("a.jpg", "1"), _record("b.jpg", "2")],
+        {"octdl:1": "train", "octdl:2": "test"},
+    )
+
+    assert validate_derived_splits(records, [("octdl:1", "octdl:2")]) == [
+        "pHash-zero linked groups cross splits: octdl:1, octdl:2"
+    ]

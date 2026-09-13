@@ -11,6 +11,7 @@ Every source adapter emits `ImageRecord` entries and no downstream component may
 | `available_labels` | Classes the source screened for; used by partial-label losses and metrics |
 | `group_id` | Patient or volume identity within a source, if known |
 | `supplied_split` | Upstream split name, retained only as provenance |
+| `split` | Derived experiment split, assigned only after manifest creation |
 
 ## Taxonomy
 
@@ -21,7 +22,18 @@ Every source adapter emits `ImageRecord` entries and no downstream component may
 
 ## Split Rules
 
-Splits must be created at the `source:group_id` level. A group may appear in one split only. Kermany filenames follow `CLASS-GROUP_ID-BSCAN_INDEX.jpeg`; the adapter extracts the middle token as the grouping key. The release copy has no sidecar metadata files, so demographic, eye, and acquisition metadata are unavailable. `oct-classify validate-splits` verifies that no extracted group crosses its supplied train/test split.
+Splits must be created at the `source:group_id` level. A group may appear in one split only. Retained
+pHash-distance-zero candidates spanning groups are linked into one split-assignment unit. Kermany
+filenames follow `CLASS-GROUP_ID-BSCAN_INDEX.jpeg`; the adapter extracts the middle token as the grouping
+key. The release copy has no sidecar metadata files, so demographic, eye, and acquisition metadata are
+unavailable. `oct-classify validate-splits` verifies that no extracted group crosses its supplied train/test
+split.
+
+The tracked `configs/splits/v1.json` is the authoritative assignment. It records the seed, source split
+ratios, and hashes of the exact derived manifests and audit reports used to create it. It preserves
+Kermany's supplied test partition, splitting its supplied training partition 85/15 into train/validation.
+Duke, OCTDL, and Paima are split 70/15/15 into train/validation/test. Generated per-image split manifests
+remain ignored under `artifacts/splits/`.
 
 ## Commands
 
@@ -31,6 +43,7 @@ Run from the repository root:
 uv run oct-classify audit
 uv run oct-classify manifest
 uv run oct-classify validate-splits
+uv run oct-classify splits
 ```
 
 The manifest command writes ignored JSONL files to `artifacts/manifests/` by default. It applies the
@@ -65,3 +78,7 @@ below defines an exclusion.
 - Quarantine exact duplicate components with label conflicts and pHash-distance-zero components that
   conflict in label or supplied split. Treat other pHash results, including distances 2 and 4, as review
   candidates rather than automatic exclusions.
+- Deterministic preprocessing converts to RGB, composites alpha over black, preserves aspect ratio while
+  resizing into a centered square canvas, applies per-image 1st/99th percentile intensity scaling, and
+  uses normalization statistics calculated from training records only. Stochastic augmentation is a
+  training concern and is not part of this deterministic contract.

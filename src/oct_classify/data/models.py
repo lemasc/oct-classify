@@ -27,6 +27,7 @@ class ImageRecord:
     available_labels: frozenset[UnifiedLabel]
     group_id: str | None = None
     supplied_split: str | None = None
+    split: str | None = None
 
     def __post_init__(self) -> None:
         if self.label not in self.available_labels:
@@ -48,6 +49,7 @@ class ImageRecord:
             "available_labels": sorted(label.value for label in self.available_labels),
             "group_id": self.group_id,
             "supplied_split": self.supplied_split,
+            "split": self.split,
         }
 
     @classmethod
@@ -60,4 +62,5 @@ class ImageRecord:
             available_labels=frozenset(UnifiedLabel(label) for label in value["available_labels"]),
             group_id=value.get("group_id"),
             supplied_split=value.get("supplied_split"),
+            split=value.get("split"),
         )
