@@ -1,70 +1,82 @@
-# Retinal OCT Article Index
+# Retinal OCT Research Index
 
-This directory holds JATS/NLM XML exports of two related, published studies on self-supervised retinal OCT classification. Treat the XML as the authoritative source for experimental claims, tables, and citations.
+This directory contains the primary research context for retinal OCT classification, datasets, and cross-dataset generalization. Start with the two SelfNet papers for the project method, then use the dataset papers to resolve dataset provenance and label meaning.
 
 ## Quick Navigation
 
-| Article | Scope | Primary model | Key outcome |
-| --- | --- | --- | --- |
-| [OCT-SelfNet (2025)](OCT-SelfNet.xml) | Binary Normal vs. AMD classification | MAE pre-training with ViT, Swin, or SwinV2 encoders; emphasis on SwinV2 | Establishes the two-phase, multi-source approach and evaluates cross-dataset generalization. |
-| [Multi-OCT-SelfNet (2026)](Multi-OCT-SelfNet.xml) | Multi-class retinal disease classification | SwinV2 MAE, including a larger variant in pre-training experiments | Extends the earlier work to multi-class tasks and reports stronger cross-domain and limited-data performance. |
+| Need | Read |
+| --- | --- |
+| Current method, multiclass task, latest results | [Multi-OCT-SelfNet](#multi-oct-selfnet-2026) |
+| Original method and binary Normal-vs-AMD protocol | [OCT-SelfNet](#oct-selfnet-2025) |
+| Source and conventions for DS1 / Kermany | [Kermany](#kermany-2018) |
+| OCTDL dataset composition and label ontology | [OCTDL](#octdl-2024) |
+| Dataset aliases, splits, and task differences | [Dataset Map](#dataset-map) |
 
-Each article is available in two complementary formats: XML is the source for structured text, metadata, tables, and references; the paired EPUB contains the rendered article and embedded figures.
+## Reading Files
 
-## Relationship Between Articles
+Use the XML files as the canonical, structured full-text sources for the SelfNet papers. Their EPUB counterparts are alternate exports of the same articles. The HTML files are body-only exports, so their bibliographic metadata is incomplete.
 
-`Multi-OCT-SelfNet.xml` is the follow-on to `OCT-SelfNet.xml`, not an independent method. Both use the same high-level pipeline:
+| Article key | Canonical local source | Alternate export |
+| --- | --- | --- |
+| Multi-OCT-SelfNet | `Multi-OCT-SelfNet.xml` | `Multi-OCT-SelfNet.epub` |
+| OCT-SelfNet | `OCT-SelfNet.xml` | `OCT-SelfNet.epub` |
+| Kermany | `Kermany.html` | None |
+| OCTDL | `OCTDL.html` | None |
 
-1. Fuse training and validation images from DS1, DS2, and DS3 for label-free masked-autoencoder (MAE) pre-training.
-2. Transfer the encoder to a classifier and train/fine-tune per source dataset.
-3. Evaluate both on the source test set and on the other datasets' test sets to measure domain generalization.
-
-The material change is task scope: the 2025 article limits supervised classification to Normal versus AMD; the 2026 article retains multiple disease categories available in each dataset. Do not directly compare their metrics as if they are the same classification problem.
-
-## Article Records
-
-### OCT-SelfNet (2025)
-
-- **File:** [OCT-SelfNet.xml](OCT-SelfNet.xml)
-- **Figures:** [OCT-SelfNet.epub](OCT-SelfNet.epub) includes 15 figures and the Algorithm 1 image.
-- **Citation:** Jannat et al., *Frontiers in Big Data*, 2025, DOI [10.3389/fdata.2025.1609124](https://doi.org/10.3389/fdata.2025.1609124)
-- **Question:** Can MAE-based self-supervised learning and multi-source fusion improve generalization for binary OCT classification?
-- **Target labels:** Normal and AMD. DS1 Drusen images are treated as AMD; other categories are excluded for supervised training.
-- **Encoders/baselines:** OCT-SelfNet variants with ViT, Swin, and SwinV2; ResNet-50 and ViT-Base baselines.
-- **Implementation reported:** 224 x 224 images, 70% random masking, 50 SSL epochs, 100 supervised epochs with early stopping; PyTorch 1.12.1, CUDA 11.2, Python 3.10.9.
-- **Primary claims:** SwinV2-based OCT-SelfNet generally surpasses baselines, especially in cross-dataset and limited-label settings; both data fusion and SSL pre-training materially contribute in ablations.
-- **Important limitations:** Data-fusion bias, binary-only scope, and need for human review of low-confidence clinical predictions.
-
-Useful sections: [methodology](OCT-SelfNet.xml#s3), [datasets](OCT-SelfNet.xml#s4), [experiments/results](OCT-SelfNet.xml#s5), [summary](OCT-SelfNet.xml#s6), [conclusion](OCT-SelfNet.xml#s7), and [data availability](OCT-SelfNet.xml#s8).
+## Papers
 
 ### Multi-OCT-SelfNet (2026)
 
-- **File:** [Multi-OCT-SelfNet.xml](Multi-OCT-SelfNet.xml)
-- **Figures:** [Multi-OCT-SelfNet.epub](Multi-OCT-SelfNet.epub) includes all 9 figures.
-- **Citation:** Jannat et al., *Frontiers in Systems Biology*, 2026, DOI [10.3389/fsysb.2026.1717398](https://doi.org/10.3389/fsysb.2026.1717398)
-- **Question:** Does the multi-source SSL pipeline improve multi-class retinal disease classification and transfer to unseen datasets?
-- **Target labels:** Dataset-specific combinations of Normal, AMD/Drusen, DME, CNV, and DR. DS3 excludes RVO, CSC, and heterogeneous `OTHERS` categories.
-- **Encoders/baselines:** Multi-OCT-SelfNet with SwinV2; pre-training comparisons include Swin and SwinV2-large. Baselines are ResNet-50 and conventional SwinV2 without the proposed SSL multi-source pre-training.
-- **Implementation reported:** 224 x 224 images, 70% random masking, 100 SSL epochs, 100 fine-tuning epochs with early stopping; unified ImageNet normalization; PyTorch 1.12.1, CUDA 11.2, Python 3.10.9.
-- **Headline results:** On-domain AUC-ROC is 0.97 (DS1), 0.97 (DS2), and 0.89 (DS3). Cross-domain examples include DS2-to-DS3 AUC-ROC of 0.90 and DS3-to-DS2 of 0.94 for Multi-OCT-SelfNet-SwinV2.
-- **Interpretation caveat:** Classes and class frequencies differ substantially across datasets, so cross-dataset scores should be read as robustness evidence rather than performance on a fully harmonized label space.
-- **Future work:** Improve interpretability, introduce human-in-the-loop review, and address label quality and fusion-induced bias.
+**Jannat et al.** *Multi-OCT-SelfNet: integrating self-supervised learning with multi-source data fusion for enhanced multi-class retinal disease classification.* Frontiers in Systems Biology, 2026. DOI: `10.3389/fsysb.2026.1717398`.
 
-Useful sections: [methodology](Multi-OCT-SelfNet.xml#s3), [datasets](Multi-OCT-SelfNet.xml#s3-6), [implementation](Multi-OCT-SelfNet.xml#s4-1), [results](Multi-OCT-SelfNet.xml#s4-4), [future work](Multi-OCT-SelfNet.xml#s5), [conclusion](Multi-OCT-SelfNet.xml#s6), and [data availability](Multi-OCT-SelfNet.xml#s7).
+- **Purpose:** Current and most complete framework for robust multiclass retinal-disease classification across domains.
+- **Method:** Fuse unlabeled images from three sources for masked-autoencoder self-supervised pre-training with a SwinV2 encoder; replace the decoder with a classifier and fine-tune per downstream dataset.
+- **Evaluation:** On-domain, cross-dataset, 50%-data, data-fusion, and SSL ablations. Primary metrics are AUC-ROC, AUC-PR, accuracy, and F1; AUC-ROC is emphasized because of imbalance.
+- **Central claim:** Multi-source fusion and SSL improve transferability most strongly for the smaller DS2 and DS3 datasets. For example, DS2-to-DS3 AUC-ROC is 0.90 versus 0.59 for ResNet-50 and 0.61 for conventional SwinV2.
+- **Scope warning:** Pre-training uses all available disease categories, while downstream fine-tuning evaluates Normal against disease classes present in each dataset. Do not assume the earlier binary-only task.
+- **Where to look:** `Methodology`, `Datasets`, `Results`, and the data-fusion / SSL / limited-data ablations.
+
+### OCT-SelfNet (2025)
+
+**Jannat et al.** *OCT-SelfNet: a self-supervised framework with multi-source datasets for generalized retinal disease detection.* Frontiers in Big Data, 2025. DOI: `10.3389/fdata.2025.1609124`.
+
+- **Purpose:** Predecessor framework and source for the original experimental protocol.
+- **Method:** Multi-source unlabeled SSL pre-training with a SwinV2 masked autoencoder, followed by supervised fine-tuning; compares against ResNet-50 and ViT-based models.
+- **Task:** Binary **Normal vs. AMD** classification only. DS1 Drusen images are treated as AMD; other source classes are removed from downstream training and evaluation.
+- **Evidence:** Cross-dataset evaluation, no-SSL, no-data-fusion, unseen-dataset, and reduced-data experiments show the strongest benefit on DS2 and DS3.
+- **Where to look:** Sections `3 Methodology`, `4 Datasets`, and `5.4` for the ablations; section `6 Summary` and `7 Conclusion` for interpretation.
+
+### Kermany (2018)
+
+**Kermany et al.** *Identifying medical diagnoses and treatable diseases by image-based deep learning.* Cell, 2018. DOI: `10.1016/j.cell.2018.02.010`.
+
+- **Purpose:** Foundational large OCT classification dataset and the source denoted **DS1** in both SelfNet papers.
+- **Dataset:** 109,559 Spectralis OCT images in four labels: Normal, CNV, DME, and Drusen. The SelfNet data-cleaning procedure reports 101,565 images after duplicate removal.
+- **Project convention:** Map DS1 `Drusen` to AMD only when reproducing the binary OCT-SelfNet task. Retain its original label for the multiclass Multi-OCT-SelfNet context unless the implementation specifies otherwise.
+- **Where to look:** `Results` for the clinical deep-learning setting and `STAR Methods` / `Transfer Learning Methods` for original data and model details.
+
+### OCTDL (2024)
+
+**OCTDL dataset paper.** Scientific Data, 2024. DOI: `10.1038/s41597-024-03182-7`.
+
+- **Purpose:** Dataset reference for image-level retinal pathology labels and dataset-combination baselines; it is not one of the DS1--DS3 sources in the SelfNet papers.
+- **Dataset:** More than 2,000 macular raster-scan OCT images covering AMD, DME, ERM, RAO, RVO, and vitreomacular interface disease, with pathology labels including MNV, DRIL, drusen, macular edema, and macular hole.
+- **Use carefully:** Its experimental combinations with OCTID and Kermany use their own splits and objectives. Do not merge its results with SelfNet results without reconciling labels, data sources, and split policy.
+- **Where to look:** `Methods`, `Data Records`, and `Technical Validation`.
 
 ## Dataset Map
 
-| ID | Source and acquisition | Notes relevant to both papers |
-| --- | --- | --- |
-| DS1 | Kermany et al. 2018; Heidelberg Spectralis OCT | 109,559 original images; duplicates removed to yield 101,565. Split 80/10/10. Drusen is mapped to AMD. |
-| DS2 | Srinivasan et al. 2014; Heidelberg Spectralis SD-OCT | 45 subjects: 15 each Normal, dry AMD, and DME. Subject-level split: 10 train, 2 validation, 3 test per class. |
-| DS3 | Li et al. 2020 / OCTA-500; RTVue-XR spectral-domain OCT | 500 subjects; foveal slices are used. Multi-class work retains Normal, AMD, CNV, and DR, while removing sparse or heterogeneous classes. |
+| Alias | Source | Acquisition / scale | Original classes relevant here | SelfNet handling |
+| --- | --- | --- | --- | --- |
+| DS1 | Kermany 2018 | Spectralis; 109,559 images before duplicate cleanup | Normal, CNV, DME, Drusen | Drusen relabeled AMD for the 2025 binary task; 80/10/10 image split |
+| DS2 | Srinivasan et al. 2014 | Spectralis SD-OCT; 45 subjects | Normal, dry AMD, DME | Subject-level split: 10/2/3 subjects per class for train/validation/test |
+| DS3 | OCTA-500 / Li et al. 2020 | RTVue-XR; 500 subjects; foveal B-scans used | Includes Normal, AMD, DR, CNV | Stratified 80/10/10 split; a small, domain-shift-sensitive setting |
+| OCTDL | OCTDL 2024 | More than 2,000 macular raster scans | Multiple disease and pathology labels | Separate dataset paper; not DS1, DS2, or DS3 |
 
-Public-source links are recorded in each article's data-availability section. Repository datasets should be referenced through the project's `datasets/` symlink paths, not their resolved locations.
+## Context Resolution Rules
 
-## Agent Use Notes
-
-- Use the 2025 article for binary Normal-vs-AMD design, ablations, and its ViT/Swin/SwinV2 comparison.
-- Use the 2026 article for the current multi-class framing, reported SwinV2 settings, and headline quantitative results.
-- Confirm numeric claims against the XML tables and captions before propagating them into code, documentation, or reports.
-- Use the paired EPUB when a task requires visual inspection of figures; its `OPS/images/` archive entries contain the figure files.
+- Treat **OCT-SelfNet** and **Multi-OCT-SelfNet** as related but non-interchangeable experiments: the former is binary Normal-vs-AMD; the latter is multiclass.
+- Treat **DS1**, **DS2**, and **DS3** as project aliases only. Resolve them to Kermany, Srinivasan, and OCTA-500 respectively before comparing code, labels, or counts.
+- Do not compare raw accuracy across datasets without considering class imbalance and domain shift. The SelfNet papers prioritize AUC-ROC, AUC-PR, and F1 for this reason.
+- Distinguish a model's **pre-training dataset mixture** from its **fine-tuning dataset** and its **cross-dataset test set**. These are deliberately different in the generalization experiments.
+- Use reported results as paper-specific evidence, not universal baselines: preprocessing, deduplication, class mapping, foveal-slice selection, and split policy materially affect them.
