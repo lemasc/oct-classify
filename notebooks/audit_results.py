@@ -20,6 +20,8 @@ def _():
         "duke": repository_root / "datasets" / "duke1",
         "kermany": repository_root / "datasets" / "kermany",
         "octdl": repository_root / "datasets" / "octdl",
+        "octid": repository_root / "datasets" / "octid",
+        "paima": repository_root / "datasets" / "paima",
     }
     report_paths = sorted(audit_directory.glob("*.json"))
     reports = {
