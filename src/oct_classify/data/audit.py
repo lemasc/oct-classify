@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import itertools
-import json
 from collections import Counter
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass
@@ -17,47 +16,6 @@ from PIL import Image, UnidentifiedImageError
 from oct_classify.data.models import ImageRecord
 
 _IMAGE_SUFFIXES = {".bmp", ".gif", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
-_PHASH_CACHE_VERSION = 1
-
-
-def load_perceptual_hash_cache(path: Path) -> dict[str, str]:
-    if not path.exists():
-        return {}
-    value = json.loads(path.read_text(encoding="utf-8"))
-    if (
-        not isinstance(value, dict)
-        or value.get("version") != _PHASH_CACHE_VERSION
-        or value.get("algorithm") != "imagehash.phash"
-        or value.get("hash_size") != 8
-    ):
-        raise ValueError(f"Unsupported perceptual hash cache format: {path}")
-    hashes = value.get("hashes")
-    if not isinstance(hashes, dict) or not all(
-        isinstance(digest, str) and isinstance(perceptual_hash, str)
-        for digest, perceptual_hash in hashes.items()
-    ):
-        raise ValueError(f"Invalid perceptual hash cache: {path}")
-    return hashes
-
-
-def write_perceptual_hash_cache(path: Path, hashes: dict[str, str]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary_path = path.with_suffix(f"{path.suffix}.tmp")
-    temporary_path.write_text(
-        json.dumps(
-            {
-                "algorithm": "imagehash.phash",
-                "hash_size": 8,
-                "hashes": dict(sorted(hashes.items())),
-                "version": _PHASH_CACHE_VERSION,
-            },
-            indent=2,
-            sort_keys=True,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    temporary_path.replace(path)
 
 
 def _file_digest(path: Path) -> str:
@@ -128,6 +86,12 @@ class CrossSourceAuditReport:
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
+
+
+@dataclass(frozen=True, slots=True)
+class ComputedImageAudit:
+    file_digest: str
+    perceptual_hash: imagehash.ImageHash | None
 
 
 def _distribution(values: list[float]) -> dict[str, float | int] | None:
@@ -230,8 +194,7 @@ def audit_records(
     perceptual_hashes: bool = True,
     max_hash_distance: int = 5,
     hash_timing_log: TextIO | None = None,
-    computed_perceptual_hashes: dict[Path, imagehash.ImageHash] | None = None,
-    perceptual_hash_cache: dict[str, str] | None = None,
+    computed_images: dict[Path, ComputedImageAudit] | None = None,
 ) -> AuditReport:
     if max_hash_distance < 0:
         raise ValueError("The perceptual hash distance must be non-negative.")
@@ -270,25 +233,18 @@ def audit_records(
                 image_p01s.append(float(np.percentile(pixels, 1)))
                 image_p99s.append(float(np.percentile(pixels, 99)))
                 if perceptual_hashes:
-                    cached_hash = (
-                        perceptual_hash_cache.get(digest)
-                        if perceptual_hash_cache is not None
-                        else None
-                    )
-                    if cached_hash is None:
-                        hash_start = perf_counter()
-                        perceptual_hash = imagehash.phash(image)
-                        if perceptual_hash_cache is not None:
-                            perceptual_hash_cache[digest] = str(perceptual_hash)
-                        if hash_timing_log is not None:
-                            hash_timing_log.write(
-                                f"{record.source}\t{record.path}\t{perf_counter() - hash_start:.6f}\n"
-                            )
-                    else:
-                        perceptual_hash = imagehash.hex_to_hash(cached_hash)
+                    hash_start = perf_counter()
+                    perceptual_hash = imagehash.phash(image)
                     perceptual_hash_values[index] = perceptual_hash
-                    if computed_perceptual_hashes is not None:
-                        computed_perceptual_hashes[image_path] = perceptual_hash
+                    if hash_timing_log is not None:
+                        hash_timing_log.write(
+                            f"{record.source}\t{record.path}\t{perf_counter() - hash_start:.6f}\n"
+                        )
+            if computed_images is not None:
+                computed_images[image_path] = ComputedImageAudit(
+                    file_digest=digest,
+                    perceptual_hash=perceptual_hash if perceptual_hashes else None,
+                )
         except (OSError, UnidentifiedImageError):
             invalid_images.append(record.path)
         else:
@@ -360,8 +316,7 @@ def audit_cross_source_records(
     perceptual_hashes: bool = True,
     max_hash_distance: int = 5,
     hash_timing_log: TextIO | None = None,
-    computed_perceptual_hashes: dict[Path, imagehash.ImageHash] | None = None,
-    perceptual_hash_cache: dict[str, str] | None = None,
+    computed_images: dict[Path, ComputedImageAudit] | None = None,
 ) -> CrossSourceAuditReport:
     """Report duplicate candidates shared by distinct configured dataset roots."""
     if max_hash_distance < 0:
@@ -377,33 +332,28 @@ def audit_cross_source_records(
 
     for index, (image_path, record) in enumerate(locations):
         try:
-            digest = _file_digest(image_path)
-            with Image.open(image_path) as image:
-                image.load()
-                if perceptual_hashes:
-                    perceptual_hash = (
-                        computed_perceptual_hashes.get(image_path)
-                        if computed_perceptual_hashes is not None
-                        else None
-                    )
-                    if perceptual_hash is None:
-                        cached_hash = (
-                            perceptual_hash_cache.get(digest)
-                            if perceptual_hash_cache is not None
-                            else None
-                        )
-                        if cached_hash is None:
-                            hash_start = perf_counter()
-                            perceptual_hash = imagehash.phash(image)
-                            if perceptual_hash_cache is not None:
-                                perceptual_hash_cache[digest] = str(perceptual_hash)
-                            if hash_timing_log is not None:
-                                hash_timing_log.write(
-                                    f"{record.source}\t{record.path}\t{perf_counter() - hash_start:.6f}\n"
-                                )
-                        else:
-                            perceptual_hash = imagehash.hex_to_hash(cached_hash)
-                    perceptual_hash_values[index] = perceptual_hash
+            computed_image = (
+                computed_images.get(image_path) if computed_images is not None else None
+            )
+            if computed_image is not None and (
+                not perceptual_hashes or computed_image.perceptual_hash is not None
+            ):
+                digest = computed_image.file_digest
+                perceptual_hash = computed_image.perceptual_hash
+            else:
+                digest = _file_digest(image_path)
+                with Image.open(image_path) as image:
+                    image.load()
+                    if perceptual_hashes:
+                        hash_start = perf_counter()
+                        perceptual_hash = imagehash.phash(image)
+                        if hash_timing_log is not None:
+                            hash_timing_log.write(
+                                f"{record.source}\t{record.path}\t{perf_counter() - hash_start:.6f}\n"
+                            )
+            if perceptual_hashes:
+                assert perceptual_hash is not None
+                perceptual_hash_values[index] = perceptual_hash
         except (OSError, UnidentifiedImageError):
             invalid_images.append(f"{record.source}:{record.path}")
         else:

@@ -12,8 +12,6 @@ from oct_classify.data.audit import (
     audit_cross_source_records,
     audit_records,
     classify_duplicate_for_quarantine,
-    load_perceptual_hash_cache,
-    write_perceptual_hash_cache,
 )
 from oct_classify.data.models import ImageRecord
 from oct_classify.data.taxonomy import ALL_LABELS, UnifiedLabel
@@ -152,33 +150,6 @@ def test_audit_writes_per_image_phash_timings(tmp_path: Path) -> None:
     assert float(seconds) >= 0
 
 
-def test_audit_reuses_content_keyed_perceptual_hash_cache(tmp_path: Path) -> None:
-    image_path = tmp_path / "image.png"
-    Image.new("L", (8, 4), color=64).save(image_path)
-    cache: dict[str, str] = {}
-    audit_records(tmp_path, [_record("image.png", "patient-1")], perceptual_hash_cache=cache)
-    timing_log = StringIO()
-
-    audit_records(
-        tmp_path,
-        [_record("image.png", "patient-1")],
-        hash_timing_log=timing_log,
-        perceptual_hash_cache=cache,
-    )
-
-    assert len(cache) == 1
-    assert timing_log.getvalue() == ""
-
-
-def test_perceptual_hash_cache_round_trip(tmp_path: Path) -> None:
-    cache_path = tmp_path / "phash-cache.json"
-    hashes = {"digest": "0123456789abcdef"}
-
-    write_perceptual_hash_cache(cache_path, hashes)
-
-    assert load_perceptual_hash_cache(cache_path) == hashes
-
-
 def test_cross_source_audit_reports_only_cross_source_duplicates(tmp_path: Path) -> None:
     first_root = tmp_path / "first"
     second_root = tmp_path / "second"
@@ -203,15 +174,15 @@ def test_cross_source_audit_reports_only_cross_source_duplicates(tmp_path: Path)
     assert report.near_duplicates[0]["distance"] == 0
 
 
-def test_cross_source_audit_reuses_computed_perceptual_hashes(tmp_path: Path) -> None:
+def test_cross_source_audit_reuses_computed_image_analyses(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     first_root = tmp_path / "first"
     second_root = tmp_path / "second"
     first_root.mkdir()
     second_root.mkdir()
-    first_path = first_root / "image.png"
-    second_path = second_root / "image.png"
-    Image.new("L", (8, 4), color=64).save(first_path)
-    Image.new("L", (8, 4), color=64).save(second_path)
+    Image.new("L", (8, 4), color=64).save(first_root / "image.png")
+    Image.new("L", (8, 4), color=64).save(second_root / "image.png")
     first = _record("image.png", "patient-1")
     second = ImageRecord(
         path="image.png",
@@ -221,16 +192,19 @@ def test_cross_source_audit_reuses_computed_perceptual_hashes(tmp_path: Path) ->
         available_labels=ALL_LABELS,
         group_id="patient-2",
     )
-    computed_hashes = {
-        first_path: imagehash.phash(Image.open(first_path)),
-        second_path: imagehash.phash(Image.open(second_path)),
-    }
-    timing_log = StringIO()
+    computed_images = {}
+    audit_records(first_root, [first], computed_images=computed_images)
+    audit_records(second_root, [second], computed_images=computed_images)
 
-    audit_cross_source_records(
+    def fail_if_opened(*args: object, **kwargs: object) -> None:
+        raise AssertionError("cross-source audit reopened an analyzed image")
+
+    monkeypatch.setattr("oct_classify.data.audit.Image.open", fail_if_opened)
+
+    report = audit_cross_source_records(
         [(first_root, [first]), (second_root, [second])],
-        hash_timing_log=timing_log,
-        computed_perceptual_hashes=computed_hashes,
+        computed_images=computed_images,
     )
 
-    assert timing_log.getvalue() == ""
+    assert report.exact_duplicates[0]["crosses_sources"] is True
+    assert report.near_duplicates[0]["distance"] == 0
