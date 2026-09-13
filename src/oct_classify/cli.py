@@ -5,12 +5,7 @@ import json
 from collections import Counter
 from dataclasses import replace
 from pathlib import Path
-
-import torch
-from torch import nn
-from torch.optim import AdamW
-from torch.utils.data import DataLoader
-from torch.utils.tensorboard import SummaryWriter
+from typing import TYPE_CHECKING
 
 from oct_classify.data.audit import (
     audit_cross_source_records,
@@ -18,7 +13,7 @@ from oct_classify.data.audit import (
 )
 from oct_classify.data.config import load_dataset_specs
 from oct_classify.data.manifest import apply_processing_decisions, read_jsonl, write_jsonl
-from oct_classify.data.preprocessing import PreprocessingSpec
+from oct_classify.data.preprocessing import PreprocessingSpec, calculate_normalization
 from oct_classify.data.sources import get_source
 from oct_classify.data.splits import (
     DerivedSplit,
@@ -30,21 +25,21 @@ from oct_classify.data.splits import (
     write_split_definition,
 )
 from oct_classify.data.taxonomy import UnifiedLabel
-from oct_classify.models import build_model
 from oct_classify.training.config import load_training_config
-from oct_classify.training.dataset import (
-    ManifestImageDataset,
-    calculate_normalization,
-    labels_for_available,
-    load_split_records,
-)
-from oct_classify.training.engine import (
-    checkpoint_state,
-    load_checkpoint,
-    run_epoch,
-    seed_everything,
-)
 from oct_classify.training.outputs import create_run_directory, write_json, write_predictions
+
+# torch, torchvision and the modules that import them (oct_classify.models,
+# oct_classify.training.dataset, oct_classify.training.engine) are imported
+# lazily inside the functions that need them. This keeps non-training
+# subcommands (audit/manifest/splits) and any process that merely imports
+# this package (e.g. a multiprocessing worker) free of the torch/CUDA stack.
+if TYPE_CHECKING:
+    import torch
+    from torch import nn
+    from torch.utils.data import DataLoader
+    from torch.utils.tensorboard import SummaryWriter
+
+    from oct_classify.training.dataset import ManifestImageDataset
 
 
 def _records_for_spec(spec_path: Path):
@@ -307,6 +302,8 @@ def _spec_for_source(config_path: Path, source: str):
 
 
 def _device(value: str) -> torch.device:
+    import torch
+
     device = torch.device(value)
     if device.type == "cuda" and not torch.cuda.is_available():
         raise ValueError("CUDA was requested but is not available.")
@@ -316,6 +313,9 @@ def _device(value: str) -> torch.device:
 def _loader(
     dataset: ManifestImageDataset, batch_size: int, workers: int, *, shuffle: bool, seed: int
 ) -> DataLoader[tuple[torch.Tensor, int, str]]:
+    import torch
+    from torch.utils.data import DataLoader
+
     generator = torch.Generator().manual_seed(seed)
     return DataLoader(
         dataset,
@@ -358,6 +358,24 @@ def _log_tensorboard_metrics(
 
 
 def _train(args: argparse.Namespace) -> None:
+    import torch
+    from torch import nn
+    from torch.optim import AdamW
+    from torch.utils.tensorboard import SummaryWriter
+
+    from oct_classify.models import build_model
+    from oct_classify.training.dataset import (
+        ManifestImageDataset,
+        labels_for_available,
+        load_split_records,
+    )
+    from oct_classify.training.engine import (
+        checkpoint_state,
+        load_checkpoint,
+        run_epoch,
+        seed_everything,
+    )
+
     config = load_training_config(args.training_config)
     if args.epochs is not None:
         if args.epochs <= 0:
@@ -371,7 +389,9 @@ def _train(args: argparse.Namespace) -> None:
     val_records = load_split_records(manifest_path, "val")
     test_records = load_split_records(manifest_path, "test")
     seed_everything(config.run.seed)
-    mean, stdev = calculate_normalization(spec.root, train_records, preprocessing)
+    mean, stdev = calculate_normalization(
+        spec.root, train_records, preprocessing, workers=args.workers
+    )
     train_dataset = ManifestImageDataset(
         spec.root,
         train_records,
@@ -594,17 +614,23 @@ def _train(args: argparse.Namespace) -> None:
     print(f"Wrote run artifacts to {run_directory}")
 
 
-class _RestrictedClassifier(nn.Module):
-    def __init__(self, model: nn.Module, indices: list[int]) -> None:
-        super().__init__()
-        self.model = model
-        self.indices = indices
-
-    def forward(self, images: torch.Tensor) -> torch.Tensor:
-        return self.model(images)[:, self.indices]
-
-
 def _evaluate(args: argparse.Namespace) -> None:
+    import torch
+    from torch import nn
+
+    from oct_classify.models import build_model
+    from oct_classify.training.dataset import ManifestImageDataset, load_split_records
+    from oct_classify.training.engine import run_epoch
+
+    class _RestrictedClassifier(nn.Module):
+        def __init__(self, model: nn.Module, indices: list[int]) -> None:
+            super().__init__()
+            self.model = model
+            self.indices = indices
+
+        def forward(self, images: torch.Tensor) -> torch.Tensor:
+            return self.model(images)[:, self.indices]
+
     checkpoint = torch.load(args.checkpoint, map_location="cpu", weights_only=False)
     metadata = checkpoint["metadata"]
     source_spec = _spec_for_source(args.config, args.source)
@@ -736,6 +762,11 @@ def main() -> None:
                 "--max-eval-batches",
                 type=int,
                 help="Cap validation and test batches for a local smoke test.",
+            )
+            command_parser.add_argument(
+                "--workers",
+                type=int,
+                help="Processes for normalization statistics; defaults to all available CPU cores.",
             )
         if command == "evaluate":
             command_parser.add_argument("--checkpoint", type=Path, required=True)

@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+import multiprocessing
+import os
 from collections.abc import Iterable
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 from PIL import Image
+
+from oct_classify.data.models import ImageRecord
 
 
 @dataclass(frozen=True, slots=True)
@@ -63,3 +69,40 @@ def channel_statistics(images: Iterable[np.ndarray]) -> tuple[np.ndarray, np.nda
     mean = total / pixel_count
     variance = np.maximum(total_squared / pixel_count - np.square(mean), 0.0)
     return mean.astype(np.float32), np.sqrt(variance).astype(np.float32)
+
+
+def _preprocess_for_normalization(job: tuple[Path, str, PreprocessingSpec]) -> np.ndarray:
+    root, path, spec = job
+    with Image.open(root / path) as image:
+        return preprocess_image(image, spec)
+
+
+def calculate_normalization(
+    root: Path,
+    records: Iterable[ImageRecord],
+    spec: PreprocessingSpec,
+    *,
+    workers: int | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Compute channel statistics in worker processes that stay free of torch/torchvision.
+
+    The worker function lives here (not in training.dataset) so that spawned
+    processes only import this lightweight, torch-free module instead of
+    pulling in the full torch/CUDA stack for plain PIL/numpy work.
+    """
+    if workers is not None and workers < 1:
+        raise ValueError("The normalization worker count must be at least one.")
+    records = list(records)
+    jobs = [(root, record.path, spec) for record in records]
+    if workers == 1 or len(jobs) < 2:
+        return channel_statistics(_preprocess_for_normalization(job) for job in jobs)
+
+    worker_count = workers or os.cpu_count() or 1
+    chunksize = max(1, len(jobs) // (worker_count * 4))
+    with ProcessPoolExecutor(
+        max_workers=worker_count,
+        mp_context=multiprocessing.get_context("spawn"),
+    ) as executor:
+        return channel_statistics(
+            executor.map(_preprocess_for_normalization, jobs, chunksize=chunksize)
+        )

@@ -12,7 +12,7 @@ from torchvision.transforms import InterpolationMode
 from torchvision.transforms import functional as transforms
 
 from oct_classify.data.models import ImageRecord
-from oct_classify.data.preprocessing import PreprocessingSpec, channel_statistics, preprocess_image
+from oct_classify.data.preprocessing import PreprocessingSpec, preprocess_image
 from oct_classify.data.taxonomy import UnifiedLabel
 from oct_classify.training.config import AugmentationConfig
 
@@ -34,17 +34,6 @@ def load_split_records(path: Path, split: str) -> list[ImageRecord]:
     if not records:
         raise ValueError(f"No {split!r} records in split manifest: {path}")
     return records
-
-
-def calculate_normalization(
-    root: Path, records: Iterable[ImageRecord], spec: PreprocessingSpec
-) -> tuple[np.ndarray, np.ndarray]:
-    def images() -> Iterable[np.ndarray]:
-        for record in records:
-            with Image.open(root / record.path) as image:
-                yield preprocess_image(image, spec)
-
-    return channel_statistics(images())
 
 
 class ManifestImageDataset(Dataset[tuple[torch.Tensor, int, str]]):
