@@ -34,3 +34,19 @@ It summarizes the generated audit reports and displays the source images in each
 pHash duplicate cluster.
 
 Generated manifests and reports belong under ignored `artifacts/`. See `docs/data-contract.md` for the unified-label and patient/volume split contract.
+
+## Local Baseline
+
+The supervised baseline is ImageNet-pretrained ResNet-50 trained separately per source. Run a short,
+end-to-end local flow check before a full experiment:
+
+```bash
+uv run oct-classify train --source duke --run-name smoke --epochs 1 --max-train-batches 2 --max-eval-batches 2
+uv run oct-classify evaluate --checkpoint artifacts/runs/duke/resnet50/smoke/checkpoint-best.pt --source paima --max-eval-batches 2
+```
+
+`train` consumes the derived source split, calculates normalization from its training records only, and
+writes configuration, normalization, checkpoints, history, metrics, and predictions under
+`artifacts/runs/`. `evaluate` uses the class intersection between the checkpoint and target source, so
+a three-class model is evaluated on Paima's Normal/AMD test examples only.
+Metrics from capped smoke runs are flow-validation evidence only, not experimental results.

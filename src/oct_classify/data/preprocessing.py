@@ -42,7 +42,8 @@ def preprocess_image(image: Image.Image, spec: PreprocessingSpec | None = None) 
         array = np.clip((array - low) / (high - low), 0.0, 1.0)
     else:
         array.fill(0.0)
-    return array
+    # Percentile arithmetic may promote the float32 pixel array to float64.
+    return array.astype(np.float32, copy=False)
 
 
 def channel_statistics(images: Iterable[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:

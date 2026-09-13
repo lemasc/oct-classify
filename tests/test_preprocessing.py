@@ -13,6 +13,7 @@ def test_preprocess_preserves_aspect_ratio_with_center_padding() -> None:
     )
 
     assert result.shape == (8, 8, 3)
+    assert result.dtype == np.float32
     assert np.all(result[:2] == 0)
     assert np.all(result[2:6] == 1)
     assert np.all(result[6:] == 0)
