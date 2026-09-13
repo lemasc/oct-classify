@@ -65,3 +65,23 @@ The operative processing decisions are maintained in [the data contract](data-co
 use the configured source snapshots, select lexical canonical paths, preserve Kermany's supplied test
 partition, exclude OCTDL ERM from this task, and quarantine only the defined exact/pHash-zero conflict
 components.
+
+## 2026-09-13: Audit Policy Interpretation
+
+Audit reports remain exploratory: every exact and pHash candidate is retained in the JSON reports. Each
+component is annotated with `quarantine_eligible` and `quarantine_reasons` under the locked processing
+policy. The command exits non-zero only for invalid manifest images and quarantine-eligible components;
+nonzero-distance pHash candidates remain visible review observations and do not independently fail the
+audit.
+
+**Post-policy audit result:** `uv run oct-classify audit` decoded all 131,072 manifest records with no
+invalid images.
+
+| Source | Exact label-conflict components | pHash-zero label-conflict components | pHash-zero split-crossing components | Audit status |
+| --- | ---: | ---: | ---: | --- |
+| Duke | 0 | 0 | 0 | Pass; pHash candidates are review-only |
+| PAIMA | 3 | 32 | 0 | Fail; quarantine pending |
+| Kermany | 82 | 153 | 0 | Fail; quarantine pending |
+| OCTDL | 0 | 0 | 0 | Pass; pHash candidates are review-only |
+
+The command exits non-zero only for PAIMA and Kermany pending derived-manifest quarantine.

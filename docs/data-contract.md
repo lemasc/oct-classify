@@ -41,9 +41,11 @@ The manifest command writes ignored JSONL files to `artifacts/manifests/` by def
 mode, resolution, aspect ratio, and grayscale intensity statistics. It also reports image files that
 are present below a dataset root but not emitted by the source adapter.
 
-The audit detects byte-identical images and perceptually similar images using pHashes. It fails when
-either kind crosses a supplied split or has conflicting unified labels. Similar images within a known
-patient/volume group remain a reported observation rather than a failure.
+The audit detects byte-identical images and perceptually similar images using pHashes. It reports every
+detected component, including review-only candidates, and annotates each with its quarantine eligibility
+and reason codes. It fails only for invalid manifest images and components eligible under the locked
+policy below. Similar images within a known patient/volume group remain a reported observation rather
+than a failure.
 
 `audit` also writes `cross-source.json`, which compares all configured sources. It reports only
 duplicate candidates that span source roots; pHash findings remain candidates unless the locked policy

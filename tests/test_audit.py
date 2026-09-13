@@ -1,14 +1,17 @@
+from dataclasses import replace
 from io import StringIO
 from pathlib import Path
 
 import imagehash
 import numpy as np
+import pytest
 from PIL import Image
 
 from oct_classify.data.audit import (
     _perceptual_duplicate_pairs,
     audit_cross_source_records,
     audit_records,
+    classify_duplicate_for_quarantine,
     load_perceptual_hash_cache,
     write_perceptual_hash_cache,
 )
@@ -50,7 +53,9 @@ def test_audit_profiles_images_and_detects_cross_split_exact_duplicates(tmp_path
     assert report.intensity_distribution is not None
     assert report.unmanifested_images == ["unmanifested.jpg"]
     assert report.exact_duplicates[0]["crosses_supplied_splits"] is True
-    assert report.integrity_failures == ["duplicate images cross supplied splits"]
+    assert report.exact_duplicates[0]["quarantine_eligible"] is False
+    assert report.near_duplicates[0]["quarantine_reasons"] == ["phash_zero_split_crossing"]
+    assert report.integrity_failures == ["pHash-distance-zero components cross supplied splits"]
 
 
 def test_perceptual_hash_candidates_include_nearby_hashes() -> None:
@@ -73,6 +78,67 @@ def test_audit_rejects_negative_hash_distance(tmp_path: Path) -> None:
         assert "distance" in str(error)
     else:
         raise AssertionError("Expected a negative perceptual hash distance to fail")
+
+
+@pytest.mark.parametrize(
+    ("exact", "distance", "conflicting_labels", "crosses_splits", "reasons"),
+    [
+        (True, None, True, False, ["exact_label_conflict"]),
+        (True, None, False, True, []),
+        (False, 0, True, False, ["phash_zero_label_conflict"]),
+        (False, 0, False, True, ["phash_zero_split_crossing"]),
+        (False, 4, True, True, []),
+    ],
+)
+def test_duplicate_quarantine_classification_follows_locked_policy(
+    exact: bool,
+    distance: int | None,
+    conflicting_labels: bool,
+    crosses_splits: bool,
+    reasons: list[str],
+) -> None:
+    duplicate: dict[str, object] = {
+        "conflicting_labels": conflicting_labels,
+        "crosses_supplied_splits": crosses_splits,
+    }
+    if distance is not None:
+        duplicate["distance"] = distance
+
+    classified = classify_duplicate_for_quarantine(duplicate, exact=exact)
+
+    assert classified["quarantine_eligible"] is bool(reasons)
+    assert classified["quarantine_reasons"] == reasons
+
+
+def test_integrity_failures_ignore_review_only_candidates(tmp_path: Path) -> None:
+    report = audit_records(tmp_path, [], perceptual_hashes=False)
+    review_only = classify_duplicate_for_quarantine(
+        {
+            "conflicting_labels": True,
+            "crosses_supplied_splits": True,
+            "distance": 4,
+        },
+        exact=False,
+    )
+
+    assert replace(report, near_duplicates=[review_only]).integrity_failures == []
+
+
+def test_integrity_failures_include_quarantine_eligible_candidates(tmp_path: Path) -> None:
+    report = audit_records(tmp_path, [], perceptual_hashes=False)
+    exact = classify_duplicate_for_quarantine(
+        {"conflicting_labels": True, "crosses_supplied_splits": False}, exact=True
+    )
+    near = classify_duplicate_for_quarantine(
+        {"conflicting_labels": True, "crosses_supplied_splits": True, "distance": 0},
+        exact=False,
+    )
+
+    assert replace(report, exact_duplicates=[exact], near_duplicates=[near]).integrity_failures == [
+        "exact duplicate components have conflicting labels",
+        "pHash-distance-zero components have conflicting labels",
+        "pHash-distance-zero components cross supplied splits",
+    ]
 
 
 def test_audit_writes_per_image_phash_timings(tmp_path: Path) -> None:

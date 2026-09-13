@@ -100,14 +100,22 @@ class AuditReport:
         failures: list[str] = []
         if self.invalid_images:
             failures.append(f"{len(self.invalid_images)} invalid or missing manifest image(s)")
-        for duplicate in [*self.exact_duplicates, *self.near_duplicates]:
-            if duplicate["crosses_supplied_splits"]:
-                failures.append("duplicate images cross supplied splits")
-                break
-        for duplicate in [*self.exact_duplicates, *self.near_duplicates]:
-            if duplicate["conflicting_labels"]:
-                failures.append("duplicate images have conflicting labels")
-                break
+        exact_reasons = {
+            reason
+            for duplicate in self.exact_duplicates
+            for reason in duplicate["quarantine_reasons"]
+        }
+        near_reasons = {
+            reason
+            for duplicate in self.near_duplicates
+            for reason in duplicate["quarantine_reasons"]
+        }
+        if "exact_label_conflict" in exact_reasons:
+            failures.append("exact duplicate components have conflicting labels")
+        if "phash_zero_label_conflict" in near_reasons:
+            failures.append("pHash-distance-zero components have conflicting labels")
+        if "phash_zero_split_crossing" in near_reasons:
+            failures.append("pHash-distance-zero components cross supplied splits")
         return failures
 
 
@@ -152,6 +160,32 @@ def _duplicate_summary(records: list[ImageRecord], indices: Iterable[int]) -> di
         "conflicting_labels": len(labels) > 1,
         "crosses_sources": len({record.source for record in duplicate_records}) > 1,
     }
+
+
+def classify_duplicate_for_quarantine(
+    duplicate: dict[str, object], *, exact: bool
+) -> dict[str, object]:
+    """Classify an audit duplicate component under the locked quarantine policy."""
+    reasons: list[str] = []
+    if exact:
+        if duplicate["conflicting_labels"]:
+            reasons.append("exact_label_conflict")
+    elif duplicate["distance"] == 0:
+        if duplicate["conflicting_labels"]:
+            reasons.append("phash_zero_label_conflict")
+        if duplicate["crosses_supplied_splits"]:
+            reasons.append("phash_zero_split_crossing")
+    return {
+        **duplicate,
+        "quarantine_eligible": bool(reasons),
+        "quarantine_reasons": reasons,
+    }
+
+
+def _classify_duplicates(
+    duplicates: Iterable[dict[str, object]], *, exact: bool
+) -> list[dict[str, object]]:
+    return [classify_duplicate_for_quarantine(duplicate, exact=exact) for duplicate in duplicates]
 
 
 def _perceptual_duplicate_pairs(
@@ -271,15 +305,19 @@ def audit_records(
         and path.suffix.lower() in _IMAGE_SUFFIXES
         and str(path.relative_to(root)) not in manifest_paths
     )
-    exact_duplicates = [
-        _duplicate_summary(records, indices)
-        for indices in exact_hashes.values()
-        if len(indices) > 1
-    ]
-    near_duplicates = (
+    exact_duplicates = _classify_duplicates(
+        [
+            _duplicate_summary(records, indices)
+            for indices in exact_hashes.values()
+            if len(indices) > 1
+        ],
+        exact=True,
+    )
+    near_duplicates = _classify_duplicates(
         _perceptual_duplicate_pairs(records, perceptual_hash_values, max_hash_distance)
         if perceptual_hashes
-        else []
+        else [],
+        exact=False,
     )
 
     return AuditReport(
@@ -371,12 +409,15 @@ def audit_cross_source_records(
         else:
             exact_hashes.setdefault(digest, []).append(index)
 
-    exact_duplicates = [
-        _duplicate_summary(records, indices)
-        for indices in exact_hashes.values()
-        if len(indices) > 1 and len({records[index].source for index in indices}) > 1
-    ]
-    near_duplicates = (
+    exact_duplicates = _classify_duplicates(
+        [
+            _duplicate_summary(records, indices)
+            for indices in exact_hashes.values()
+            if len(indices) > 1 and len({records[index].source for index in indices}) > 1
+        ],
+        exact=True,
+    )
+    near_duplicates = _classify_duplicates(
         [
             duplicate
             for duplicate in _perceptual_duplicate_pairs(
@@ -385,7 +426,8 @@ def audit_cross_source_records(
             if duplicate["crosses_sources"]
         ]
         if perceptual_hashes
-        else []
+        else [],
+        exact=False,
     )
     return CrossSourceAuditReport(
         image_count=len(records),
