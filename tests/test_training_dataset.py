@@ -6,6 +6,7 @@ from PIL import Image
 from oct_classify.data.models import ImageRecord
 from oct_classify.data.preprocessing import PreprocessingSpec
 from oct_classify.data.taxonomy import ALL_LABELS, UnifiedLabel
+from oct_classify.training.config import AugmentationConfig
 from oct_classify.training.dataset import ManifestImageDataset, labels_for_available
 
 
@@ -36,6 +37,7 @@ def test_dataset_filters_to_requested_labels_and_normalizes(tmp_path: Path) -> N
         PreprocessingSpec(image_size=4, lower_percentile=0, upper_percentile=100),
         np.zeros(3, dtype=np.float32),
         np.ones(3, dtype=np.float32),
+        AugmentationConfig(0.5, 10.0, 0.1, 0.1, 0.25, 0.5),
         training=False,
     )
 

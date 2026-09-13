@@ -19,10 +19,21 @@ class DataConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class AugmentationConfig:
+    horizontal_flip_probability: float
+    rotation_degrees: float
+    brightness_jitter: float
+    contrast_jitter: float
+    gaussian_blur_probability: float
+    gaussian_blur_sigma: float
+
+
+@dataclass(frozen=True, slots=True)
 class OptimizationConfig:
     epochs: int
     learning_rate: float
     weight_decay: float
+    early_stopping_patience: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,6 +45,7 @@ class RunConfig:
 class TrainingConfig:
     model: ModelConfig
     data: DataConfig
+    augmentation: AugmentationConfig
     optimization: OptimizationConfig
     run: RunConfig
 
@@ -48,6 +60,7 @@ def load_training_config(path: Path) -> TrainingConfig:
         config = TrainingConfig(
             model=ModelConfig(**value["model"]),
             data=DataConfig(**value["data"]),
+            augmentation=AugmentationConfig(**value["augmentation"]),
             optimization=OptimizationConfig(**value["optimization"]),
             run=RunConfig(**value["run"]),
         )
@@ -59,8 +72,22 @@ def load_training_config(path: Path) -> TrainingConfig:
         raise ValueError("data.image_size and data.batch_size must be positive.")
     if config.data.num_workers < 0:
         raise ValueError("data.num_workers must not be negative.")
+    if not 0 <= config.augmentation.horizontal_flip_probability <= 1:
+        raise ValueError("augmentation.horizontal_flip_probability must be between 0 and 1.")
+    if config.augmentation.rotation_degrees < 0:
+        raise ValueError("augmentation.rotation_degrees must not be negative.")
+    if not 0 <= config.augmentation.brightness_jitter <= 1:
+        raise ValueError("augmentation.brightness_jitter must be between 0 and 1.")
+    if not 0 <= config.augmentation.contrast_jitter <= 1:
+        raise ValueError("augmentation.contrast_jitter must be between 0 and 1.")
+    if not 0 <= config.augmentation.gaussian_blur_probability <= 1:
+        raise ValueError("augmentation.gaussian_blur_probability must be between 0 and 1.")
+    if config.augmentation.gaussian_blur_sigma <= 0:
+        raise ValueError("augmentation.gaussian_blur_sigma must be positive.")
     if config.optimization.epochs <= 0 or config.optimization.learning_rate <= 0:
         raise ValueError("optimization.epochs and optimization.learning_rate must be positive.")
     if config.optimization.weight_decay < 0:
         raise ValueError("optimization.weight_decay must not be negative.")
+    if config.optimization.early_stopping_patience <= 0:
+        raise ValueError("optimization.early_stopping_patience must be positive.")
     return config

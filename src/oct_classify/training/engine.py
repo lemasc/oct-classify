@@ -77,6 +77,7 @@ def checkpoint_state(
     optimizer: Optimizer,
     epoch: int,
     best_macro_f1: float,
+    epochs_without_improvement: int,
     metadata: dict[str, object],
 ) -> dict[str, object]:
     return {
@@ -84,6 +85,7 @@ def checkpoint_state(
         "optimizer_state": optimizer.state_dict(),
         "epoch": epoch,
         "best_macro_f1": best_macro_f1,
+        "epochs_without_improvement": epochs_without_improvement,
         "metadata": metadata,
     }
 

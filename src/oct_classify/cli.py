@@ -359,13 +359,34 @@ def _train(args: argparse.Namespace) -> None:
     seed_everything(config.run.seed)
     mean, stdev = calculate_normalization(spec.root, train_records, preprocessing)
     train_dataset = ManifestImageDataset(
-        spec.root, train_records, class_labels, preprocessing, mean, stdev, training=True
+        spec.root,
+        train_records,
+        class_labels,
+        preprocessing,
+        mean,
+        stdev,
+        config.augmentation,
+        training=True,
     )
     val_dataset = ManifestImageDataset(
-        spec.root, val_records, class_labels, preprocessing, mean, stdev, training=False
+        spec.root,
+        val_records,
+        class_labels,
+        preprocessing,
+        mean,
+        stdev,
+        config.augmentation,
+        training=False,
     )
     test_dataset = ManifestImageDataset(
-        spec.root, test_records, class_labels, preprocessing, mean, stdev, training=False
+        spec.root,
+        test_records,
+        class_labels,
+        preprocessing,
+        mean,
+        stdev,
+        config.augmentation,
+        training=False,
     )
     train_loader = _loader(
         train_dataset,
@@ -417,6 +438,7 @@ def _train(args: argparse.Namespace) -> None:
     )
     start_epoch = 0
     best_macro_f1 = -1.0
+    epochs_without_improvement = 0
     if args.resume is not None:
         checkpoint = load_checkpoint(str(args.resume), model, optimizer)
         checkpoint_metadata = checkpoint["metadata"]
@@ -430,6 +452,7 @@ def _train(args: argparse.Namespace) -> None:
         run_directory = args.resume.parent
         start_epoch = int(checkpoint["epoch"]) + 1
         best_macro_f1 = float(checkpoint["best_macro_f1"])
+        epochs_without_improvement = int(checkpoint.get("epochs_without_improvement", 0))
     else:
         run_directory = create_run_directory(
             args.output, spec.name, config.model.architecture, args.run_name
@@ -482,15 +505,38 @@ def _train(args: argparse.Namespace) -> None:
             macro_f1 = float(val_result.evaluation.metrics["macro_f1"])
             if macro_f1 > best_macro_f1:
                 best_macro_f1 = macro_f1
+                epochs_without_improvement = 0
                 torch.save(
-                    checkpoint_state(model, optimizer, epoch, best_macro_f1, metadata),
+                    checkpoint_state(
+                        model,
+                        optimizer,
+                        epoch,
+                        best_macro_f1,
+                        epochs_without_improvement,
+                        metadata,
+                    ),
                     run_directory / "checkpoint-best.pt",
                 )
+            else:
+                epochs_without_improvement += 1
             torch.save(
-                checkpoint_state(model, optimizer, epoch, best_macro_f1, metadata),
+                checkpoint_state(
+                    model,
+                    optimizer,
+                    epoch,
+                    best_macro_f1,
+                    epochs_without_improvement,
+                    metadata,
+                ),
                 run_directory / "checkpoint-last.pt",
             )
             print(json.dumps(epoch_result, sort_keys=True))
+            if epochs_without_improvement >= config.optimization.early_stopping_patience:
+                print(
+                    f"Early stopping after {epoch + 1} epochs: validation macro-F1 did not improve "
+                    f"for {epochs_without_improvement} epochs."
+                )
+                break
     load_checkpoint(str(run_directory / "checkpoint-best.pt"), model)
     with torch.no_grad():
         test_result = run_epoch(

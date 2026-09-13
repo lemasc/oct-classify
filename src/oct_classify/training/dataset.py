@@ -8,10 +8,13 @@ import numpy as np
 import torch
 from PIL import Image
 from torch.utils.data import Dataset
+from torchvision.transforms import InterpolationMode
+from torchvision.transforms import functional as transforms
 
 from oct_classify.data.models import ImageRecord
 from oct_classify.data.preprocessing import PreprocessingSpec, channel_statistics, preprocess_image
 from oct_classify.data.taxonomy import UnifiedLabel
+from oct_classify.training.config import AugmentationConfig
 
 CLASS_ORDER = (UnifiedLabel.NORMAL, UnifiedLabel.AMD, UnifiedLabel.DME)
 
@@ -53,6 +56,7 @@ class ManifestImageDataset(Dataset[tuple[torch.Tensor, int, str]]):
         preprocessing: PreprocessingSpec,
         mean: np.ndarray,
         stdev: np.ndarray,
+        augmentation: AugmentationConfig,
         *,
         training: bool,
     ) -> None:
@@ -61,6 +65,7 @@ class ManifestImageDataset(Dataset[tuple[torch.Tensor, int, str]]):
         self.preprocessing = preprocessing
         self.mean = torch.tensor(mean, dtype=torch.float32).view(3, 1, 1)
         self.stdev = torch.tensor(np.maximum(stdev, 1e-6), dtype=torch.float32).view(3, 1, 1)
+        self.augmentation = augmentation
         self.training = training
         class_indices = {label: index for index, label in enumerate(class_labels)}
         self.records = [record for record in records if record.label in class_indices]
@@ -76,7 +81,37 @@ class ManifestImageDataset(Dataset[tuple[torch.Tensor, int, str]]):
         with Image.open(self.root / record.path) as image:
             array = preprocess_image(image, self.preprocessing)
         tensor = torch.from_numpy(array).permute(2, 0, 1).contiguous()
-        # OCT B-scans have no clinically meaningful left-to-right orientation for this task.
-        if self.training and random.random() < 0.5:
-            tensor = torch.flip(tensor, dims=(2,))
+        if self.training:
+            # OCT B-scans have no clinically meaningful left-to-right orientation for this task.
+            if random.random() < self.augmentation.horizontal_flip_probability:
+                tensor = torch.flip(tensor, dims=(2,))
+            if self.augmentation.rotation_degrees:
+                tensor = transforms.rotate(
+                    tensor,
+                    random.uniform(
+                        -self.augmentation.rotation_degrees, self.augmentation.rotation_degrees
+                    ),
+                    interpolation=InterpolationMode.BILINEAR,
+                    fill=0.0,
+                )
+            if self.augmentation.brightness_jitter:
+                tensor = transforms.adjust_brightness(
+                    tensor,
+                    random.uniform(
+                        1 - self.augmentation.brightness_jitter,
+                        1 + self.augmentation.brightness_jitter,
+                    ),
+                )
+            if self.augmentation.contrast_jitter:
+                tensor = transforms.adjust_contrast(
+                    tensor,
+                    random.uniform(
+                        1 - self.augmentation.contrast_jitter,
+                        1 + self.augmentation.contrast_jitter,
+                    ),
+                )
+            if random.random() < self.augmentation.gaussian_blur_probability:
+                tensor = transforms.gaussian_blur(
+                    tensor, kernel_size=[3, 3], sigma=self.augmentation.gaussian_blur_sigma
+                )
         return (tensor - self.mean) / self.stdev, self.targets[index], record.path
