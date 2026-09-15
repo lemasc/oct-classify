@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import multiprocessing
 import os
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
@@ -111,7 +111,7 @@ def _combine_partial_statistics(
 
 
 def calculate_normalization(
-    root: Path,
+    root: Path | Mapping[str, Path],
     records: Iterable[ImageRecord],
     spec: PreprocessingSpec,
     *,
@@ -126,7 +126,13 @@ def calculate_normalization(
     if workers is not None and workers < 1:
         raise ValueError("The normalization worker count must be at least one.")
     records = list(records)
-    jobs = [(root, record.path, spec) for record in records]
+    if isinstance(root, Path):
+        jobs = [(root, record.path, spec) for record in records]
+    else:
+        missing_sources = {record.source for record in records} - root.keys()
+        if missing_sources:
+            raise ValueError(f"No normalization root for sources: {sorted(missing_sources)}")
+        jobs = [(root[record.source], record.path, spec) for record in records]
     if workers == 1 or len(jobs) < 2:
         return channel_statistics(_preprocess_for_normalization(job) for job in jobs)
 

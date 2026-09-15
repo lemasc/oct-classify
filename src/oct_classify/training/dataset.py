@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 
 import numpy as np
@@ -36,10 +36,10 @@ def load_split_records(path: Path, split: str) -> list[ImageRecord]:
     return records
 
 
-class ManifestImageDataset(Dataset[tuple[torch.Tensor, int, str]]):
+class ManifestImageDataset(Dataset[tuple[torch.Tensor, int, torch.Tensor, str, str]]):
     def __init__(
         self,
-        root: Path,
+        root: Path | Mapping[str, Path],
         records: Iterable[ImageRecord],
         class_labels: tuple[UnifiedLabel, ...],
         preprocessing: PreprocessingSpec,
@@ -49,7 +49,12 @@ class ManifestImageDataset(Dataset[tuple[torch.Tensor, int, str]]):
         *,
         training: bool,
     ) -> None:
-        self.root = root
+        records = list(records)
+        self.roots = (
+            {source: root for source in {record.source for record in records}}
+            if isinstance(root, Path)
+            else dict(root)
+        )
         self.class_labels = class_labels
         self.preprocessing = preprocessing
         self.mean = torch.tensor(mean, dtype=torch.float32).view(3, 1, 1)
@@ -60,14 +65,17 @@ class ManifestImageDataset(Dataset[tuple[torch.Tensor, int, str]]):
         self.records = [record for record in records if record.label in class_indices]
         if not self.records:
             raise ValueError("No records remain after filtering to the requested class labels.")
+        unknown_sources = {record.source for record in self.records} - self.roots.keys()
+        if unknown_sources:
+            raise ValueError(f"No image root configured for sources: {sorted(unknown_sources)}")
         self.targets = [class_indices[record.label] for record in self.records]
 
     def __len__(self) -> int:
         return len(self.records)
 
-    def __getitem__(self, index: int) -> tuple[torch.Tensor, int, str]:
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, int, torch.Tensor, str, str]:
         record = self.records[index]
-        with Image.open(self.root / record.path) as image:
+        with Image.open(self.roots[record.source] / record.path) as image:
             array = preprocess_image(image, self.preprocessing)
         tensor = torch.from_numpy(array).permute(2, 0, 1).contiguous()
         if self.training:
@@ -103,4 +111,13 @@ class ManifestImageDataset(Dataset[tuple[torch.Tensor, int, str]]):
                 tensor = transforms.gaussian_blur(
                     tensor, kernel_size=[3, 3], sigma=self.augmentation.gaussian_blur_sigma
                 )
-        return (tensor - self.mean) / self.stdev, self.targets[index], record.path
+        available_mask = torch.tensor(
+            [label in record.available_labels for label in self.class_labels], dtype=torch.bool
+        )
+        return (
+            (tensor - self.mean) / self.stdev,
+            self.targets[index],
+            available_mask,
+            record.source,
+            record.path,
+        )

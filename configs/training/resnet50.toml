@@ -23,3 +23,7 @@ early_stopping_patience = 10
 
 [run]
 seed = 20260913
+
+[sampling]
+strategy = "source_class_balanced"
+batches_per_epoch = 1000

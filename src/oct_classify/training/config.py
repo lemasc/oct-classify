@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import tomllib
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 
@@ -42,12 +42,19 @@ class RunConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class SamplingConfig:
+    strategy: str = "source_class_balanced"
+    batches_per_epoch: int = 1000
+
+
+@dataclass(frozen=True, slots=True)
 class TrainingConfig:
     model: ModelConfig
     data: DataConfig
     augmentation: AugmentationConfig
     optimization: OptimizationConfig
     run: RunConfig
+    sampling: SamplingConfig = field(default_factory=SamplingConfig)
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
@@ -61,8 +68,9 @@ def load_training_config(path: Path) -> TrainingConfig:
             model=ModelConfig(**value["model"]),
             data=DataConfig(**value["data"]),
             augmentation=AugmentationConfig(**value["augmentation"]),
-            optimization=OptimizationConfig(**value["optimization"]),
-            run=RunConfig(**value["run"]),
+                optimization=OptimizationConfig(**value["optimization"]),
+                run=RunConfig(**value["run"]),
+                sampling=SamplingConfig(**value.get("sampling", {})),
         )
     except (KeyError, TypeError) as error:
         raise ValueError(f"Invalid training configuration in {path}") from error
@@ -90,4 +98,8 @@ def load_training_config(path: Path) -> TrainingConfig:
         raise ValueError("optimization.weight_decay must not be negative.")
     if config.optimization.early_stopping_patience <= 0:
         raise ValueError("optimization.early_stopping_patience must be positive.")
+    if config.sampling.strategy != "source_class_balanced":
+        raise ValueError("sampling.strategy must be 'source_class_balanced'.")
+    if config.sampling.batches_per_epoch <= 0:
+        raise ValueError("sampling.batches_per_epoch must be positive.")
     return config

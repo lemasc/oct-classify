@@ -31,29 +31,43 @@ def write_predictions(
     predictions: np.ndarray,
     probabilities: np.ndarray,
     class_names: tuple[str, ...],
+    *,
+    sources: list[str] | None = None,
 ) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames = [
+        "path",
+        "target",
+        "prediction",
+        *[f"probability_{name}" for name in class_names],
+    ]
+    if sources is not None:
+        if len(sources) != len(paths):
+            raise ValueError("sources must have the same length as paths.")
+        fieldnames.insert(1, "source")
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(
             handle,
-            fieldnames=[
-                "path",
-                "target",
-                "prediction",
-                *[f"probability_{name}" for name in class_names],
-            ],
+            fieldnames=fieldnames,
         )
         writer.writeheader()
-        for image_path, target, prediction, probability in zip(
-            paths, targets, predictions, probabilities, strict=True
+        for image_path, target, prediction, probability, source in zip(
+            paths,
+            targets,
+            predictions,
+            probabilities,
+            sources or [None] * len(paths),
+            strict=True,
         ):
-            writer.writerow(
-                {
-                    "path": image_path,
-                    "target": class_names[int(target)],
-                    "prediction": class_names[int(prediction)],
-                    **{
-                        f"probability_{name}": float(score)
-                        for name, score in zip(class_names, probability, strict=True)
-                    },
-                }
-            )
+            row = {
+                "path": image_path,
+                "target": class_names[int(target)],
+                "prediction": class_names[int(prediction)],
+                **{
+                    f"probability_{name}": float(score)
+                    for name, score in zip(class_names, probability, strict=True)
+                },
+            }
+            if sources is not None:
+                row["source"] = source
+            writer.writerow(row)

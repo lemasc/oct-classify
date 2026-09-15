@@ -41,8 +41,10 @@ def test_dataset_filters_to_requested_labels_and_normalizes(tmp_path: Path) -> N
         training=False,
     )
 
-    image, target, path = dataset[1]
+    image, target, available_mask, source, path = dataset[1]
 
     assert image.shape == (3, 4, 4)
     assert target == 1
+    assert available_mask.tolist() == [True, True]
+    assert source == "test"
     assert path == "image.png"
