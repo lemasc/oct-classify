@@ -1,7 +1,7 @@
 # Multi-Dataset OCT Classification — Project Plan
 
-**Scope:** First pass: Normal / AMD (merged: AMD-unspecified + CNV + Drusen) / DME, across Duke, Kermany, OCTDL, and Paima/NEH. OCTID is deferred until a defensible split design is available.
-**Timeline:** ~8 weeks
+**Scope:** First pass: Normal / AMD (merged: AMD-unspecified + CNV + Drusen) / DME, across Duke, Kermany, OCTDL, and PAIMA. OCTID is deferred until a defensible split design is available.
+**Timeline:** ~6 weeks total: one completed exploratory week and approximately five remaining weeks.
 **Compute:** RTX 3060 (local) · A100 cluster (1g.10gb MIG slices, on-demand) · 7g.80gb slices (queued)
 
 ---
@@ -10,16 +10,16 @@
 
 After merging CNV + Drusen + AMD-unspecified into a single AMD class, your label availability looks like this:
 
-| Class | Duke | Kermany | OCTDL | Paima/NEH |
+| Class | Duke | Kermany | OCTDL | PAIMA |
 |---|---|---|---|---|
 | Normal | ✓ | ✓ | ✓ | ✓ |
 | AMD (merged) | ✓ | ✓ (via CNV) | ✓ | ✓ (via CNV/Drusen) |
 | DME | ✓ | ✓ | ✓ | **✗** |
 
-Once merged, AMD and Normal are available everywhere — but **DME is missing from Paima/NEH**. This is a partial-label, not a missing-modality, problem: Paima/NEH is not "off-domain" for DME; it simply has no DME images at all (not even unlabeled ones you could pseudo-label). This shapes two decisions:
+Once merged, AMD and Normal are available everywhere — but **DME is structurally absent from PAIMA**. PAIMA images were not screened or labeled for DME, so their labels must not be treated as negative DME targets. This shapes two decisions:
 
-- **Training a unified 3-way classifier on fused labeled data:** naively training softmax cross-entropy with Paima batches will push DME logits toward zero for images that were never screened for DME, which is a false negative signal, not a true one. Use a **masked loss** (only backprop the classes a given dataset actually screened for) or train **one-vs-rest binary heads** instead of a single softmax, so absent classes don't contaminate gradients.
-- **Cross-dataset evaluation:** evaluate Paima/NEH on Normal/AMD only. Report a **full 3-class grid** for the Duke/Kermany/OCTDL subset and a separate **2-class (Normal/AMD) 4×4 grid** for all active sources. Keep these visually and numerically separate in your results tables — conflating them will make your off-domain numbers look worse than they are.
+- **Training a unified 3-way classifier on fused labeled data:** naively training softmax cross-entropy with PAIMA batches will push DME logits toward zero for images that were never screened for DME, which is a false negative signal, not a true one. Use a **masked loss** (only backprop the classes a given dataset actually screened for) or train **one-vs-rest binary heads** instead of a single softmax, so absent classes don't contaminate gradients.
+- **Cross-dataset evaluation:** evaluate PAIMA on Normal/AMD only. Report a **full 3-class grid** for the Duke/Kermany/OCTDL subset and a separate **2-class (Normal/AMD) 4×4 grid** for all active sources. Keep these visually and numerically separate in your results tables — conflating them will make your off-domain numbers look worse than they are.
 
 ---
 
@@ -29,12 +29,15 @@ Mirroring your papers' structure, adapted for 4 sources and partial labels:
 
 | Stage | What | Backbone(s) |
 |---|---|---|
-| **Baseline** | ImageNet-pretrained, no SSL, fine-tuned independently per dataset; establish within- and cross-source grids before fusion | ResNet-50 first; ViT-B follows through the same pipeline |
-| **Fused supervised** | Train once on all labeled sources using a masked loss for Paima/NEH, only after the independent baseline and cross-source duplicate review are complete | ResNet-50 |
-| **Proposed (SSL)** | MAE pretraining on fused *unlabeled* images from all 4 active sources → fine-tune per dataset (masked/one-vs-rest loss) → cross-dataset eval | SwinV2 (matches your papers), consider ViT-B as a second run if time allows |
+| **Comparable ResNet-50 campaign** | ImageNet-pretrained independent and source-balanced fused training from the same revised manifests and split definitions; retain predictions for all evaluations | ResNet-50 |
+| **Generalization gate** | Leave-one-source-out (LOSO) training and evaluation, with confidence intervals and source-appropriate aggregation | ResNet-50 |
+| **Architecture comparison** | Repeat the fixed ResNet-50 protocol with ViT-B only after the LOSO result is stable enough to interpret | ViT-B |
+| **Proposed (SSL)** | MAE pretraining on fused *unlabeled* images from all 4 active sources, then fine-tune and evaluate under the same protocol | SwinV2 (matches the papers); ViT-B only if it passes the prior gate |
 | **Stretch: new architecture** | See §6 | TBD, gated on results from above |
 
-**Splits:** patient-level, not image-level, wherever patient/volume IDs are available (Duke, Kermany especially — B-scans from the same volume are near-duplicates and will leak across train/test if split randomly). Where no patient ID exists, dedupe with perceptual hashing before splitting.
+**Data and evaluation contract:** The completed data fix is the starting point for all comparable runs: Duke uses five patient/volume-level outer folds with eye/volume-level probability aggregation; PAIMA uses its per-B-scan `Label`, retains its cohort and CSV-derived eye identity as metadata, and remains group-split by cohort-local patient identifier. Kermany preserves its supplied test partition; OCTDL and PAIMA retain 70/15/15 group splits. PAIMA distance-two pHash candidates were reviewed and retained because they were predominantly false positives; only the contract's exact and distance-zero quarantine rules alter manifests.
+
+**Fair-comparison rule:** Any model comparison uses the same regenerated manifests, split assignments, preprocessing, training budget, and evaluation protocol. The earlier ResNet baseline and fused runs establish runtime and pipeline feasibility, but Duke results from the former 70/15/15 split are exploratory and are not tabled against the CV campaign.
 
 ---
 
@@ -44,7 +47,7 @@ Your bottleneck isn't total compute, it's **queue time on the 7g.80gb slices**. 
 
 | Resource | Use it for | Why |
 |---|---|---|
-| **RTX 3060 (local)** | Data pipeline dev/debugging, preprocessing, small sanity-check training runs, writing eval/plotting scripts, a *tiny* pilot MAE run (low-res, 1-epoch, subsampled) to catch bugs | Fast iteration, no queue, but not enough VRAM for full MAE pretraining at target resolution/batch size |
+| **RTX 3060 (local)** | ResNet-50 independent, fused, and LOSO campaigns; preprocessing; evaluation and plotting; a *tiny* pilot MAE run (low-res, 1-epoch, subsampled) to catch bugs | The completed independent and fused ResNet-50 work took one week locally, so it is the default resource for the comparable rerun |
 | **1g.10gb MIG slices** | Future parallel baseline fine-tuning, linear-probe evaluation of SSL-pretrained encoders, hyperparameter sweeps, inference/eval jobs | Low memory but no queue wait — good for many small parallel jobs |
 | **7g.80gb (queued)** | MAE self-supervised pretraining on the fused dataset (needs large batch size + memory), full fine-tuning of the largest runs | This is your scarce resource — debug elsewhere first, submit here only once the job is verified to run end-to-end |
 
@@ -56,32 +59,30 @@ Your bottleneck isn't total compute, it's **queue time on the 7g.80gb slices**. 
 
 | Week | Focus | Compute | Milestone |
 |---|---|---|---|
-| **1** | Dataset audit and split work is complete. Implement the supervised image loader, ResNet-50 model factory, checkpointing, and evaluation harness. Run a capped Duke train/validate/test flow locally on the RTX 3060, then resume it and evaluate the checkpoint against Paima using the Normal/AMD intersection. | 3060 | Reproducible local flow check; no SLURM submission |
-| **2** | Run ImageNet-pretrained ResNet-50 independently for Duke, Kermany, OCTDL, and Paima. Report each source's held-out test result and preserve predictions. | 3060 | Four independent ResNet-50 baselines |
-| **3** | Run the complete cross-dataset grid: 3-class among Duke/Kermany/OCTDL and a separate Normal/AMD grid including Paima. Add ViT-B through the same model interface only after ResNet results are stable. | 3060 | Baseline cross-evaluation table; optional ViT-B starts |
-| **4** | Review retained cross-source duplicate candidates and decide whether fused training needs an additional manifest version. Then implement source-balanced, masked-loss fused supervised ResNet-50. | 3060 | Defensible fused-supervised baseline |
-| **5** | Compare independent and fused supervised baselines; build bootstrap confidence intervals, error analysis, and embedding tooling. Decide whether measured cross-source gaps justify SSL. | 3060 + 1g.10gb if needed | Baseline decision point |
-| **6** | Error analysis: confusion matrices per dataset, embedding t-SNE/UMAP, per-class AUC-ROC/PR, significance tests. **Decision point:** go/no-go on new architecture based on time remaining and where the SSL model is weak. | 1g.10gb | Results consolidated; go/no-go decision made |
-| **7** | New architecture experiment (see §6) — scoped tightly to *one* idea, not several. | 7g.80gb (queued) for training, 1g.10gb for eval | New architecture results (even if preliminary) |
-| **8** | Final evaluation pass, figures/tables, writeup. This week is also your buffer for any queue delays that pushed earlier weeks back. | 1g.10gb + 3060 | Final deliverable |
+| **1 (completed)** | Implemented and exercised independent and fused ResNet-50 training locally. Completed the data fix: Duke five-fold CV, PAIMA labeling/eye metadata, contract and audit updates, and regenerated manifests/splits. | 3060 | Feasible pipeline and versioned data contract; prior Duke 70/15/15 results are exploratory |
+| **2** | Rerun the comparable ResNet-50 independent and fused campaign from the revised manifests. Use Duke CV, preserve predictions, and report source-appropriate aggregate metrics. | 3060 | Fair independent-versus-fused supervised table |
+| **3** | Run four ResNet-50 LOSO experiments. Report held-out-source metrics with confidence intervals; keep 3-class Duke/Kermany/OCTDL results separate from PAIMA's Normal/AMD evaluation. | 3060 + 1g.10gb if useful | Architecture-independent generalization result |
+| **4** | Complete paired confidence intervals, calibration/decision-boundary analysis, confusion matrices, and compact validation subsets where needed. Decide whether the LOSO evidence supports an architecture comparison. | 3060 + 1g.10gb | Stable ResNet interpretation and ViT go/no-go |
+| **5** | If the gate passes, run ViT-B under the identical data and evaluation protocol. Otherwise validate the MAE pipeline locally and document why architecture comparison is deferred. | 3060; 7g.80gb only for a verified MAE job | Interpretable ViT comparison or SSL-ready pipeline |
+| **6** | Run the scoped SSL experiment if compute and the Week-4 gate support it; otherwise consolidate figures, tables, limitations, and writeup. This is the buffer for queue delays. | 7g.80gb + 1g.10gb for SSL; 3060 for reporting | Final deliverable |
 
 ---
 
 ## 5. Risk Mitigation
 
-- **Do not submit to SLURM until the local supervised flow is verified.** The first queued workload is now contingent on the independent and fused supervised baseline table showing a remaining generalization gap.
+- **Do not submit to SLURM until the local supervised flow is verified.** That condition is met for supervised ResNet-50. A queued SSL job remains contingent on the LOSO result showing a remaining generalization gap and a local MAE smoke test.
 - **Checkpoint aggressively.** 7g.80gb jobs that get preempted or interrupted by queue churn should resume, not restart. Save encoder state every N steps.
 - **Class imbalance.** AMD will likely dominate after merging (3 original classes flow into it). Use class-weighted loss or a balanced sampler on top of the masked-loss handling above — these solve different problems and you need both.
-- **Leakage.** Double-check Kermany and Duke in particular for patient/volume-level duplication between train and test; both are known to have this issue if split naively.
+- **Leakage and label unit.** Duke CV is volume-safe and evaluated at the eye/volume unit. PAIMA is group-safe by cohort-local patient ID but remains an image-labeled source; do not interpret its Normal/AMD score as an eye-diagnosis metric. Retain reviewed distance-two PAIMA pHash matches as observations, not exclusions.
 
 ---
 
 ## 6. Stretch Goal: New Architecture Ideas
 
-If Weeks 1–6 land on schedule, pick **one** of these rather than spreading Week 7 thin:
+If the core schedule lands early, pick **one** of these rather than spreading the remaining time thin:
 
 1. **Partial-label-aware head.** Replace the shared softmax classifier with a one-vs-rest (sigmoid) head per class, explicitly designed for datasets with structurally absent classes — this is the most direct extension of what your papers didn't have to solve (they were binary).
-2. **Domain-conditioned normalization.** Add per-source batch/instance normalization (or FiLM-style conditioning) inside the encoder to explicitly account for the 5 distinct acquisition domains during fine-tuning, rather than treating cross-dataset shift as purely a generalization problem.
+2. **Domain-conditioned normalization.** Add per-source batch/instance normalization (or FiLM-style conditioning) inside the encoder to explicitly account for the 4 distinct acquisition domains during fine-tuning, rather than treating cross-dataset shift as purely a generalization problem.
 3. **OCT-specific SSL augmentation.** Swap MAE's random masking for augmentations informed by OCT physics (speckle noise simulation, layer-aware intensity jitter) and compare against your MAE baseline — a smaller, cheaper experiment than a full new architecture, and a natural ablation on top of what's already built.
 
 Option 1 is the most defensible as a contribution given your actual dataset structure — it directly addresses the problem the original papers never had to face.
@@ -90,8 +91,9 @@ Option 1 is the most defensible as a contribution given your actual dataset stru
 
 ## 7. End-of-Project Deliverables
 
-- Harmonized, patient-split, 4-source dataset with documented label taxonomy
-- Baseline table (ResNet-50, ViT-B) — per-dataset and fused, full cross-eval grid
-- SSL (MAE + SwinV2) table — same grid, with significance tests vs. baseline
+- Harmonized 4-source dataset with documented taxonomy, labeling unit, and versioned splits; Duke uses five-fold volume-level CV
+- Comparable ResNet-50 independent and fused table, plus LOSO evaluation and confidence intervals
+- ViT-B table only if it passes the ResNet LOSO gate; otherwise an explicit deferred-architecture decision
+- SSL (MAE + SwinV2) table if the compute and generalization gates pass, with significance tests versus baseline
 - Error analysis (confusion matrices, embeddings, per-class breakdowns)
 - (If time allows) new architecture results, scoped as a focused ablation on top of the SSL pipeline
