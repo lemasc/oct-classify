@@ -7,6 +7,7 @@ import json
 from collections import Counter
 from collections.abc import Sequence
 from dataclasses import replace
+from datetime import UTC, datetime
 from pathlib import Path
 
 import torch
@@ -354,21 +355,14 @@ def _baseline(args: argparse.Namespace) -> None:
     print(f"Wrote run artifacts to {run_directory}")
 
 
-def _fused(args: argparse.Namespace) -> None:
-    config = load_training_config(args.training_config)
-    if args.epochs is not None:
-        if args.epochs <= 0:
-            raise ValueError("--epochs must be positive.")
-        config = replace(config, optimization=replace(config.optimization, epochs=args.epochs))
-    if len(set(args.sources)) != len(args.sources):
-        raise ValueError("--sources must not repeat a source.")
-    specs = [_spec_for_source(args.config, source) for source in args.sources]
-    if len(specs) < 2:
-        raise ValueError("Fused training requires at least two sources.")
-    if config.data.batch_size % len(specs):
-        raise ValueError("data.batch_size must divide evenly across selected sources.")
-
-    manifests = {spec.name: args.split_dir / f"{spec.name}.jsonl" for spec in specs}
+def _run_fused(
+    args: argparse.Namespace,
+    config,
+    specs,
+    split_dir: Path,
+    run_name: str | None,
+) -> tuple[Path, dict[str, object] | None]:
+    manifests = {spec.name: split_dir / f"{spec.name}.jsonl" for spec in specs}
     splits = ("train", "val") if args.skip_test else ("train", "val", "test")
     records_by_split = {
         split: {spec.name: load_split_records(manifests[spec.name], split) for spec in specs}
@@ -473,7 +467,7 @@ def _fused(args: argparse.Namespace) -> None:
         best_macro_f1 = float(checkpoint["best_macro_f1"])
         epochs_without_improvement = int(checkpoint.get("epochs_without_improvement", 0))
     else:
-        run_directory = create_run_directory(args.output, "fused", config.model.architecture, args.run_name)
+        run_directory = create_run_directory(args.output, "fused", config.model.architecture, run_name)
         write_json(run_directory / "config.json", config.to_dict())
         write_json(
             run_directory / "dataset.json",
@@ -533,6 +527,7 @@ def _fused(args: argparse.Namespace) -> None:
             print(json.dumps(epoch_result, sort_keys=True))
             if epochs_without_improvement >= config.optimization.early_stopping_patience:
                 break
+    test_metrics_payload = None
     if not args.skip_test:
         load_checkpoint(str(run_directory / "checkpoint-best.pt"), model)
         with torch.no_grad():
@@ -559,16 +554,14 @@ def _fused(args: argparse.Namespace) -> None:
                 [group_by_path[path] for path in duke_result.paths],  # type: ignore[list-item]
                 tuple(class_labels[index].value for index in source_label_indices["duke"]),
             ).metrics
-        write_json(
-            run_directory / "metrics-test.json",
-            {
-                "by_source": test_metrics,
-                "three_class_by_source": {
-                    spec.name: test_metrics[spec.name] for spec in specs if len(spec.available_labels) == 3
-                },
-                "normal_amd_by_source": normal_amd_metrics,
+        test_metrics_payload = {
+            "by_source": test_metrics,
+            "three_class_by_source": {
+                spec.name: test_metrics[spec.name] for spec in specs if len(spec.available_labels) == 3
             },
-        )
+            "normal_amd_by_source": normal_amd_metrics,
+        }
+        write_json(run_directory / "metrics-test.json", test_metrics_payload)
         for source, result in test_results.items():
             labels = tuple(class_labels[index].value for index in source_label_indices[source])
             write_predictions(
@@ -582,6 +575,50 @@ def _fused(args: argparse.Namespace) -> None:
             )
     writer.close()
     print(f"Wrote run artifacts to {run_directory}")
+    return run_directory, test_metrics_payload
+
+
+def _fused(args: argparse.Namespace) -> None:
+    config = load_training_config(args.training_config)
+    if args.epochs is not None:
+        if args.epochs <= 0:
+            raise ValueError("--epochs must be positive.")
+        config = replace(config, optimization=replace(config.optimization, epochs=args.epochs))
+    if len(set(args.sources)) != len(args.sources):
+        raise ValueError("--sources must not repeat a source.")
+    specs = [_spec_for_source(args.config, source) for source in args.sources]
+    if len(specs) < 2:
+        raise ValueError("Fused training requires at least two sources.")
+    if config.data.batch_size % len(specs):
+        raise ValueError("data.batch_size must divide evenly across selected sources.")
+    if args.folds < 1:
+        raise ValueError("--folds must be positive.")
+    if args.folds > 1 and args.resume is not None:
+        raise ValueError(
+            "--resume is not supported together with --folds > 1; resume a single fold "
+            "directly with --folds 1, --split-dir pointing at that fold, and a matching --run-name."
+        )
+
+    if args.folds == 1:
+        _run_fused(args, config, specs, args.split_dir, args.run_name)
+        return
+
+    base_run_name = args.run_name or datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    fold_summaries: dict[int, dict[str, object]] = {}
+    for fold in range(1, args.folds + 1):
+        fold_split_dir = args.split_dir / f"fold-{fold}"
+        if not fold_split_dir.is_dir():
+            raise FileNotFoundError(f"Duke CV fold directory not found: {fold_split_dir}")
+        fold_run_name = f"{base_run_name}-fold{fold}"
+        run_directory, test_metrics = _run_fused(args, config, specs, fold_split_dir, fold_run_name)
+        fold_summaries[fold] = {
+            "split_dir": str(fold_split_dir),
+            "run_directory": str(run_directory),
+            "metrics_test": test_metrics,
+        }
+    summary_path = args.output / "fused" / config.model.architecture / f"{base_run_name}-cv-summary.json"
+    write_json(summary_path, {"base_run_name": base_run_name, "folds": fold_summaries})
+    print(f"Wrote {args.folds}-fold fused CV summary to {summary_path}")
 
 
 def _evaluate(args: argparse.Namespace) -> None:
@@ -704,6 +741,17 @@ def main(argv: Sequence[str] | None = None) -> None:
         "--training-config", type=Path, default=Path("configs/training/resnet50.toml")
     )
     fused.add_argument("--split-dir", type=Path, default=Path("artifacts/splits"))
+    fused.add_argument(
+        "--folds",
+        type=int,
+        default=1,
+        help=(
+            "Duke CV fold count. When >1, --split-dir is treated as the base directory "
+            "containing fold-1 .. fold-N subdirectories (as written by 'oct-classify data "
+            "duke-cv'); one fused run is trained per fold and a *-cv-summary.json is written "
+            "under --output collecting each fold's run directory and test metrics."
+        ),
+    )
     fused.add_argument("--output", type=Path, default=Path("artifacts/runs"))
     fused.add_argument("--run-name")
     fused.add_argument("--resume", type=Path)

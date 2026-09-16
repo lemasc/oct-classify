@@ -99,6 +99,18 @@ uv run oct-classify train fused --sources duke paima --run-name fused-smoke --ep
 The fused run writes one shared checkpoint plus per-source validation and test metrics. Its test outputs retain
 the three-class results for Duke, Kermany, and OCTDL separately from Normal/AMD results, including Paima.
 
+For the Duke cross-validation campaign, point `--split-dir` at the CV base directory and pass `--folds`; this
+trains one fused model per Duke outer fold (each fold's manifests already include the other sources' fixed
+splits) and writes a `*-cv-summary.json` alongside the per-fold runs collecting each fold's run directory and
+test metrics:
+
+```bash
+uv run oct-classify train fused --split-dir artifacts/splits/duke-cv --folds 5 --run-name fused-cv
+```
+
+`--resume` is not supported with `--folds > 1`; resume a single fold directly with `--folds 1`, that fold's
+`--split-dir artifacts/splits/duke-cv/fold-N`, and the matching `--run-name fused-cv-foldN`.
+
 ## Cluster Baseline
 
 Submit the four per-dataset ResNet-50 runs as a SLURM job array:
@@ -116,6 +128,20 @@ Run the same four independent baselines sequentially on the local GPU with:
 ```bash
 bash scripts/train-resnet50-local.sh
 ```
+
+## Cluster Fused
+
+Submit the five Duke-CV-fold fused runs as a SLURM job array:
+
+```bash
+sbatch scripts/train-fused.sbatch
+```
+
+Each array task requests one 10 GB MIG GPU slice, four CPUs, 32 GB memory, and up to 12 hours. It
+trains one fused ResNet-50 per Duke outer fold against `artifacts/splits/duke-cv/fold-{1..5}`
+(these must already exist; run `oct-classify data duke-cv` first). Output runs are uniquely named by
+their SLURM job ID and fold number, and task logs are written to `artifacts/slurm/`. For a local,
+sequential equivalent, use the `--folds` flag directly (see Fused Baseline above).
 
 Local-script logs are written to `artifacts/local/`. Both scripts require the derived split manifests to
 already exist.
