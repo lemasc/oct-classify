@@ -3,6 +3,7 @@ from oct_classify.data.splits import (
     apply_derived_splits,
     assign_group_splits,
     create_derived_splits,
+    create_stratified_cross_validation_splits,
     validate_derived_splits,
     validate_supplied_splits,
 )
@@ -97,3 +98,43 @@ def test_derived_split_validation_rejects_linked_groups_in_different_splits() ->
     assert validate_derived_splits(records, [("octdl:1", "octdl:2")]) == [
         "pHash-zero linked groups cross splits: octdl:1, octdl:2"
     ]
+
+
+def test_cross_validation_covers_each_group_once_in_outer_test_folds() -> None:
+    records = [
+        ImageRecord(
+            path=f"{label.value}-{number}.jpg",
+            source="duke",
+            raw_label=label.value,
+            label=label,
+            available_labels=ALL_LABELS,
+            group_id=f"{label.value}-{number}",
+            label_unit="eye",
+            eye_id=f"{label.value}-{number}",
+        )
+        for label in ALL_LABELS
+        for number in range(15)
+    ]
+
+    result = create_stratified_cross_validation_splits(
+        records, [], folds=5, validation_groups_per_class=3, seed=7
+    )
+
+    assert len(result.folds) == 5
+    for fold in result.folds:
+        test_groups = {group for group, split in fold.assignments.items() if split == "test"}
+        validation_groups = {group for group, split in fold.assignments.items() if split == "val"}
+        assert len(test_groups) == 9
+        assert len(validation_groups) == 9
+        for label in ALL_LABELS:
+            assert sum(group.startswith(f"duke:{label.value}-") for group in test_groups) == 3
+            assert sum(group.startswith(f"duke:{label.value}-") for group in validation_groups) == 3
+        assert validate_derived_splits(
+            apply_derived_splits(records, fold.assignments), fold.linked_group_components
+        ) == []
+    assert {
+        group
+        for fold in result.folds
+        for group, split in fold.assignments.items()
+        if split == "test"
+    } == {record.group_key for record in records}

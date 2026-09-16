@@ -70,6 +70,10 @@ groups crossing supplied splits.
 
 ### Evidence And Policy
 
+PAIMA pHash-distance-two candidates were manually reviewed after this audit. They were predominantly
+false positives, so the locked policy is retained: nonzero-distance pHash results remain review
+observations rather than automatic exclusions. No PAIMA records are removed on that basis.
+
 The locally extracted Kermany article states that each retained OCT image was independently graded by
 ophthalmologists and its final label verified by senior retinal specialists
 (`docs/articles/Kermany.html`, Image Labeling). It also states that the original test partition used
@@ -85,3 +89,10 @@ The operative rules are maintained in [the data contract](data-contract.md#locke
 use configured source snapshots; select lexical canonical paths; preserve Kermany's supplied test
 partition; exclude OCTDL ERM; and quarantine only exact label-conflict or pHash-distance-zero label/split
 conflict components.
+
+### PAIMA Distance-Two Review
+
+PAIMA train/test pHash-distance-two candidates were manually reviewed. Most were false positives, so they
+remain review observations rather than automatic exclusions. No PAIMA records were removed and the tracked
+split assignments remain unchanged. This supports retaining the locked distance-zero-only linkage and
+quarantine policy.

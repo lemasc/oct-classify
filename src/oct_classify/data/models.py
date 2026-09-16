@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from oct_classify.data.taxonomy import UnifiedLabel
 
@@ -26,6 +26,9 @@ class ImageRecord:
     label: UnifiedLabel
     available_labels: frozenset[UnifiedLabel]
     group_id: str | None = None
+    label_unit: Literal["eye", "image"] = "image"
+    eye_id: str | None = None
+    cohort: str | None = None
     supplied_split: str | None = None
     split: str | None = None
 
@@ -48,6 +51,9 @@ class ImageRecord:
             "label": self.label.value,
             "available_labels": sorted(label.value for label in self.available_labels),
             "group_id": self.group_id,
+            "label_unit": self.label_unit,
+            "eye_id": self.eye_id,
+            "cohort": self.cohort,
             "supplied_split": self.supplied_split,
             "split": self.split,
         }
@@ -61,6 +67,9 @@ class ImageRecord:
             label=UnifiedLabel(value["label"]),
             available_labels=frozenset(UnifiedLabel(label) for label in value["available_labels"]),
             group_id=value.get("group_id"),
+            label_unit=value.get("label_unit", "image"),
+            eye_id=value.get("eye_id"),
+            cohort=value.get("cohort"),
             supplied_split=value.get("supplied_split"),
             split=value.get("split"),
         )

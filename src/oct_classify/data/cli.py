@@ -15,9 +15,11 @@ from oct_classify.data.splits import (
     DerivedSplit,
     apply_derived_splits,
     create_derived_splits,
+    create_stratified_cross_validation_splits,
     file_sha256,
     validate_derived_splits,
     validate_supplied_splits,
+    write_cross_validation_definition,
     write_split_definition,
 )
 
@@ -269,6 +271,48 @@ def _splits(args: argparse.Namespace) -> None:
     print(f"{action} split definition at {args.definition} and wrote manifests to {args.output}")
 
 
+def _duke_cv(args: argparse.Namespace) -> None:
+    import shutil
+
+    manifest_path = args.manifest_dir / "duke.jsonl"
+    audit_path = args.audit_dir / "duke.json"
+    if not manifest_path.is_file() or not audit_path.is_file():
+        raise FileNotFoundError("Duke CV requires the Duke manifest and audit; run manifest and audit first.")
+    if args.definition.exists() and not args.replace_definition:
+        raise FileExistsError(f"Split definition already exists: {args.definition}")
+    records = list(read_jsonl(manifest_path))
+    audit = json.loads(audit_path.read_text(encoding="utf-8"))
+    result = create_stratified_cross_validation_splits(
+        records,
+        audit["near_duplicates"],
+        folds=args.folds,
+        validation_groups_per_class=args.validation_groups_per_class,
+        seed=args.seed,
+    )
+    write_cross_validation_definition(
+        args.definition,
+        seed=args.seed,
+        source="duke",
+        folds=args.folds,
+        validation_groups_per_class=args.validation_groups_per_class,
+        assignments=(fold.assignments for fold in result.folds),
+        manifest_hash=file_sha256(manifest_path),
+        audit_hash=file_sha256(audit_path),
+    )
+    for fold_number, fold in enumerate(result.folds, start=1):
+        output = args.output / f"fold-{fold_number}"
+        output.mkdir(parents=True, exist_ok=True)
+        for source_manifest in args.base_split_dir.glob("*.jsonl"):
+            if source_manifest.name != "duke.jsonl":
+                shutil.copy2(source_manifest, output / source_manifest.name)
+        split_records = apply_derived_splits(records, fold.assignments)
+        failures = validate_derived_splits(split_records, fold.linked_group_components)
+        if failures:
+            raise ValueError("Duke CV split validation failed: " + "; ".join(failures))
+        write_jsonl(output / "duke.jsonl", split_records)
+    print(f"Wrote {args.folds} Duke CV fold manifests to {args.output}")
+
+
 def main(argv: Sequence[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="OCT dataset preparation utilities")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -277,6 +321,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         ("manifest", _manifest, "Write canonical JSONL manifests."),
         ("validate-splits", _validate_splits, "Check supplied splits for group leakage."),
         ("splits", _splits, "Create reproducible group-safe derived splits."),
+        ("duke-cv", _duke_cv, "Create Duke five-fold train/validation/test manifests."),
     ):
         command_parser = subparsers.add_parser(command, help=help_text)
         command_parser.add_argument("--config", type=Path, default=Path("configs/datasets.toml"))
@@ -312,6 +357,18 @@ def main(argv: Sequence[str] | None = None) -> None:
                 action="store_true",
                 help="Replace an existing tracked split definition after intentionally changing inputs.",
             )
+        if command == "duke-cv":
+            command_parser.add_argument("--manifest-dir", type=Path, default=Path("artifacts/manifests"))
+            command_parser.add_argument("--audit-dir", type=Path, default=Path("artifacts/audits"))
+            command_parser.add_argument("--base-split-dir", type=Path, default=Path("artifacts/splits"))
+            command_parser.add_argument(
+                "--definition", type=Path, default=Path("configs/splits/duke-cv-v1.json")
+            )
+            command_parser.add_argument("--output", type=Path, default=Path("artifacts/splits/duke-cv"))
+            command_parser.add_argument("--seed", type=int, default=20260913)
+            command_parser.add_argument("--folds", type=int, default=5)
+            command_parser.add_argument("--validation-groups-per-class", type=int, default=3)
+            command_parser.add_argument("--replace-definition", action="store_true")
         command_parser.set_defaults(handler=handler)
     args = parser.parse_args(argv)
     args.handler(args)

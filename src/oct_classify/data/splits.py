@@ -33,6 +33,12 @@ class DerivedSplit:
     linked_group_components: tuple[tuple[str, ...], ...]
 
 
+@dataclass(frozen=True, slots=True)
+class CrossValidationSplits:
+    folds: tuple[DerivedSplit, ...]
+    linked_group_components: tuple[tuple[str, ...], ...]
+
+
 def _source_group_components(
     records: Iterable[ImageRecord], near_duplicates: Iterable[dict[str, object]]
 ) -> tuple[tuple[str, ...], ...]:
@@ -155,6 +161,74 @@ def create_derived_splits(
     return DerivedSplit(assignments, components)
 
 
+def create_stratified_cross_validation_splits(
+    records: Iterable[ImageRecord],
+    near_duplicates: Iterable[dict[str, object]],
+    *,
+    folds: int,
+    validation_groups_per_class: int,
+    seed: int,
+) -> CrossValidationSplits:
+    """Create group-safe outer folds with a class-balanced inner validation set."""
+    if folds < 2 or validation_groups_per_class < 1:
+        raise ValueError("folds must be at least 2 and validation_groups_per_class must be positive.")
+    records = list(records)
+    if any(record.group_key is None for record in records):
+        raise ValueError("Cannot create group-safe folds until every record has a group ID.")
+    components = _source_group_components(records, near_duplicates)
+    records_by_group: dict[str, list[ImageRecord]] = defaultdict(list)
+    for record in records:
+        records_by_group[record.group_key].append(record)  # type: ignore[index]
+
+    units_by_label: dict[UnifiedLabel, list[tuple[str, ...]]] = defaultdict(list)
+    for component in components:
+        labels = {
+            record.label
+            for group in component
+            for record in records_by_group[group]
+        }
+        if len(labels) != 1:
+            raise ValueError("Cross-validation components must contain exactly one label.")
+        units_by_label[labels.pop()].append(component)
+
+    outer_groups: list[set[str]] = [set() for _ in range(folds)]
+    for label, units in units_by_label.items():
+        if len(units) % folds:
+            raise ValueError(f"{label.value} groups cannot be evenly distributed across {folds} folds.")
+        shuffled = list(units)
+        random.Random(f"{seed}:{label.value}").shuffle(shuffled)
+        for index, unit in enumerate(shuffled):
+            outer_groups[index % folds].update(unit)
+
+    all_groups = set(records_by_group)
+    results: list[DerivedSplit] = []
+    for fold_index, test_groups in enumerate(outer_groups):
+        validation_groups: set[str] = set()
+        for label, units in units_by_label.items():
+            available = [unit for unit in units if not set(unit) & test_groups]
+            random.Random(f"{seed}:{fold_index}:{label.value}").shuffle(available)
+            selected: list[tuple[str, ...]] = []
+            selected_count = 0
+            for unit in available:
+                if selected_count + len(unit) > validation_groups_per_class:
+                    continue
+                selected.append(unit)
+                selected_count += len(unit)
+                if selected_count == validation_groups_per_class:
+                    break
+            if selected_count != validation_groups_per_class:
+                raise ValueError(
+                    f"Cannot select {validation_groups_per_class} validation groups for {label.value}."
+                )
+            validation_groups.update(group for unit in selected for group in unit)
+        assignments = {
+            group: "test" if group in test_groups else "val" if group in validation_groups else "train"
+            for group in all_groups
+        }
+        results.append(DerivedSplit(assignments, components))
+    return CrossValidationSplits(tuple(results), components)
+
+
 def apply_derived_splits(
     records: Iterable[ImageRecord], assignments: dict[str, str]
 ) -> list[ImageRecord]:
@@ -168,9 +242,12 @@ def apply_derived_splits(
                 source=record.source,
                 raw_label=record.raw_label,
                 label=record.label,
-                available_labels=record.available_labels,
-                group_id=record.group_id,
-                supplied_split=record.supplied_split,
+            available_labels=record.available_labels,
+            group_id=record.group_id,
+            label_unit=record.label_unit,
+            eye_id=record.eye_id,
+            cohort=record.cohort,
+            supplied_split=record.supplied_split,
                 split=assignments[record.group_key],
             )
         )
@@ -221,6 +298,38 @@ def write_split_definition(
                 "assignments": dict(sorted(assignments.items())),
                 "manifest_sha256": manifest_hashes,
                 "audit_sha256": audit_hashes,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def write_cross_validation_definition(
+    path: Path,
+    *,
+    seed: int,
+    source: str,
+    folds: int,
+    validation_groups_per_class: int,
+    assignments: Iterable[dict[str, str]],
+    manifest_hash: str,
+    audit_hash: str,
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "source": source,
+                "folds": folds,
+                "seed": seed,
+                "validation_groups_per_class": validation_groups_per_class,
+                "assignments": [dict(sorted(fold.items())) for fold in assignments],
+                "manifest_sha256": manifest_hash,
+                "audit_sha256": audit_hash,
             },
             indent=2,
             sort_keys=True,

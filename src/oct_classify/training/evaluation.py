@@ -46,3 +46,29 @@ def calculate_metrics(
         # A test split may not contain every class, making AUROC undefined rather than zero.
         metrics["macro_auroc"] = None
     return EvaluationResult(metrics, probabilities, targets, predictions)
+
+
+def calculate_grouped_metrics(
+    targets: np.ndarray,
+    probabilities: np.ndarray,
+    group_ids: list[str],
+    class_names: tuple[str, ...],
+) -> EvaluationResult:
+    """Average image probabilities within a labeled eye or volume before scoring."""
+    if len(group_ids) != len(targets):
+        raise ValueError("group_ids must have the same length as targets.")
+    grouped_targets: list[int] = []
+    grouped_probabilities: list[np.ndarray] = []
+    by_group: dict[str, list[int]] = {}
+    for index, group_id in enumerate(group_ids):
+        by_group.setdefault(group_id, []).append(index)
+    for group_id in sorted(by_group):
+        indices = by_group[group_id]
+        group_targets = targets[indices]
+        if len(np.unique(group_targets)) != 1:
+            raise ValueError(f"Group {group_id!r} has multiple target labels.")
+        grouped_targets.append(int(group_targets[0]))
+        grouped_probabilities.append(probabilities[indices].mean(axis=0))
+    return calculate_metrics(
+        np.asarray(grouped_targets), np.asarray(grouped_probabilities), class_names
+    )

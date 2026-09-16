@@ -29,4 +29,6 @@ class DukeSource:
                         label=label,
                         available_labels=spec.available_labels,
                         group_id=group_dir.name,
+                        label_unit="eye",
+                        eye_id=group_dir.name,
                     )

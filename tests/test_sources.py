@@ -22,6 +22,8 @@ def test_duke_uses_class_folder_as_group_id(tmp_path: Path) -> None:
 
     assert records[0].label is UnifiedLabel.AMD
     assert records[0].group_id == "AMD1"
+    assert records[0].label_unit == "eye"
+    assert records[0].eye_id == "AMD1"
 
 
 def test_kermany_merges_cnv_and_drusen_into_amd(tmp_path: Path) -> None:
@@ -79,3 +81,6 @@ def test_paima_uses_metadata_labels_and_patient_groups(tmp_path: Path) -> None:
 
     assert records[0].label is UnifiedLabel.AMD
     assert records[0].group_id == "CNV/patient-1"
+    assert records[0].label_unit == "image"
+    assert records[0].eye_id == "CNV/patient-1/OD"
+    assert records[0].cohort == "CNV"

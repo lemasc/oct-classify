@@ -44,4 +44,11 @@ class PaimaSource:
                     label=label,
                     available_labels=spec.available_labels,
                     group_id=(f"{row['Class']}/{row['Patient ID']}" if row["Patient ID"] else None),
+                    label_unit="image",
+                    eye_id=(
+                        f"{row['Class']}/{row['Patient ID']}/{row['Eye']}"
+                        if row["Patient ID"] and row["Eye"]
+                        else None
+                    ),
+                    cohort=row["Class"],
                 )

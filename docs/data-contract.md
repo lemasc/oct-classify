@@ -10,15 +10,29 @@ Every source adapter emits `ImageRecord` entries and no downstream component may
 | `label` | Unified `normal`, `amd`, or `dme` label |
 | `available_labels` | Classes the source screened for; used by partial-label losses and metrics |
 | `group_id` | Patient or volume identity within a source, if known |
+| `label_unit` | Whether the source target labels an `eye` or an individual `image` |
+| `eye_id` | Eye or volume identity where source metadata can derive it |
+| `cohort` | Source-native cohort identity where it differs from the image label |
 | `supplied_split` | Upstream split name, retained only as provenance |
 | `split` | Derived experiment split, assigned only after manifest creation |
 
 ## Taxonomy
 
-- `normal` maps from Duke `NORMAL`, Kermany `NORMAL`, and OCTDL `NO`.
-- `amd` maps from Duke `AMD`, Kermany `CNV` and `DRUSEN`, and OCTDL `AMD`.
-- `dme` maps directly from all current sources.
-- OCTID and Paima/NEH must declare only `normal` and `amd` when added. Their absence of DME is structural, not a negative DME label.
+- `normal` maps from Duke `NORMAL`, PAIMA `NORMAL`, Kermany `NORMAL`, and OCTDL `NO`.
+- `amd` maps from Duke `AMD`, PAIMA `CNV` and `DRUSEN`, Kermany `CNV` and `DRUSEN`, and OCTDL `AMD`.
+- `dme` maps directly from Duke, Kermany, and OCTDL. PAIMA's absence of DME is structural, not a negative DME label.
+- OCTID must declare only `normal` and `amd` before it is enabled.
+
+### Labeling And Evaluation Units
+
+- Duke labels an eye/volume diagnosis propagated to its B-scans. It emits `label_unit="eye"`
+  and uses its volume group as `eye_id`. Duke headline metrics aggregate mean class probabilities
+  by `eye_id` before scoring.
+- PAIMA labels individual B-scans. It emits `label_unit="image"`, retains CSV `Label` as the
+  training target, records CSV `Class` as `cohort`, and derives `eye_id` from CSV
+  `Class`/`Patient ID`/`Eye`. Its `group_id` remains `Class`/`Patient ID` because patient numbering
+  is cohort-local.
+- Kermany and OCTDL are image-labeled for this contract. Their eye identity is unknown.
 
 ## Split Rules
 
@@ -32,8 +46,10 @@ split.
 The tracked `configs/splits/v1.json` is the authoritative assignment. It records the seed, source split
 ratios, and hashes of the exact derived manifests and audit reports used to create it. It preserves
 Kermany's supplied test partition, splitting its supplied training partition 85/15 into train/validation.
-Duke, OCTDL, and Paima are split 70/15/15 into train/validation/test. Generated per-image split manifests
-remain ignored under `artifacts/splits/`.
+OCTDL and Paima are split 70/15/15 into train/validation/test. Duke uses a separate tracked
+`configs/splits/duke-cv-v1.json`: five patient/volume-level outer folds, each holding out 9 volumes
+(3/class), with an inner validation set of 9 volumes (3/class) and 27 training volumes. Generated
+per-image split manifests remain ignored under `artifacts/splits/`.
 
 ## Commands
 

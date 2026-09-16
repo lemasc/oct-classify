@@ -34,7 +34,7 @@ from oct_classify.training.engine import (
     run_source_evaluations,
     seed_everything,
 )
-from oct_classify.training.evaluation import calculate_metrics
+from oct_classify.training.evaluation import calculate_grouped_metrics, calculate_metrics
 from oct_classify.training.outputs import create_run_directory, write_json, write_predictions
 from oct_classify.training.partial_labels import MaskedCrossEntropyLoss
 from oct_classify.training.sampling import SourceClassBalancedBatchSampler
@@ -124,7 +124,7 @@ def _baseline(args: argparse.Namespace) -> None:
     preprocessing = PreprocessingSpec(image_size=config.data.image_size)
     train_records = load_split_records(manifest_path, "train")
     val_records = load_split_records(manifest_path, "val")
-    test_records = load_split_records(manifest_path, "test")
+    test_records = [] if args.skip_test else load_split_records(manifest_path, "test")
     seed_everything(config.run.seed)
     mean, stdev = calculate_normalization(
         spec.root, train_records, preprocessing, workers=args.workers
@@ -149,15 +149,19 @@ def _baseline(args: argparse.Namespace) -> None:
         config.augmentation,
         training=False,
     )
-    test_dataset = ManifestImageDataset(
-        spec.root,
-        test_records,
-        class_labels,
-        preprocessing,
-        mean,
-        stdev,
-        config.augmentation,
-        training=False,
+    test_dataset = (
+        ManifestImageDataset(
+            spec.root,
+            test_records,
+            class_labels,
+            preprocessing,
+            mean,
+            stdev,
+            config.augmentation,
+            training=False,
+        )
+        if test_records
+        else None
     )
     train_loader = _loader(
         train_dataset,
@@ -173,12 +177,16 @@ def _baseline(args: argparse.Namespace) -> None:
         shuffle=False,
         seed=config.run.seed,
     )
-    test_loader = _loader(
-        test_dataset,
-        config.data.batch_size,
-        config.data.num_workers,
-        shuffle=False,
-        seed=config.run.seed,
+    test_loader = (
+        _loader(
+            test_dataset,
+            config.data.batch_size,
+            config.data.num_workers,
+            shuffle=False,
+            seed=config.run.seed,
+        )
+        if test_dataset is not None
+        else None
     )
     device = _device(args.device)
     model = build_model(
@@ -238,7 +246,7 @@ def _baseline(args: argparse.Namespace) -> None:
                 "records": {
                     "train": len(train_dataset),
                     "val": len(val_dataset),
-                    "test": len(test_dataset),
+                    "test": len(test_dataset) if test_dataset is not None else 0,
                 },
             },
         )
@@ -307,32 +315,42 @@ def _baseline(args: argparse.Namespace) -> None:
                     f"Early stopping after {epoch + 1} epochs: validation macro-F1 did not improve for {epochs_without_improvement} epochs."
                 )
                 break
-    load_checkpoint(str(run_directory / "checkpoint-best.pt"), model)
-    with torch.no_grad():
-        test_result = run_epoch(
-            model,
-            test_loader,
-            criterion,
-            device,
-            tuple(label.value for label in class_labels),
-            max_batches=args.max_eval_batches,
+    if test_loader is not None:
+        load_checkpoint(str(run_directory / "checkpoint-best.pt"), model)
+        with torch.no_grad():
+            test_result = run_epoch(
+                model,
+                test_loader,
+                criterion,
+                device,
+                tuple(label.value for label in class_labels),
+                max_batches=args.max_eval_batches,
+            )
+        test_metrics = {"loss": test_result.loss, **test_result.evaluation.metrics}
+        if spec.name == "duke":
+            group_by_path = {record.path: record.eye_id for record in test_records}
+            if any(group_by_path[path] is None for path in test_result.paths):
+                raise ValueError("Duke test records require an eye ID for volume-level evaluation.")
+            eye_result = calculate_grouped_metrics(
+                test_result.evaluation.targets,
+                test_result.evaluation.probabilities,
+                [group_by_path[path] for path in test_result.paths],  # type: ignore[list-item]
+                tuple(label.value for label in class_labels),
+            )
+            test_metrics["eye_level"] = eye_result.metrics
+        write_json(run_directory / "metrics-test.json", test_metrics)
+        _log_tensorboard_metrics(
+            writer, "test", test_result.loss, test_result.evaluation.metrics, last_epoch + 1
         )
-    write_json(
-        run_directory / "metrics-test.json",
-        {"loss": test_result.loss, **test_result.evaluation.metrics},
-    )
-    _log_tensorboard_metrics(
-        writer, "test", test_result.loss, test_result.evaluation.metrics, last_epoch + 1
-    )
+        write_predictions(
+            run_directory / "predictions-test.csv",
+            test_result.paths,
+            test_result.evaluation.targets,
+            test_result.evaluation.predictions,
+            test_result.evaluation.probabilities,
+            tuple(label.value for label in class_labels),
+        )
     writer.close()
-    write_predictions(
-        run_directory / "predictions-test.csv",
-        test_result.paths,
-        test_result.evaluation.targets,
-        test_result.evaluation.predictions,
-        test_result.evaluation.probabilities,
-        tuple(label.value for label in class_labels),
-    )
     print(f"Wrote run artifacts to {run_directory}")
 
 
@@ -351,9 +369,10 @@ def _fused(args: argparse.Namespace) -> None:
         raise ValueError("data.batch_size must divide evenly across selected sources.")
 
     manifests = {spec.name: args.split_dir / f"{spec.name}.jsonl" for spec in specs}
+    splits = ("train", "val") if args.skip_test else ("train", "val", "test")
     records_by_split = {
         split: {spec.name: load_split_records(manifests[spec.name], split) for spec in specs}
-        for split in ("train", "val", "test")
+        for split in splits
     }
     roots = {spec.name: spec.root for spec in specs}
     class_labels = CLASS_ORDER
@@ -385,7 +404,8 @@ def _fused(args: argparse.Namespace) -> None:
             )
             for spec in specs
         }
-        for split in ("val", "test")
+        for split in splits
+        if split != "train"
     }
     sampler = SourceClassBalancedBatchSampler(
         [record.source for record in train_dataset.records],
@@ -513,43 +533,53 @@ def _fused(args: argparse.Namespace) -> None:
             print(json.dumps(epoch_result, sort_keys=True))
             if epochs_without_improvement >= config.optimization.early_stopping_patience:
                 break
-    load_checkpoint(str(run_directory / "checkpoint-best.pt"), model)
-    with torch.no_grad():
-        test_results, _ = run_source_evaluations(
-            model, source_loaders["test"], criterion, device, tuple(label.value for label in class_labels),
-            source_label_indices, max_batches=args.max_eval_batches,
-        )
-    test_metrics = {source: {"loss": result.loss, **result.evaluation.metrics} for source, result in test_results.items()}
-    normal_amd_metrics = {}
-    for source, result in test_results.items():
-        normal_amd = result.evaluation.targets < 2
-        probabilities = result.evaluation.probabilities[normal_amd, :2]
-        probabilities /= probabilities.sum(axis=1, keepdims=True)
-        metrics = calculate_metrics(
-            result.evaluation.targets[normal_amd], probabilities, ("normal", "amd")
-        ).metrics
-        normal_amd_metrics[source] = metrics
-    write_json(
-        run_directory / "metrics-test.json",
-        {
-            "by_source": test_metrics,
-            "three_class_by_source": {
-                spec.name: test_metrics[spec.name] for spec in specs if len(spec.available_labels) == 3
+    if not args.skip_test:
+        load_checkpoint(str(run_directory / "checkpoint-best.pt"), model)
+        with torch.no_grad():
+            test_results, _ = run_source_evaluations(
+                model, source_loaders["test"], criterion, device, tuple(label.value for label in class_labels),
+                source_label_indices, max_batches=args.max_eval_batches,
+            )
+        test_metrics = {source: {"loss": result.loss, **result.evaluation.metrics} for source, result in test_results.items()}
+        normal_amd_metrics = {}
+        for source, result in test_results.items():
+            normal_amd = result.evaluation.targets < 2
+            probabilities = result.evaluation.probabilities[normal_amd, :2]
+            probabilities /= probabilities.sum(axis=1, keepdims=True)
+            metrics = calculate_metrics(
+                result.evaluation.targets[normal_amd], probabilities, ("normal", "amd")
+            ).metrics
+            normal_amd_metrics[source] = metrics
+        duke_result = test_results.get("duke")
+        if duke_result is not None:
+            group_by_path = {record.path: record.eye_id for record in records_by_split["test"]["duke"]}
+            test_metrics["duke"]["eye_level"] = calculate_grouped_metrics(
+                duke_result.evaluation.targets,
+                duke_result.evaluation.probabilities,
+                [group_by_path[path] for path in duke_result.paths],  # type: ignore[list-item]
+                tuple(class_labels[index].value for index in source_label_indices["duke"]),
+            ).metrics
+        write_json(
+            run_directory / "metrics-test.json",
+            {
+                "by_source": test_metrics,
+                "three_class_by_source": {
+                    spec.name: test_metrics[spec.name] for spec in specs if len(spec.available_labels) == 3
+                },
+                "normal_amd_by_source": normal_amd_metrics,
             },
-            "normal_amd_by_source": normal_amd_metrics,
-        },
-    )
-    for source, result in test_results.items():
-        labels = tuple(class_labels[index].value for index in source_label_indices[source])
-        write_predictions(
-            run_directory / "predictions-test" / f"{source}.csv",
-            result.paths,
-            result.evaluation.targets,
-            result.evaluation.predictions,
-            result.evaluation.probabilities,
-            labels,
-            sources=result.sources,
         )
+        for source, result in test_results.items():
+            labels = tuple(class_labels[index].value for index in source_label_indices[source])
+            write_predictions(
+                run_directory / "predictions-test" / f"{source}.csv",
+                result.paths,
+                result.evaluation.targets,
+                result.evaluation.predictions,
+                result.evaluation.probabilities,
+                labels,
+                sources=result.sources,
+            )
     writer.close()
     print(f"Wrote run artifacts to {run_directory}")
 
@@ -648,6 +678,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     baseline.add_argument("--output", type=Path, default=Path("artifacts/runs"))
     baseline.add_argument("--run-name")
     baseline.add_argument("--resume", type=Path)
+    baseline.add_argument("--skip-test", action="store_true", help="Do not load or evaluate the test split.")
     baseline.add_argument("--device", default="cuda")
     baseline.add_argument("--epochs", type=int, help="Override configured epoch count.")
     baseline.add_argument(
@@ -676,6 +707,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     fused.add_argument("--output", type=Path, default=Path("artifacts/runs"))
     fused.add_argument("--run-name")
     fused.add_argument("--resume", type=Path)
+    fused.add_argument("--skip-test", action="store_true", help="Do not load or evaluate test splits.")
     fused.add_argument("--device", default="cuda")
     fused.add_argument("--epochs", type=int, help="Override configured epoch count.")
     fused.add_argument("--max-train-batches", type=int)

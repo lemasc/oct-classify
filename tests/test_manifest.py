@@ -16,6 +16,9 @@ def test_manifest_round_trip(tmp_path: Path) -> None:
         label=UnifiedLabel.AMD,
         available_labels=ALL_LABELS,
         group_id="AMD1",
+        label_unit="eye",
+        eye_id="AMD1",
+        cohort="AMD",
     )
 
     write_jsonl(path, [record])
