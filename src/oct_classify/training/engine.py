@@ -101,7 +101,12 @@ def run_source_evaluations(
     *,
     max_batches: int | None = None,
 ) -> tuple[dict[str, EpochResult], float]:
-    """Evaluate sources independently and return their unweighted macro-F1 mean."""
+    """Evaluate sources independently and return their example-count-weighted macro-F1 mean.
+
+    Sources are weighted by validation example count so that small splits (e.g. duke,
+    octdl) can't dominate checkpoint selection and early stopping with epoch-to-epoch
+    noise the way an unweighted mean would.
+    """
     results = {
         source: run_epoch(
             model,
@@ -114,9 +119,9 @@ def run_source_evaluations(
         )
         for source, loader in loaders.items()
     }
-    score = float(
-        np.mean([float(result.evaluation.metrics["macro_f1"]) for result in results.values()])
-    )
+    weights = np.array([len(result.paths) for result in results.values()], dtype=float)
+    macro_f1s = np.array([float(result.evaluation.metrics["macro_f1"]) for result in results.values()])
+    score = float(np.average(macro_f1s, weights=weights))
     return results, score
 
 
