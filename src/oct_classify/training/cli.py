@@ -645,7 +645,13 @@ def _evaluate(args: argparse.Namespace) -> None:
     preprocessing = PreprocessingSpec(image_size=config["data"]["image_size"])
     normalization = metadata["normalization"]
     augmentation = AugmentationConfig(**config["augmentation"])
-    records = load_split_records(args.split_dir / f"{source_spec.name}.jsonl", "test")
+    manifest_path = args.split_dir / f"{source_spec.name}.jsonl"
+    if args.full_source:
+        from oct_classify.data.manifest import read_jsonl
+
+        records = list(read_jsonl(manifest_path))
+    else:
+        records = load_split_records(manifest_path, "test")
     dataset = ManifestImageDataset(
         source_spec.root,
         records,
@@ -679,16 +685,26 @@ def _evaluate(args: argparse.Namespace) -> None:
         )
     output = args.output or args.checkpoint.parent / "evaluations" / source_spec.name
     output.mkdir(parents=True, exist_ok=True)
-    write_json(
-        output / "metrics.json",
-        {
-            "checkpoint": str(args.checkpoint),
-            "target_source": source_spec.name,
-            "class_labels": [label.value for label in class_labels],
-            "loss": result.loss,
-            **result.evaluation.metrics,
-        },
-    )
+    metrics_payload = {
+        "checkpoint": str(args.checkpoint),
+        "target_source": source_spec.name,
+        "class_labels": [label.value for label in class_labels],
+        "full_source": args.full_source,
+        "loss": result.loss,
+        **result.evaluation.metrics,
+    }
+    if source_spec.name == "duke":
+        group_by_path = {record.path: record.eye_id for record in records}
+        if any(group_by_path[path] is None for path in result.paths):
+            raise ValueError("Duke records require an eye ID for volume-level evaluation.")
+        eye_result = calculate_grouped_metrics(
+            result.evaluation.targets,
+            result.evaluation.probabilities,
+            [group_by_path[path] for path in result.paths],  # type: ignore[list-item]
+            tuple(label.value for label in class_labels),
+        )
+        metrics_payload["eye_level"] = eye_result.metrics
+    write_json(output / "metrics.json", metrics_payload)
     write_predictions(
         output / "predictions.csv",
         result.paths,
@@ -776,6 +792,15 @@ def main(argv: Sequence[str] | None = None) -> None:
         nargs="+",
         choices=[label.value for label in UnifiedLabel],
         help="Restrict evaluation to the selected shared labels.",
+    )
+    evaluate.add_argument(
+        "--full-source",
+        action="store_true",
+        help=(
+            "Evaluate against every record for the source (train+val+test combined) "
+            "instead of only its test split. Use this when the source was withheld "
+            "entirely from training, e.g. leave-one-source-out."
+        ),
     )
     evaluate.add_argument(
         "--max-eval-batches", type=int, help="Cap test batches for a local smoke test."

@@ -1,0 +1,29 @@
+[model]
+architecture = "resnet50"
+pretrained = true
+
+[data]
+image_size = 224
+batch_size = 12
+num_workers = 2
+
+[augmentation]
+horizontal_flip_probability = 0.5
+rotation_degrees = 10.0
+brightness_jitter = 0.1
+contrast_jitter = 0.1
+gaussian_blur_probability = 0.25
+gaussian_blur_sigma = 0.5
+
+[optimization]
+epochs = 100
+learning_rate = 0.0001
+weight_decay = 0.0001
+early_stopping_patience = 10
+
+[run]
+seed = 20260913
+
+[sampling]
+strategy = "source_class_balanced"
+batches_per_epoch = 1000
