@@ -66,23 +66,97 @@ Each cell is macro-F1 (%). Duke training has five outer-fold checkpoints; its ce
 
 Values are mean +/- SD across the five fused checkpoints. The Kermany, OCTDL, and PAIMA test sets are evaluated once per fold, so their aggregate confusion matrices repeat their fixed test samples across checkpoints and are descriptive only.
 
-| Test source | Accuracy | Balanced accuracy | Macro-F1 | Macro-AUROC | Aggregate confusion matrix |
-|---|---:|---:|---:|---:|---|
-| duke | 94.11 +/- 5.48 | 93.76 +/- 5.62 | 94.07 +/- 5.50 | 99.38 +/- 1.08 | $\begin{bmatrix}1403 & 3 & 1 \\ 6 & 687 & 30 \\ 143 & 15 & 943\end{bmatrix}$ |
-| kermany | 96.84 +/- 1.56 | 96.08 +/- 2.00 | 96.59 +/- 1.65 | 99.82 +/- 0.16 | $\begin{bmatrix}1142 & 77 & 31 \\ 14 & 2478 & 8 \\ 0 & 28 & 1222\end{bmatrix}$ |
-| octdl | 97.34 +/- 0.43 | 95.88 +/- 0.73 | 96.20 +/- 0.75 | 99.62 +/- 0.05 | $\begin{bmatrix}245 & 5 & 0 \\ 19 & 900 & 1 \\ 1 & 8 & 101\end{bmatrix}$ |
-| paima | 90.76 +/- 0.74 | 90.60 +/- 0.79 | 90.69 +/- 0.77 | 95.56 +/- 0.37 | $\begin{bmatrix}6163 & 237 \\ 912 & 5128\end{bmatrix}$ |
+| Test source | Accuracy | Balanced accuracy | Macro-F1 | Macro-AUROC |
+|---|---:|---:|---:|---:|
+| duke | 94.11 +/- 5.48 | 93.76 +/- 5.62 | 94.07 +/- 5.50 | 99.38 +/- 1.08 |
+| kermany | 96.84 +/- 1.56 | 96.08 +/- 2.00 | 96.59 +/- 1.65 | 99.82 +/- 0.16 |
+| octdl | 97.34 +/- 0.43 | 95.88 +/- 0.73 | 96.20 +/- 0.75 | 99.62 +/- 0.05 |
+| paima | 90.76 +/- 0.74 | 90.60 +/- 0.79 | 90.69 +/- 0.77 | 95.56 +/- 0.37 |
+
+Aggregate confusion matrices:
+
+$$
+C_{\mathrm{duke}} =
+\begin{bmatrix}
+1403 & 3 & 1 \\
+6 & 687 & 30 \\
+143 & 15 & 943
+\end{bmatrix}
+$$
+
+$$
+C_{\mathrm{kermany}} =
+\begin{bmatrix}
+1142 & 77 & 31 \\
+14 & 2478 & 8 \\
+0 & 28 & 1222
+\end{bmatrix}
+$$
+
+$$
+C_{\mathrm{octdl}} =
+\begin{bmatrix}
+245 & 5 & 0 \\
+19 & 900 & 1 \\
+1 & 8 & 101
+\end{bmatrix}
+$$
+
+$$
+C_{\mathrm{paima}} =
+\begin{bmatrix}
+6163 & 237 \\
+912 & 5128
+\end{bmatrix}
+$$
 
 ### LOSO Full-Source Evaluation
 
 Each held-out source was never used for training. Duke has one checkpoint because the training sources exclude Duke; the other targets have five checkpoints because their training sources include Duke CV. Values are mean +/- SD across checkpoints where applicable. Matrices are sums over checkpoints and therefore repeat the held-out full source for the three five-checkpoint conditions.
 
-| Held-out source | Accuracy | Balanced accuracy | Macro-F1 | Macro-AUROC | Aggregate confusion matrix |
-|---|---:|---:|---:|---:|---|
-| duke | 87.56 +/- 0.00 | 87.30 +/- 0.00 | 87.45 +/- 0.00 | 97.24 +/- 0.00 | $\begin{bmatrix}1381 & 25 & 1 \\ 33 & 679 & 11 \\ 272 & 60 & 769\end{bmatrix}$ |
-| kermany | 80.63 +/- 4.03 | 77.62 +/- 4.22 | 73.96 +/- 3.96 | 92.22 +/- 2.72 | $\begin{bmatrix}199009 & 16253 & 36053 \\ 4780 & 171509 & 22996 \\ 11194 & 6777 & 37514\end{bmatrix}$ |
-| octdl | 94.70 +/- 0.64 | 88.06 +/- 2.22 | 90.20 +/- 1.68 | 98.92 +/- 0.33 | $\begin{bmatrix}1604 & 56 & 0 \\ 161 & 5970 & 19 \\ 36 & 181 & 518\end{bmatrix}$ |
-| paima | 86.73 +/- 1.99 | 86.71 +/- 1.89 | 86.70 +/- 1.97 | 93.06 +/- 0.64 | $\begin{bmatrix}37361 & 5244 \\ 5768 & 34632\end{bmatrix}$ |
+| Held-out source | Accuracy | Balanced accuracy | Macro-F1 | Macro-AUROC |
+|---|---:|---:|---:|---:|
+| duke | 87.56 +/- 0.00 | 87.30 +/- 0.00 | 87.45 +/- 0.00 | 97.24 +/- 0.00 |
+| kermany | 80.63 +/- 4.03 | 77.62 +/- 4.22 | 73.96 +/- 3.96 | 92.22 +/- 2.72 |
+| octdl | 94.70 +/- 0.64 | 88.06 +/- 2.22 | 90.20 +/- 1.68 | 98.92 +/- 0.33 |
+| paima | 86.73 +/- 1.99 | 86.71 +/- 1.89 | 86.70 +/- 1.97 | 93.06 +/- 0.64 |
+
+Aggregate confusion matrices:
+
+$$
+C_{\mathrm{duke}} =
+\begin{bmatrix}
+1381 & 25 & 1 \\
+33 & 679 & 11 \\
+272 & 60 & 769
+\end{bmatrix}
+$$
+
+$$
+C_{\mathrm{kermany}} =
+\begin{bmatrix}
+199009 & 16253 & 36053 \\
+4780 & 171509 & 22996 \\
+11194 & 6777 & 37514
+\end{bmatrix}
+$$
+
+$$
+C_{\mathrm{octdl}} =
+\begin{bmatrix}
+1604 & 56 & 0 \\
+161 & 5970 & 19 \\
+36 & 181 & 518
+\end{bmatrix}
+$$
+
+$$
+C_{\mathrm{paima}} =
+\begin{bmatrix}
+37361 & 5244 \\
+5768 & 34632
+\end{bmatrix}
+$$
 
 ## Interpretation
 
