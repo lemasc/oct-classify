@@ -155,3 +155,48 @@ uv run tensorboard --logdir artifacts/runs
 Training writes scalar loss, accuracy, balanced accuracy, macro-F1, and macro-AUROC to each run's
 `events/` directory. Use SSH port forwarding rather than exposing TensorBoard directly to the
 network.
+
+## Post-Training Analysis
+
+Analyze saved predictions without retraining. `analyze run` finds every `predictions-test*` and
+`evaluations/*/predictions.csv` in a run and writes a bundle to `<run>/analysis/<set>/`. It joins each row
+to its manifest record and checks the recomputed point metrics against the saved ones. The bundle contains:
+
+- 95% cluster-bootstrap intervals over patients or volumes (`source:group_id`), plus eye-level intervals for
+  eye-labelled Duke
+- calibration (ECE, Brier, NLL, reliability bins)
+- ROC/PR curves and disease-vs-normal operating points
+- slices by cohort, raw label, and duplicate-cluster membership
+- per-patient error concentration
+- error-gallery and control-sample indexes
+
+```bash
+uv run oct-classify analyze run artifacts/runs/fused/resnet50/loso-paima-*-fold{1..5}
+uv run oct-classify analyze campaign --name loso-paima artifacts/runs/fused/resnet50/loso-paima-*-fold{1..5}
+uv run oct-classify analyze gradcam artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold1
+```
+
+`analyze campaign` aggregates the same set across checkpoints and writes `data/analysis/<name>/`. There are
+two modes:
+
+- **shared:** checkpoints scored on identical rows, such as a fixed test set or a LOSO held-out source. One
+  group resample is applied to every checkpoint, giving an interval for mean checkpoint performance.
+- **pooled:** disjoint out-of-fold rows, such as the Duke CV test folds. The rows are concatenated so each
+  patient counts once.
+
+`analyze gradcam` needs `analyze run` first and a GPU by default (`--device cpu` also works). It computes
+Grad-CAM at `layer3` and `layer4` for the gallery images and writes `<set>/gradcam/`. For each image it reports
+the share of attention outside a heuristic retina band (ILM to just below the RPE) and on letterbox padding or
+fill wedges. It also runs a weight-randomization sanity check (Spearman correlation against a model with
+`layer4` and `fc` re-initialized).
+
+The retina band is coarse and `layer4` maps are 7×7, so compare errors against controls, or one source
+against another, rather than reading absolute values.
+
+Browse the results with the notebook, which needs the `notebook` dependency group. See
+[docs/analysis-guide.md](docs/analysis-guide.md) for a section-by-section walkthrough and how to
+interpret each output:
+
+```bash
+uv run --group notebook marimo edit notebooks/analysis_results.py
+```

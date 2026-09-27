@@ -38,3 +38,17 @@ def test_cli_help_lists_command_families() -> None:
 
     assert "data" in result.stdout
     assert "train" in result.stdout
+
+
+def test_analyze_help_does_not_import_torch() -> None:
+    _run(
+        "import sys\n"
+        "from oct_classify.cli import main\n"
+        "for command in (['analyze', '--help'], ['analyze', 'run', '--help']):\n"
+        "    try:\n"
+        "        main(command)\n"
+        "    except SystemExit as error:\n"
+        "        assert error.code == 0\n"
+        "import oct_classify.analysis.report, oct_classify.analysis.campaign\n"
+        "assert 'torch' not in sys.modules\n"
+    )

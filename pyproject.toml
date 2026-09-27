@@ -28,6 +28,9 @@ dev = [
     "pytest>=9.0.0",
     "ruff>=0.16.6",
 ]
+notebook = [
+    "altair>=6.3.0",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
