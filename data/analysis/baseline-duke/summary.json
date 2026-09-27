@@ -1,0 +1,1040 @@
+{
+  "campaign": "baseline-duke",
+  "run_dirs": [
+    "artifacts/runs/duke/resnet50/local-20260916-duke-fold1",
+    "artifacts/runs/duke/resnet50/local-20260916-duke-fold2",
+    "artifacts/runs/duke/resnet50/local-20260916-duke-fold3",
+    "artifacts/runs/duke/resnet50/local-20260916-duke-fold4",
+    "artifacts/runs/duke/resnet50/local-20260916-duke-fold5"
+  ],
+  "sets": {
+    "eval-duke": {
+      "bootstrap": {
+        "fold_count": 1,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.9799708434955456,
+            "ci_low": 0.8747278688236444,
+            "mean": 0.9324093250122497,
+            "n_valid": 2000,
+            "point": 0.9322191272051996
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.9759886147008219,
+            "ci_low": 0.8809315742793684,
+            "mean": 0.9311874998328304,
+            "n_valid": 2000,
+            "point": 0.9306093942968138
+          },
+          "macro_auroc": {
+            "ci_high": 0.9977577857910718,
+            "ci_low": 0.9716277605121557,
+            "mean": 0.9877429344996221,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9882271832310908
+          },
+          "macro_f1": {
+            "ci_high": 0.9756977524979137,
+            "ci_low": 0.8791851760825128,
+            "mean": 0.9312600492753451,
+            "n_valid": 2000,
+            "point": 0.9329634249930826
+          },
+          "recall_amd": {
+            "ci_high": 1.0,
+            "ci_low": 0.9006125001797243,
+            "mean": 0.9689881346357128,
+            "n_valid": 2000,
+            "point": 0.9695712309820194
+          },
+          "recall_dme": {
+            "ci_high": 0.9564703622088071,
+            "ci_low": 0.6932889183702543,
+            "mean": 0.8288665925723043,
+            "n_valid": 2000,
+            "point": 0.8265213442325159
+          },
+          "recall_normal": {
+            "ci_high": 1.0,
+            "ci_low": 0.989247311827957,
+            "mean": 0.9957077722904742,
+            "n_valid": 2000,
+            "point": 0.9957356076759062
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 3231,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 45
+      },
+      "class_names": [
+        "normal",
+        "amd",
+        "dme"
+      ],
+      "eye_level_bootstrap": {
+        "fold_count": 1,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 1.0,
+            "ci_low": 0.8888888888888888,
+            "mean": 0.9550222222222223,
+            "n_valid": 2000,
+            "point": 0.9555555555555556
+          },
+          "balanced_accuracy": {
+            "ci_high": 1.0,
+            "ci_low": 0.8888888888888888,
+            "mean": 0.9547947340352398,
+            "n_valid": 2000,
+            "point": 0.9555555555555556
+          },
+          "macro_auroc": {
+            "ci_high": 1.0,
+            "ci_low": 0.9959514170040485,
+            "mean": 0.9993064383044461,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9992592592592593
+          },
+          "macro_f1": {
+            "ci_high": 1.0,
+            "ci_low": 0.8819427141011444,
+            "mean": 0.9533525273962442,
+            "n_valid": 2000,
+            "point": 0.9553571428571429
+          },
+          "recall_amd": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          },
+          "recall_dme": {
+            "ci_high": 1.0,
+            "ci_low": 0.6666666666666666,
+            "mean": 0.8643842021057196,
+            "n_valid": 2000,
+            "point": 0.8666666666666667
+          },
+          "recall_normal": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 45,
+        "seed": 20260927,
+        "unit": "eye (mean B-scan probability)",
+        "unit_count": 45
+      },
+      "eye_level_per_run": [
+        {
+          "accuracy": 0.8888888888888888,
+          "balanced_accuracy": 0.8888888888888888,
+          "ece": 0.06297704166964839,
+          "macro_auroc": 1.0,
+          "macro_f1": 0.8857142857142858,
+          "rows": 9,
+          "run": "local-20260916-duke-fold1"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.05746390541849805,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "local-20260916-duke-fold2"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.051516116143032475,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "local-20260916-duke-fold3"
+        },
+        {
+          "accuracy": 0.8888888888888888,
+          "balanced_accuracy": 0.8888888888888888,
+          "ece": 0.15027521969817756,
+          "macro_auroc": 0.9814814814814815,
+          "macro_f1": 0.8857142857142858,
+          "rows": 9,
+          "run": "local-20260916-duke-fold4"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.01333058830492262,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "local-20260916-duke-fold5"
+        }
+      ],
+      "eye_level_pooled_metrics": {
+        "accuracy": 0.9555555555555556,
+        "balanced_accuracy": 0.9555555555555556,
+        "confusion_matrix": [
+          [
+            15,
+            0,
+            0
+          ],
+          [
+            0,
+            15,
+            0
+          ],
+          [
+            2,
+            0,
+            13
+          ]
+        ],
+        "macro_auroc": 0.9992592592592593,
+        "macro_f1": 0.9553571428571429
+      },
+      "label_unit": "eye",
+      "mode": "pooled",
+      "per_run": [
+        {
+          "accuracy": 0.9178294573643411,
+          "balanced_accuracy": 0.919330289193303,
+          "ece": 0.037372441254844874,
+          "macro_auroc": 0.9990409963196379,
+          "macro_f1": 0.9213358070500927,
+          "rows": 645,
+          "run": "local-20260916-duke-fold1"
+        },
+        {
+          "accuracy": 0.9452054794520548,
+          "balanced_accuracy": 0.9467118580238196,
+          "ece": 0.01989616034056314,
+          "macro_auroc": 0.9968715027507461,
+          "macro_f1": 0.9510595761695321,
+          "rows": 657,
+          "run": "local-20260916-duke-fold2"
+        },
+        {
+          "accuracy": 0.9710144927536232,
+          "balanced_accuracy": 0.9726027397260274,
+          "ece": 0.03392886347624797,
+          "macro_auroc": 0.9883185716174278,
+          "macro_f1": 0.9607142857142857,
+          "rows": 621,
+          "run": "local-20260916-duke-fold3"
+        },
+        {
+          "accuracy": 0.8468085106382979,
+          "balanced_accuracy": 0.8425727809116256,
+          "ece": 0.09543751385195028,
+          "macro_auroc": 0.9737542672949017,
+          "macro_f1": 0.8431553964138234,
+          "rows": 705,
+          "run": "local-20260916-duke-fold4"
+        },
+        {
+          "accuracy": 0.9933665008291874,
+          "balanced_accuracy": 0.9919989676087236,
+          "ece": 0.007639212790215607,
+          "macro_auroc": 0.9995216181052958,
+          "macro_f1": 0.9933839547821312,
+          "rows": 603,
+          "run": "local-20260916-duke-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.9348448882075008,
+          "sd": 0.05674568254521211
+        },
+        "balanced_accuracy": {
+          "mean": 0.9346433270926999,
+          "sd": 0.0582831677010946
+        },
+        "ece": {
+          "mean": 0.03885483834276437,
+          "sd": 0.03377095145060964
+        },
+        "macro_auroc": {
+          "mean": 0.9915013912176018,
+          "sd": 0.010898377521884583
+        },
+        "macro_f1": {
+          "mean": 0.9339298040259729,
+          "sd": 0.056886367945894904
+        }
+      },
+      "pooled_metrics": {
+        "accuracy": 0.9322191272051996,
+        "balanced_accuracy": 0.9306093942968138,
+        "confusion_matrix": [
+          [
+            1401,
+            2,
+            4
+          ],
+          [
+            1,
+            701,
+            21
+          ],
+          [
+            157,
+            34,
+            910
+          ]
+        ],
+        "macro_auroc": 0.9882271832310908,
+        "macro_f1": 0.9329634249930826
+      },
+      "runs": [
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold1",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold2",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold3",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold4",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold5"
+      ],
+      "source": "duke"
+    },
+    "eval-kermany": {
+      "bootstrap": {
+        "fold_count": 5,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.5453059243322663,
+            "ci_low": 0.45149995417494854,
+            "mean": 0.4982949196986184,
+            "n_valid": 2000,
+            "point": 0.4988
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.34072724690395545,
+            "ci_low": 0.3315738628773448,
+            "mean": 0.33600023835951975,
+            "n_valid": 2000,
+            "point": 0.33599999999999997
+          },
+          "macro_auroc": {
+            "ci_high": 0.7391004957247982,
+            "ci_low": 0.7087575550654543,
+            "mean": 0.7238152120778116,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.7238105333333333
+          },
+          "macro_f1": {
+            "ci_high": 0.2496776786577919,
+            "ci_low": 0.2179721306590675,
+            "mean": 0.2338115539916992,
+            "n_valid": 2000,
+            "point": 0.23410248856131516
+          },
+          "recall_amd": {
+            "ci_high": 0.9930772357723577,
+            "ci_low": 0.9799989775051123,
+            "mean": 0.9871707881884845,
+            "n_valid": 2000,
+            "point": 0.9872
+          },
+          "recall_dme": {
+            "ci_high": 0.03430711406471293,
+            "ci_low": 0.010655503958112572,
+            "mean": 0.0208299268900748,
+            "n_valid": 2000,
+            "point": 0.020800000000000003
+          },
+          "recall_normal": {
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "mean": 0.0,
+            "n_valid": 2000,
+            "point": 0.0
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 1000,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 635
+      },
+      "class_names": [
+        "normal",
+        "amd",
+        "dme"
+      ],
+      "label_unit": "image",
+      "mode": "shared",
+      "per_run": [
+        {
+          "accuracy": 0.483,
+          "balanced_accuracy": 0.32666666666666666,
+          "ece": 0.45732812500000003,
+          "macro_auroc": 0.6435155555555556,
+          "macro_f1": 0.23271558415624738,
+          "rows": 1000,
+          "run": "local-20260916-duke-fold1"
+        },
+        {
+          "accuracy": 0.5,
+          "balanced_accuracy": 0.33466666666666667,
+          "ece": 0.496875,
+          "macro_auroc": 0.7814042222222222,
+          "macro_f1": 0.22717447752186057,
+          "rows": 1000,
+          "run": "local-20260916-duke-fold2"
+        },
+        {
+          "accuracy": 0.5,
+          "balanced_accuracy": 0.33466666666666667,
+          "ece": 0.49985986328125,
+          "macro_auroc": 0.6871168888888888,
+          "macro_f1": 0.22717447752186057,
+          "rows": 1000,
+          "run": "local-20260916-duke-fold3"
+        },
+        {
+          "accuracy": 0.511,
+          "balanced_accuracy": 0.34933333333333333,
+          "ece": 0.45482421875,
+          "macro_auroc": 0.9060571111111111,
+          "macro_f1": 0.25627342608474685,
+          "rows": 1000,
+          "run": "local-20260916-duke-fold4"
+        },
+        {
+          "accuracy": 0.5,
+          "balanced_accuracy": 0.33466666666666667,
+          "ece": 0.49995507812499995,
+          "macro_auroc": 0.6009588888888889,
+          "macro_f1": 0.22717447752186057,
+          "rows": 1000,
+          "run": "local-20260916-duke-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.4988,
+          "sd": 0.01003493896344169
+        },
+        "balanced_accuracy": {
+          "mean": 0.33599999999999997,
+          "sd": 0.008219218670625302
+        },
+        "ece": {
+          "mean": 0.48176845703125004,
+          "sd": 0.02350309348645078
+        },
+        "macro_auroc": {
+          "mean": 0.7238105333333333,
+          "sd": 0.12187809652804214
+        },
+        "macro_f1": {
+          "mean": 0.23410248856131516,
+          "sd": 0.012624044373586479
+        }
+      },
+      "runs": [
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold1",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold2",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold3",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold4",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold5"
+      ],
+      "source": "kermany"
+    },
+    "eval-octdl": {
+      "bootstrap": {
+        "fold_count": 5,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.815227303712905,
+            "ci_low": 0.6190089285714286,
+            "mean": 0.7204343313049083,
+            "n_valid": 2000,
+            "point": 0.72109375
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.3602072028423773,
+            "ci_low": 0.33471382865500515,
+            "mean": 0.34673812861472575,
+            "n_valid": 2000,
+            "point": 0.34703425559947293
+          },
+          "macro_auroc": {
+            "ci_high": 0.7659659214163802,
+            "ci_low": 0.6686327572147593,
+            "mean": 0.7188103292837332,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.7199211915591718
+          },
+          "macro_f1": {
+            "ci_high": 0.33220403586628855,
+            "ci_low": 0.2718654934761626,
+            "mean": 0.30319879547853845,
+            "n_valid": 2000,
+            "point": 0.3051921405264898
+          },
+          "recall_amd": {
+            "ci_high": 1.0,
+            "ci_low": 0.9893491124260356,
+            "mean": 0.9967310841987014,
+            "n_valid": 2000,
+            "point": 0.9967391304347825
+          },
+          "recall_dme": {
+            "ci_high": 0.07502155172413781,
+            "ci_low": 0.0,
+            "mean": 0.03544831726002316,
+            "n_valid": 2000,
+            "point": 0.03636363636363636
+          },
+          "recall_normal": {
+            "ci_high": 0.020408163265306124,
+            "ci_low": 0.0,
+            "mean": 0.008034984385452672,
+            "n_valid": 2000,
+            "point": 0.008
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 256,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 99
+      },
+      "class_names": [
+        "normal",
+        "amd",
+        "dme"
+      ],
+      "label_unit": "image",
+      "mode": "shared",
+      "per_run": [
+        {
+          "accuracy": 0.73046875,
+          "balanced_accuracy": 0.3836429512516468,
+          "ece": 0.21331787109375,
+          "macro_auroc": 0.69943757872367,
+          "macro_f1": 0.3704547424628561,
+          "rows": 256,
+          "run": "local-20260916-duke-fold1"
+        },
+        {
+          "accuracy": 0.71484375,
+          "balanced_accuracy": 0.33152173913043476,
+          "ece": 0.2762660980224609,
+          "macro_auroc": 0.6774442562483403,
+          "macro_f1": 0.27790432801822323,
+          "rows": 256,
+          "run": "local-20260916-duke-fold2"
+        },
+        {
+          "accuracy": 0.71875,
+          "balanced_accuracy": 0.3333333333333333,
+          "ece": 0.26752662658691406,
+          "macro_auroc": 0.688163140494029,
+          "macro_f1": 0.27878787878787875,
+          "rows": 256,
+          "run": "local-20260916-duke-fold3"
+        },
+        {
+          "accuracy": 0.72265625,
+          "balanced_accuracy": 0.35333992094861655,
+          "ece": 0.24480247497558594,
+          "macro_auroc": 0.766723607911873,
+          "macro_f1": 0.3200258745756121,
+          "rows": 256,
+          "run": "local-20260916-duke-fold4"
+        },
+        {
+          "accuracy": 0.71875,
+          "balanced_accuracy": 0.3333333333333333,
+          "ece": 0.28105926513671875,
+          "macro_auroc": 0.7678373744179464,
+          "macro_f1": 0.27878787878787875,
+          "rows": 256,
+          "run": "local-20260916-duke-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.72109375,
+          "sd": 0.0059241214406652734
+        },
+        "balanced_accuracy": {
+          "mean": 0.34703425559947293,
+          "sd": 0.02233845743296002
+        },
+        "ece": {
+          "mean": 0.2565944671630859,
+          "sd": 0.027914719940045515
+        },
+        "macro_auroc": {
+          "mean": 0.7199211915591718,
+          "sd": 0.043928547073226305
+        },
+        "macro_f1": {
+          "mean": 0.3051921405264898,
+          "sd": 0.040676288131886985
+        }
+      },
+      "runs": [
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold1",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold2",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold3",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold4",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold5"
+      ],
+      "source": "octdl"
+    },
+    "eval-paima": {
+      "bootstrap": {
+        "fold_count": 5,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.6730644080676196,
+            "ci_low": 0.569733200558074,
+            "mean": 0.6218383673628396,
+            "n_valid": 2000,
+            "point": 0.6208199356913183
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.6646374564963763,
+            "ci_low": 0.5868189619561357,
+            "mean": 0.6257944039095324,
+            "n_valid": 2000,
+            "point": 0.625417011589404
+          },
+          "macro_auroc": {
+            "ci_high": 0.8028288337349819,
+            "ci_low": 0.7089263836994583,
+            "mean": 0.7572284350097899,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.756087929428808
+          },
+          "macro_f1": {
+            "ci_high": 0.6401623904351011,
+            "ci_low": 0.5386971703675332,
+            "mean": 0.5890053250072347,
+            "n_valid": 2000,
+            "point": 0.5902509567047672
+          },
+          "recall_amd": {
+            "ci_high": 0.8220845102380043,
+            "ci_low": 0.7429508616854605,
+            "mean": 0.7849109334564354,
+            "n_valid": 2000,
+            "point": 0.784271523178808
+          },
+          "recall_normal": {
+            "ci_high": 0.541831212806993,
+            "ci_low": 0.392964452592585,
+            "mean": 0.4666778743626296,
+            "n_valid": 2000,
+            "point": 0.46656249999999994
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 2488,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 65
+      },
+      "class_names": [
+        "normal",
+        "amd"
+      ],
+      "label_unit": "image",
+      "mode": "shared",
+      "per_run": [
+        {
+          "accuracy": 0.6523311897106109,
+          "balanced_accuracy": 0.6589662665562914,
+          "ece": 0.13655193365655144,
+          "macro_auroc": 0.7608623176221027,
+          "macro_f1": 0.6362582321141396,
+          "rows": 2488,
+          "run": "local-20260916-duke-fold1"
+        },
+        {
+          "accuracy": 0.5880225080385852,
+          "balanced_accuracy": 0.5948365066225165,
+          "ece": 0.1887634866107315,
+          "macro_auroc": 0.6813251823778972,
+          "macro_f1": 0.5674177458464759,
+          "rows": 2488,
+          "run": "local-20260916-duke-fold2"
+        },
+        {
+          "accuracy": 0.6897106109324759,
+          "balanced_accuracy": 0.6934783733443708,
+          "ece": 0.16725300975934487,
+          "macro_auroc": 0.7877751836713576,
+          "macro_f1": 0.6859011216228503,
+          "rows": 2488,
+          "run": "local-20260916-duke-fold3"
+        },
+        {
+          "accuracy": 0.5337620578778135,
+          "balanced_accuracy": 0.5458971440397351,
+          "ece": 0.30511454983922826,
+          "macro_auroc": 0.8066968905215233,
+          "macro_f1": 0.4430704915046483,
+          "rows": 2488,
+          "run": "local-20260916-duke-fold4"
+        },
+        {
+          "accuracy": 0.6402733118971061,
+          "balanced_accuracy": 0.6339067673841059,
+          "ece": 0.24671312927049838,
+          "macro_auroc": 0.743780072951159,
+          "macro_f1": 0.6186071924357219,
+          "rows": 2488,
+          "run": "local-20260916-duke-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.6208199356913183,
+          "sd": 0.06077018895166101
+        },
+        "balanced_accuracy": {
+          "mean": 0.625417011589404,
+          "sd": 0.05720260930537624
+        },
+        "ece": {
+          "mean": 0.2088792218272709,
+          "sd": 0.06719610081423605
+        },
+        "macro_auroc": {
+          "mean": 0.7560879294288079,
+          "sd": 0.04829362143339712
+        },
+        "macro_f1": {
+          "mean": 0.5902509567047672,
+          "sd": 0.09253802515574669
+        }
+      },
+      "runs": [
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold1",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold2",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold3",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold4",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold5"
+      ],
+      "source": "paima"
+    },
+    "test-duke": {
+      "bootstrap": {
+        "fold_count": 1,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.9799708434955456,
+            "ci_low": 0.8747278688236444,
+            "mean": 0.9324093250122497,
+            "n_valid": 2000,
+            "point": 0.9322191272051996
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.9759886147008219,
+            "ci_low": 0.8809315742793684,
+            "mean": 0.9311874998328304,
+            "n_valid": 2000,
+            "point": 0.9306093942968138
+          },
+          "macro_auroc": {
+            "ci_high": 0.9977577857910718,
+            "ci_low": 0.9716277605121557,
+            "mean": 0.9877429344996221,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9882271832310908
+          },
+          "macro_f1": {
+            "ci_high": 0.9756977524979137,
+            "ci_low": 0.8791851760825128,
+            "mean": 0.9312600492753451,
+            "n_valid": 2000,
+            "point": 0.9329634249930826
+          },
+          "recall_amd": {
+            "ci_high": 1.0,
+            "ci_low": 0.9006125001797243,
+            "mean": 0.9689881346357128,
+            "n_valid": 2000,
+            "point": 0.9695712309820194
+          },
+          "recall_dme": {
+            "ci_high": 0.9564703622088071,
+            "ci_low": 0.6932889183702543,
+            "mean": 0.8288665925723043,
+            "n_valid": 2000,
+            "point": 0.8265213442325159
+          },
+          "recall_normal": {
+            "ci_high": 1.0,
+            "ci_low": 0.989247311827957,
+            "mean": 0.9957077722904742,
+            "n_valid": 2000,
+            "point": 0.9957356076759062
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 3231,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 45
+      },
+      "class_names": [
+        "normal",
+        "amd",
+        "dme"
+      ],
+      "eye_level_bootstrap": {
+        "fold_count": 1,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 1.0,
+            "ci_low": 0.8888888888888888,
+            "mean": 0.9550222222222223,
+            "n_valid": 2000,
+            "point": 0.9555555555555556
+          },
+          "balanced_accuracy": {
+            "ci_high": 1.0,
+            "ci_low": 0.8888888888888888,
+            "mean": 0.9547947340352398,
+            "n_valid": 2000,
+            "point": 0.9555555555555556
+          },
+          "macro_auroc": {
+            "ci_high": 1.0,
+            "ci_low": 0.9959514170040485,
+            "mean": 0.9993064383044461,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9992592592592593
+          },
+          "macro_f1": {
+            "ci_high": 1.0,
+            "ci_low": 0.8819427141011444,
+            "mean": 0.9533525273962442,
+            "n_valid": 2000,
+            "point": 0.9553571428571429
+          },
+          "recall_amd": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          },
+          "recall_dme": {
+            "ci_high": 1.0,
+            "ci_low": 0.6666666666666666,
+            "mean": 0.8643842021057196,
+            "n_valid": 2000,
+            "point": 0.8666666666666667
+          },
+          "recall_normal": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 45,
+        "seed": 20260927,
+        "unit": "eye (mean B-scan probability)",
+        "unit_count": 45
+      },
+      "eye_level_per_run": [
+        {
+          "accuracy": 0.8888888888888888,
+          "balanced_accuracy": 0.8888888888888888,
+          "ece": 0.06297704166964839,
+          "macro_auroc": 1.0,
+          "macro_f1": 0.8857142857142858,
+          "rows": 9,
+          "run": "local-20260916-duke-fold1"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.05746390541849805,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "local-20260916-duke-fold2"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.051516116143032475,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "local-20260916-duke-fold3"
+        },
+        {
+          "accuracy": 0.8888888888888888,
+          "balanced_accuracy": 0.8888888888888888,
+          "ece": 0.15027521969817756,
+          "macro_auroc": 0.9814814814814815,
+          "macro_f1": 0.8857142857142858,
+          "rows": 9,
+          "run": "local-20260916-duke-fold4"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.01333058830492262,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "local-20260916-duke-fold5"
+        }
+      ],
+      "eye_level_pooled_metrics": {
+        "accuracy": 0.9555555555555556,
+        "balanced_accuracy": 0.9555555555555556,
+        "confusion_matrix": [
+          [
+            15,
+            0,
+            0
+          ],
+          [
+            0,
+            15,
+            0
+          ],
+          [
+            2,
+            0,
+            13
+          ]
+        ],
+        "macro_auroc": 0.9992592592592593,
+        "macro_f1": 0.9553571428571429
+      },
+      "label_unit": "eye",
+      "mode": "pooled",
+      "per_run": [
+        {
+          "accuracy": 0.9178294573643411,
+          "balanced_accuracy": 0.919330289193303,
+          "ece": 0.037372441254844874,
+          "macro_auroc": 0.9990409963196379,
+          "macro_f1": 0.9213358070500927,
+          "rows": 645,
+          "run": "local-20260916-duke-fold1"
+        },
+        {
+          "accuracy": 0.9452054794520548,
+          "balanced_accuracy": 0.9467118580238196,
+          "ece": 0.01989616034056314,
+          "macro_auroc": 0.9968715027507461,
+          "macro_f1": 0.9510595761695321,
+          "rows": 657,
+          "run": "local-20260916-duke-fold2"
+        },
+        {
+          "accuracy": 0.9710144927536232,
+          "balanced_accuracy": 0.9726027397260274,
+          "ece": 0.03392886347624797,
+          "macro_auroc": 0.9883185716174278,
+          "macro_f1": 0.9607142857142857,
+          "rows": 621,
+          "run": "local-20260916-duke-fold3"
+        },
+        {
+          "accuracy": 0.8468085106382979,
+          "balanced_accuracy": 0.8425727809116256,
+          "ece": 0.09543751385195028,
+          "macro_auroc": 0.9737542672949017,
+          "macro_f1": 0.8431553964138234,
+          "rows": 705,
+          "run": "local-20260916-duke-fold4"
+        },
+        {
+          "accuracy": 0.9933665008291874,
+          "balanced_accuracy": 0.9919989676087236,
+          "ece": 0.007639212790215607,
+          "macro_auroc": 0.9995216181052958,
+          "macro_f1": 0.9933839547821312,
+          "rows": 603,
+          "run": "local-20260916-duke-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.9348448882075008,
+          "sd": 0.05674568254521211
+        },
+        "balanced_accuracy": {
+          "mean": 0.9346433270926999,
+          "sd": 0.0582831677010946
+        },
+        "ece": {
+          "mean": 0.03885483834276437,
+          "sd": 0.03377095145060964
+        },
+        "macro_auroc": {
+          "mean": 0.9915013912176018,
+          "sd": 0.010898377521884583
+        },
+        "macro_f1": {
+          "mean": 0.9339298040259729,
+          "sd": 0.056886367945894904
+        }
+      },
+      "pooled_metrics": {
+        "accuracy": 0.9322191272051996,
+        "balanced_accuracy": 0.9306093942968138,
+        "confusion_matrix": [
+          [
+            1401,
+            2,
+            4
+          ],
+          [
+            1,
+            701,
+            21
+          ],
+          [
+            157,
+            34,
+            910
+          ]
+        ],
+        "macro_auroc": 0.9882271832310908,
+        "macro_f1": 0.9329634249930826
+      },
+      "runs": [
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold1",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold2",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold3",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold4",
+        "artifacts/runs/duke/resnet50/local-20260916-duke-fold5"
+      ],
+      "source": "duke"
+    }
+  }
+}

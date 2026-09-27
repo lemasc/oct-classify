@@ -1,0 +1,741 @@
+{
+  "campaign": "loso-paima",
+  "run_dirs": [
+    "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold1",
+    "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold2",
+    "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold3",
+    "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold4",
+    "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold5"
+  ],
+  "sets": {
+    "eval-paima-loso": {
+      "bootstrap": {
+        "fold_count": 5,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.880321866671004,
+            "ci_low": 0.8527560237091764,
+            "mean": 0.8674040677457519,
+            "n_valid": 2000,
+            "point": 0.86733329317511
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.8799588854412284,
+            "ci_low": 0.8525045354943787,
+            "mean": 0.867048250314612,
+            "n_valid": 2000,
+            "point": 0.8670717888594398
+          },
+          "macro_auroc": {
+            "ci_high": 0.9423215097823096,
+            "ci_low": 0.9179746332070474,
+            "mean": 0.9309172342833706,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9306383094300511
+          },
+          "macro_f1": {
+            "ci_high": 0.8797881385455768,
+            "ci_low": 0.8522643306826835,
+            "mean": 0.866891637187706,
+            "n_valid": 2000,
+            "point": 0.8670422181769757
+          },
+          "recall_amd": {
+            "ci_high": 0.876384266377911,
+            "ci_low": 0.8357492456060998,
+            "mean": 0.8569764873246554,
+            "n_valid": 2000,
+            "point": 0.8572277227722772
+          },
+          "recall_normal": {
+            "ci_high": 0.8938895828800987,
+            "ci_low": 0.8568471075038748,
+            "mean": 0.8771200133045683,
+            "n_valid": 2000,
+            "point": 0.8769158549466024
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 16601,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 437
+      },
+      "class_names": [
+        "normal",
+        "amd"
+      ],
+      "label_unit": "image",
+      "mode": "shared",
+      "per_run": [
+        {
+          "accuracy": 0.8856695379796398,
+          "balanced_accuracy": 0.8848714111670526,
+          "ece": 0.029763979061878783,
+          "macro_auroc": 0.9359704140963327,
+          "macro_f1": 0.8853407285978954,
+          "rows": 16601,
+          "run": "loso-paima-local-20260918-082742-fold1"
+        },
+        {
+          "accuracy": 0.8831998072405277,
+          "balanced_accuracy": 0.8817898354792644,
+          "ece": 0.01706916657882053,
+          "macro_auroc": 0.9368231413711727,
+          "macro_f1": 0.8825122138981809,
+          "rows": 16601,
+          "run": "loso-paima-local-20260918-082742-fold2"
+        },
+        {
+          "accuracy": 0.8360339738569965,
+          "balanced_accuracy": 0.8374138122355834,
+          "ece": 0.07036208991551718,
+          "macro_auroc": 0.9219432174557673,
+          "macro_f1": 0.8358892425815694,
+          "rows": 16601,
+          "run": "loso-paima-local-20260918-082742-fold3"
+        },
+        {
+          "accuracy": 0.8676585747846516,
+          "balanced_accuracy": 0.8671856063819033,
+          "ece": 0.04738951743306133,
+          "macro_auroc": 0.9323440174304368,
+          "macro_f1": 0.8674374630990525,
+          "rows": 16601,
+          "run": "loso-paima-local-20260918-082742-fold4"
+        },
+        {
+          "accuracy": 0.8641045720137341,
+          "balanced_accuracy": 0.8640982790333956,
+          "ece": 0.034881270094798536,
+          "macro_auroc": 0.9261107567965458,
+          "macro_f1": 0.8640314427081799,
+          "rows": 16601,
+          "run": "loso-paima-local-20260918-082742-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.86733329317511,
+          "sd": 0.019862917587557455
+        },
+        "balanced_accuracy": {
+          "mean": 0.8670717888594398,
+          "sd": 0.018854029696143266
+        },
+        "ece": {
+          "mean": 0.03989320461681527,
+          "sd": 0.020206466090957498
+        },
+        "macro_auroc": {
+          "mean": 0.9306383094300511,
+          "sd": 0.006436153420038548
+        },
+        "macro_f1": {
+          "mean": 0.8670422181769757,
+          "sd": 0.019709674827090153
+        }
+      },
+      "runs": [
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold1",
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold2",
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold3",
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold4",
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold5"
+      ],
+      "source": "paima"
+    },
+    "test-duke": {
+      "bootstrap": {
+        "fold_count": 1,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.9821146776876021,
+            "ci_low": 0.9354035789942958,
+            "mean": 0.9605650439541478,
+            "n_valid": 2000,
+            "point": 0.9603837821108017
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.980653328940232,
+            "ci_low": 0.92928426238115,
+            "mean": 0.9575657195212459,
+            "n_valid": 2000,
+            "point": 0.9574724602344652
+          },
+          "macro_auroc": {
+            "ci_high": 0.999444841100484,
+            "ci_low": 0.9919446984303574,
+            "mean": 0.9964140258490601,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9965775426932745
+          },
+          "macro_f1": {
+            "ci_high": 0.9811361402547943,
+            "ci_low": 0.9320594017258014,
+            "mean": 0.9586377607502654,
+            "n_valid": 2000,
+            "point": 0.9597834422355076
+          },
+          "recall_amd": {
+            "ci_high": 0.9931859796729595,
+            "ci_low": 0.8846074380165289,
+            "mean": 0.9531375687725268,
+            "n_valid": 2000,
+            "point": 0.9543568464730291
+          },
+          "recall_dme": {
+            "ci_high": 0.9826460106057244,
+            "ci_low": 0.8812327657019142,
+            "mean": 0.9347797329987111,
+            "n_valid": 2000,
+            "point": 0.9336966394187103
+          },
+          "recall_normal": {
+            "ci_high": 0.9979381443298969,
+            "ci_low": 0.9613887175098516,
+            "mean": 0.9847798567924999,
+            "n_valid": 2000,
+            "point": 0.984363894811656
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 3231,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 45
+      },
+      "class_names": [
+        "normal",
+        "amd",
+        "dme"
+      ],
+      "eye_level_bootstrap": {
+        "fold_count": 1,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          },
+          "balanced_accuracy": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          },
+          "macro_auroc": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 1.0
+          },
+          "macro_f1": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          },
+          "recall_amd": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          },
+          "recall_dme": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          },
+          "recall_normal": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 45,
+        "seed": 20260927,
+        "unit": "eye (mean B-scan probability)",
+        "unit_count": 45
+      },
+      "eye_level_per_run": [
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.03040412696480649,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "loso-paima-local-20260918-082742-fold1"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.024484403503000924,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "loso-paima-local-20260918-082742-fold2"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.0638100714530443,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "loso-paima-local-20260918-082742-fold3"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.1043891275664143,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "loso-paima-local-20260918-082742-fold4"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.012865483041744175,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "loso-paima-local-20260918-082742-fold5"
+        }
+      ],
+      "eye_level_pooled_metrics": {
+        "accuracy": 1.0,
+        "balanced_accuracy": 1.0,
+        "confusion_matrix": [
+          [
+            15,
+            0,
+            0
+          ],
+          [
+            0,
+            15,
+            0
+          ],
+          [
+            0,
+            0,
+            15
+          ]
+        ],
+        "macro_auroc": 1.0,
+        "macro_f1": 1.0
+      },
+      "label_unit": "eye",
+      "mode": "pooled",
+      "per_run": [
+        {
+          "accuracy": 0.9720930232558139,
+          "balanced_accuracy": 0.9729033955315032,
+          "ece": 0.016967205668604622,
+          "macro_auroc": 0.9997457841109951,
+          "macro_f1": 0.9735501751493921,
+          "rows": 645,
+          "run": "loso-paima-local-20260918-082742-fold1"
+        },
+        {
+          "accuracy": 0.9817351598173516,
+          "balanced_accuracy": 0.9809896561364271,
+          "ece": 0.009482094867770201,
+          "macro_auroc": 0.9999826247715157,
+          "macro_f1": 0.9835412954643079,
+          "rows": 657,
+          "run": "loso-paima-local-20260918-082742-fold2"
+        },
+        {
+          "accuracy": 0.9549114331723028,
+          "balanced_accuracy": 0.9485982239830566,
+          "ece": 0.0242847190770934,
+          "macro_auroc": 0.9967902455506946,
+          "macro_f1": 0.9524060270494111,
+          "rows": 621,
+          "run": "loso-paima-local-20260918-082742-fold3"
+        },
+        {
+          "accuracy": 0.9078014184397163,
+          "balanced_accuracy": 0.8986202170682187,
+          "ece": 0.061860386192375806,
+          "macro_auroc": 0.9851852826549578,
+          "macro_f1": 0.9012427866015189,
+          "rows": 705,
+          "run": "loso-paima-local-20260918-082742-fold4"
+        },
+        {
+          "accuracy": 0.9917081260364843,
+          "balanced_accuracy": 0.9920898783525555,
+          "ece": 0.00769994428897181,
+          "macro_auroc": 0.9999273001207029,
+          "macro_f1": 0.9922620665260397,
+          "rows": 603,
+          "run": "loso-paima-local-20260918-082742-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.9616498321443337,
+          "sd": 0.03301908288868799
+        },
+        "balanced_accuracy": {
+          "mean": 0.9586402742143522,
+          "sd": 0.03716536543504595
+        },
+        "ece": {
+          "mean": 0.024058870018963167,
+          "sd": 0.022132522229243282
+        },
+        "macro_auroc": {
+          "mean": 0.9963262474417732,
+          "sd": 0.006371151725398223
+        },
+        "macro_f1": {
+          "mean": 0.9606004701581339,
+          "sd": 0.036355592777186745
+        }
+      },
+      "pooled_metrics": {
+        "accuracy": 0.9603837821108017,
+        "balanced_accuracy": 0.9574724602344652,
+        "confusion_matrix": [
+          [
+            1385,
+            4,
+            18
+          ],
+          [
+            10,
+            690,
+            23
+          ],
+          [
+            57,
+            16,
+            1028
+          ]
+        ],
+        "macro_auroc": 0.9965775426932745,
+        "macro_f1": 0.9597834422355076
+      },
+      "runs": [
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold1",
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold2",
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold3",
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold4",
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold5"
+      ],
+      "source": "duke"
+    },
+    "test-kermany": {
+      "bootstrap": {
+        "fold_count": 5,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.9807331988977813,
+            "ci_low": 0.9684828962022212,
+            "mean": 0.9748955184864729,
+            "n_valid": 2000,
+            "point": 0.975
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.9758602080464652,
+            "ci_low": 0.9628165029796497,
+            "mean": 0.9696520029263602,
+            "n_valid": 2000,
+            "point": 0.9697333333333333
+          },
+          "macro_auroc": {
+            "ci_high": 0.9991643629295426,
+            "ci_low": 0.9974814905362782,
+            "mean": 0.9984687890826045,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9984816444444444
+          },
+          "macro_f1": {
+            "ci_high": 0.9778499810400907,
+            "ci_low": 0.9650579902068736,
+            "mean": 0.9718174318513223,
+            "n_valid": 2000,
+            "point": 0.9720061595885954
+          },
+          "recall_amd": {
+            "ci_high": 0.996774193548387,
+            "ci_low": 0.9835558486335398,
+            "mean": 0.9907871331149054,
+            "n_valid": 2000,
+            "point": 0.9907999999999999
+          },
+          "recall_dme": {
+            "ci_high": 0.9918383871767331,
+            "ci_low": 0.9752043264653236,
+            "mean": 0.9841017843477111,
+            "n_valid": 2000,
+            "point": 0.984
+          },
+          "recall_normal": {
+            "ci_high": 0.9491961040436165,
+            "ci_low": 0.9173765072483403,
+            "mean": 0.934067091316464,
+            "n_valid": 2000,
+            "point": 0.9343999999999999
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 1000,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 635
+      },
+      "class_names": [
+        "normal",
+        "amd",
+        "dme"
+      ],
+      "label_unit": "image",
+      "mode": "shared",
+      "per_run": [
+        {
+          "accuracy": 0.989,
+          "balanced_accuracy": 0.9866666666666667,
+          "ece": 0.011977050781249998,
+          "macro_auroc": 0.9986733333333334,
+          "macro_f1": 0.9889427593976836,
+          "rows": 1000,
+          "run": "loso-paima-local-20260918-082742-fold1"
+        },
+        {
+          "accuracy": 0.981,
+          "balanced_accuracy": 0.98,
+          "ece": 0.010170166015624996,
+          "macro_auroc": 0.9991346666666666,
+          "macro_f1": 0.9803079287956681,
+          "rows": 1000,
+          "run": "loso-paima-local-20260918-082742-fold2"
+        },
+        {
+          "accuracy": 0.962,
+          "balanced_accuracy": 0.952,
+          "ece": 0.011430664062500054,
+          "macro_auroc": 0.9968228888888889,
+          "macro_f1": 0.9606030695818523,
+          "rows": 1000,
+          "run": "loso-paima-local-20260918-082742-fold3"
+        },
+        {
+          "accuracy": 0.958,
+          "balanced_accuracy": 0.9466666666666667,
+          "ece": 0.024911376953124953,
+          "macro_auroc": 0.9982595555555557,
+          "macro_f1": 0.9468276503540358,
+          "rows": 1000,
+          "run": "loso-paima-local-20260918-082742-fold4"
+        },
+        {
+          "accuracy": 0.985,
+          "balanced_accuracy": 0.9833333333333334,
+          "ece": 0.007271484375,
+          "macro_auroc": 0.9995177777777778,
+          "macro_f1": 0.9833493898137368,
+          "rows": 1000,
+          "run": "loso-paima-local-20260918-082742-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.975,
+          "sd": 0.014053469322555209
+        },
+        "balanced_accuracy": {
+          "mean": 0.9697333333333333,
+          "sd": 0.018865606566212285
+        },
+        "ece": {
+          "mean": 0.0131521484375,
+          "sd": 0.00682089156962143
+        },
+        "macro_auroc": {
+          "mean": 0.9984816444444446,
+          "sd": 0.0010413390904189406
+        },
+        "macro_f1": {
+          "mean": 0.9720061595885954,
+          "sd": 0.017666525167516354
+        }
+      },
+      "runs": [
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold1",
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold2",
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold3",
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold4",
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold5"
+      ],
+      "source": "kermany"
+    },
+    "test-octdl": {
+      "bootstrap": {
+        "fold_count": 5,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.9895929985322157,
+            "ci_low": 0.9506334023724345,
+            "mean": 0.972660845682612,
+            "n_valid": 2000,
+            "point": 0.97265625
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.9880978246092077,
+            "ci_low": 0.9364362447106502,
+            "mean": 0.9666496313886874,
+            "n_valid": 2000,
+            "point": 0.9664558629776021
+          },
+          "macro_auroc": {
+            "ci_high": 0.9997695714173027,
+            "ci_low": 0.9919465143119409,
+            "mean": 0.9967622164370862,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9968800889956704
+          },
+          "macro_f1": {
+            "ci_high": 0.9846276606141593,
+            "ci_low": 0.9292530164721411,
+            "mean": 0.9621250774359248,
+            "n_valid": 2000,
+            "point": 0.9633225158278022
+          },
+          "recall_amd": {
+            "ci_high": 0.9941860465116278,
+            "ci_low": 0.9449081148048731,
+            "mean": 0.9738702731439061,
+            "n_valid": 2000,
+            "point": 0.9739130434782609
+          },
+          "recall_dme": {
+            "ci_high": 1.0,
+            "ci_low": 0.8646791443850269,
+            "mean": 0.9466854280784037,
+            "n_valid": 2000,
+            "point": 0.9454545454545455
+          },
+          "recall_normal": {
+            "ci_high": 1.0,
+            "ci_low": 0.9449861111111111,
+            "mean": 0.9793931929437525,
+            "n_valid": 2000,
+            "point": 0.9800000000000001
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 256,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 99
+      },
+      "class_names": [
+        "normal",
+        "amd",
+        "dme"
+      ],
+      "label_unit": "image",
+      "mode": "shared",
+      "per_run": [
+        {
+          "accuracy": 0.9765625,
+          "balanced_accuracy": 0.9709354413702239,
+          "ece": 0.02202987670898441,
+          "macro_auroc": 0.9960739998123915,
+          "macro_f1": 0.9706023513677241,
+          "rows": 256,
+          "run": "loso-paima-local-20260918-082742-fold1"
+        },
+        {
+          "accuracy": 0.96875,
+          "balanced_accuracy": 0.972167325428195,
+          "ece": 0.021297454833984396,
+          "macro_auroc": 0.9969368143777176,
+          "macro_f1": 0.9545382794001579,
+          "rows": 256,
+          "run": "loso-paima-local-20260918-082742-fold2"
+        },
+        {
+          "accuracy": 0.9609375,
+          "balanced_accuracy": 0.9272990777338603,
+          "ece": 0.030067443847656215,
+          "macro_auroc": 0.9969746816518925,
+          "macro_f1": 0.9413358839470747,
+          "rows": 256,
+          "run": "loso-paima-local-20260918-082742-fold3"
+        },
+        {
+          "accuracy": 0.98046875,
+          "balanced_accuracy": 0.9776021080368906,
+          "ece": 0.014272689819335951,
+          "macro_auroc": 0.996426404978009,
+          "macro_f1": 0.9748613391493289,
+          "rows": 256,
+          "run": "loso-paima-local-20260918-082742-fold4"
+        },
+        {
+          "accuracy": 0.9765625,
+          "balanced_accuracy": 0.9842753623188406,
+          "ece": 0.020473480224609333,
+          "macro_auroc": 0.9979885441583415,
+          "macro_f1": 0.9752747252747253,
+          "rows": 256,
+          "run": "loso-paima-local-20260918-082742-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.97265625,
+          "sd": 0.0078125
+        },
+        "balanced_accuracy": {
+          "mean": 0.9664558629776021,
+          "sd": 0.022515076017075773
+        },
+        "ece": {
+          "mean": 0.021628189086914062,
+          "sd": 0.005633127041007547
+        },
+        "macro_auroc": {
+          "mean": 0.9968800889956704,
+          "sd": 0.0007239556869229425
+        },
+        "macro_f1": {
+          "mean": 0.9633225158278022,
+          "sd": 0.014912834664075546
+        }
+      },
+      "runs": [
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold1",
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold2",
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold3",
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold4",
+        "artifacts/runs/fused/resnet50/loso-paima-local-20260918-082742-fold5"
+      ],
+      "source": "octdl"
+    }
+  }
+}

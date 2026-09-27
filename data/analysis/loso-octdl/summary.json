@@ -1,0 +1,741 @@
+{
+  "campaign": "loso-octdl",
+  "run_dirs": [
+    "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold1",
+    "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold2",
+    "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold3",
+    "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold4",
+    "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold5"
+  ],
+  "sets": {
+    "eval-octdl-loso": {
+      "bootstrap": {
+        "fold_count": 5,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.9580880793910672,
+            "ci_low": 0.9332147384066276,
+            "mean": 0.9468881839967145,
+            "n_valid": 2000,
+            "point": 0.9469865418373317
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.906146700649425,
+            "ci_low": 0.8534245924428098,
+            "mean": 0.8807737435419154,
+            "n_valid": 2000,
+            "point": 0.8805862241066473
+          },
+          "macro_auroc": {
+            "ci_high": 0.9935387769462796,
+            "ci_low": 0.9839662953325741,
+            "mean": 0.9893588055174231,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9892428003305952
+          },
+          "macro_f1": {
+            "ci_high": 0.9221734966536234,
+            "ci_low": 0.8780247698199165,
+            "mean": 0.9016500710315286,
+            "n_valid": 2000,
+            "point": 0.9020443801006441
+          },
+          "recall_amd": {
+            "ci_high": 0.9805522326850787,
+            "ci_low": 0.9598937921144617,
+            "mean": 0.9707011825543118,
+            "n_valid": 2000,
+            "point": 0.9707317073170731
+          },
+          "recall_dme": {
+            "ci_high": 0.7783845677738805,
+            "ci_low": 0.6301873869216852,
+            "mean": 0.7058913038393919,
+            "n_valid": 2000,
+            "point": 0.7047619047619047
+          },
+          "recall_normal": {
+            "ci_high": 0.9824465125391849,
+            "ci_low": 0.9425996126175983,
+            "mean": 0.9657287442320425,
+            "n_valid": 2000,
+            "point": 0.9662650602409638
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 1709,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 637
+      },
+      "class_names": [
+        "normal",
+        "amd",
+        "dme"
+      ],
+      "label_unit": "image",
+      "mode": "shared",
+      "per_run": [
+        {
+          "accuracy": 0.9514335868929198,
+          "balanced_accuracy": 0.9006247322124069,
+          "ece": 0.027819745648039795,
+          "macro_auroc": 0.9903349121160424,
+          "macro_f1": 0.915654317439521,
+          "rows": 1709,
+          "run": "loso-octdl-local-20260918-082742-fold1"
+        },
+        {
+          "accuracy": 0.9420713867758923,
+          "balanced_accuracy": 0.8565597382061846,
+          "ece": 0.030662576799297833,
+          "macro_auroc": 0.9853384083611868,
+          "macro_f1": 0.8860435655599446,
+          "rows": 1709,
+          "run": "loso-octdl-local-20260918-082742-fold2"
+        },
+        {
+          "accuracy": 0.9455822118197776,
+          "balanced_accuracy": 0.8826751505774216,
+          "ece": 0.011962747769163326,
+          "macro_auroc": 0.9924087984441602,
+          "macro_f1": 0.9047678843344479,
+          "rows": 1709,
+          "run": "loso-octdl-local-20260918-082742-fold3"
+        },
+        {
+          "accuracy": 0.9403159742539496,
+          "balanced_accuracy": 0.8594117968472529,
+          "ece": 0.011774892343841402,
+          "macro_auroc": 0.9862280039456731,
+          "macro_f1": 0.8833983726418339,
+          "rows": 1709,
+          "run": "loso-octdl-local-20260918-082742-fold4"
+        },
+        {
+          "accuracy": 0.9555295494441194,
+          "balanced_accuracy": 0.9036597026899701,
+          "ece": 0.018179833784376903,
+          "macro_auroc": 0.9919038787859136,
+          "macro_f1": 0.9203577605274736,
+          "rows": 1709,
+          "run": "loso-octdl-local-20260918-082742-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.9469865418373317,
+          "sd": 0.006391137470292887
+        },
+        "balanced_accuracy": {
+          "mean": 0.8805862241066473,
+          "sd": 0.022158064160303297
+        },
+        "ece": {
+          "mean": 0.020079959268943855,
+          "sd": 0.008808657999484019
+        },
+        "macro_auroc": {
+          "mean": 0.9892428003305952,
+          "sd": 0.003264615775466136
+        },
+        "macro_f1": {
+          "mean": 0.9020443801006441,
+          "sd": 0.01682057841200292
+        }
+      },
+      "runs": [
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold1",
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold2",
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold3",
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold4",
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold5"
+      ],
+      "source": "octdl"
+    },
+    "test-duke": {
+      "bootstrap": {
+        "fold_count": 1,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.9701590614044171,
+            "ci_low": 0.9126234287062313,
+            "mean": 0.9427464201794492,
+            "n_valid": 2000,
+            "point": 0.9427421850820179
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.9657403152223317,
+            "ci_low": 0.9071651182061756,
+            "mean": 0.9384591272561212,
+            "n_valid": 2000,
+            "point": 0.9384476673479667
+          },
+          "macro_auroc": {
+            "ci_high": 0.9977165759021395,
+            "ci_low": 0.9787873819515452,
+            "mean": 0.9899367825985393,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9905022344581824
+          },
+          "macro_f1": {
+            "ci_high": 0.9666154287672181,
+            "ci_low": 0.9116209326755703,
+            "mean": 0.9405715629612114,
+            "n_valid": 2000,
+            "point": 0.9423404701562227
+          },
+          "recall_amd": {
+            "ci_high": 0.9836976735442298,
+            "ci_low": 0.8666622162883846,
+            "mean": 0.9364191007201264,
+            "n_valid": 2000,
+            "point": 0.9377593360995851
+          },
+          "recall_dme": {
+            "ci_high": 0.9553587167283623,
+            "ci_low": 0.8295223616535828,
+            "mean": 0.8956363824002921,
+            "n_valid": 2000,
+            "point": 0.8946412352406903
+          },
+          "recall_normal": {
+            "ci_high": 1.0,
+            "ci_low": 0.9561812714776633,
+            "mean": 0.9833218986479455,
+            "n_valid": 2000,
+            "point": 0.9829424307036247
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 3231,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 45
+      },
+      "class_names": [
+        "normal",
+        "amd",
+        "dme"
+      ],
+      "eye_level_bootstrap": {
+        "fold_count": 1,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          },
+          "balanced_accuracy": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          },
+          "macro_auroc": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 1.0
+          },
+          "macro_f1": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          },
+          "recall_amd": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          },
+          "recall_dme": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          },
+          "recall_normal": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 45,
+        "seed": 20260927,
+        "unit": "eye (mean B-scan probability)",
+        "unit_count": 45
+      },
+      "eye_level_per_run": [
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.041098295630103907,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "loso-octdl-local-20260918-082742-fold1"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.052640632785195964,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "loso-octdl-local-20260918-082742-fold2"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.1191437427800601,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "loso-octdl-local-20260918-082742-fold3"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.12563274612291087,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "loso-octdl-local-20260918-082742-fold4"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.03293740795061802,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "loso-octdl-local-20260918-082742-fold5"
+        }
+      ],
+      "eye_level_pooled_metrics": {
+        "accuracy": 1.0,
+        "balanced_accuracy": 1.0,
+        "confusion_matrix": [
+          [
+            15,
+            0,
+            0
+          ],
+          [
+            0,
+            15,
+            0
+          ],
+          [
+            0,
+            0,
+            15
+          ]
+        ],
+        "macro_auroc": 1.0,
+        "macro_f1": 1.0
+      },
+      "label_unit": "eye",
+      "mode": "pooled",
+      "per_run": [
+        {
+          "accuracy": 0.9612403100775194,
+          "balanced_accuracy": 0.9620998097181443,
+          "ece": 0.01921405644379841,
+          "macro_auroc": 0.9989748322740991,
+          "macro_f1": 0.9630885906857811,
+          "rows": 645,
+          "run": "loso-octdl-local-20260918-082742-fold1"
+        },
+        {
+          "accuracy": 0.9406392694063926,
+          "balanced_accuracy": 0.937657254682695,
+          "ece": 0.03421164502473364,
+          "macro_auroc": 0.9975889834926249,
+          "macro_f1": 0.9448929705331434,
+          "rows": 657,
+          "run": "loso-octdl-local-20260918-082742-fold2"
+        },
+        {
+          "accuracy": 0.9323671497584541,
+          "balanced_accuracy": 0.9169227128554907,
+          "ece": 0.019824533262882485,
+          "macro_auroc": 0.9917093352867455,
+          "macro_f1": 0.9201491737615134,
+          "rows": 621,
+          "run": "loso-octdl-local-20260918-082742-fold3"
+        },
+        {
+          "accuracy": 0.8992907801418439,
+          "balanced_accuracy": 0.8914239364941334,
+          "ece": 0.060573540004432574,
+          "macro_auroc": 0.9611653192854431,
+          "macro_f1": 0.897461722293262,
+          "rows": 705,
+          "run": "loso-octdl-local-20260918-082742-fold4"
+        },
+        {
+          "accuracy": 0.9867330016583747,
+          "balanced_accuracy": 0.9839979352174475,
+          "ece": 0.010489139588515776,
+          "macro_auroc": 0.9998345722949695,
+          "macro_f1": 0.9850367217327648,
+          "rows": 603,
+          "run": "loso-octdl-local-20260918-082742-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.944054102208517,
+          "sd": 0.03266823817658684
+        },
+        "balanced_accuracy": {
+          "mean": 0.9384203297935823,
+          "sd": 0.03643290643933567
+        },
+        "ece": {
+          "mean": 0.028862582864872578,
+          "sd": 0.019663170454130543
+        },
+        "macro_auroc": {
+          "mean": 0.9898546085267764,
+          "sd": 0.016348654705013555
+        },
+        "macro_f1": {
+          "mean": 0.9421258358012929,
+          "sd": 0.03451917933650832
+        }
+      },
+      "pooled_metrics": {
+        "accuracy": 0.9427421850820179,
+        "balanced_accuracy": 0.9384476673479667,
+        "confusion_matrix": [
+          [
+            1383,
+            3,
+            21
+          ],
+          [
+            13,
+            678,
+            32
+          ],
+          [
+            95,
+            21,
+            985
+          ]
+        ],
+        "macro_auroc": 0.9905022344581824,
+        "macro_f1": 0.9423404701562227
+      },
+      "runs": [
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold1",
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold2",
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold3",
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold4",
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold5"
+      ],
+      "source": "duke"
+    },
+    "test-kermany": {
+      "bootstrap": {
+        "fold_count": 5,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.9609911015051503,
+            "ci_low": 0.9440147960175908,
+            "mean": 0.95275309136276,
+            "n_valid": 2000,
+            "point": 0.9528000000000001
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.9499659247292089,
+            "ci_low": 0.9317728852854372,
+            "mean": 0.9414796254128058,
+            "n_valid": 2000,
+            "point": 0.9414666666666666
+          },
+          "macro_auroc": {
+            "ci_high": 0.9981582395143389,
+            "ci_low": 0.9950942490600724,
+            "mean": 0.9967866372042936,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9967830666666668
+          },
+          "macro_f1": {
+            "ci_high": 0.9547323978886697,
+            "ci_low": 0.9368857913737517,
+            "mean": 0.9462917951970875,
+            "n_valid": 2000,
+            "point": 0.9465251672465709
+          },
+          "recall_amd": {
+            "ci_high": 0.9930190045593792,
+            "ci_low": 0.9791085771689658,
+            "mean": 0.9867782310647596,
+            "n_valid": 2000,
+            "point": 0.9868
+          },
+          "recall_dme": {
+            "ci_high": 0.961479114996068,
+            "ci_low": 0.928069113094154,
+            "mean": 0.9458324468769667,
+            "n_valid": 2000,
+            "point": 0.9456
+          },
+          "recall_normal": {
+            "ci_high": 0.9112908699459934,
+            "ci_low": 0.8709596034329682,
+            "mean": 0.8918281982966914,
+            "n_valid": 2000,
+            "point": 0.892
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 1000,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 635
+      },
+      "class_names": [
+        "normal",
+        "amd",
+        "dme"
+      ],
+      "label_unit": "image",
+      "mode": "shared",
+      "per_run": [
+        {
+          "accuracy": 0.973,
+          "balanced_accuracy": 0.9713333333333333,
+          "ece": 0.011898437500000062,
+          "macro_auroc": 0.9981015555555556,
+          "macro_f1": 0.969773581630724,
+          "rows": 1000,
+          "run": "loso-octdl-local-20260918-082742-fold1"
+        },
+        {
+          "accuracy": 0.972,
+          "balanced_accuracy": 0.9653333333333333,
+          "ece": 0.013698242187500034,
+          "macro_auroc": 0.997176,
+          "macro_f1": 0.9711872763811317,
+          "rows": 1000,
+          "run": "loso-octdl-local-20260918-082742-fold2"
+        },
+        {
+          "accuracy": 0.932,
+          "balanced_accuracy": 0.9166666666666666,
+          "ece": 0.014689697265625027,
+          "macro_auroc": 0.9970431111111111,
+          "macro_f1": 0.9139275754993229,
+          "rows": 1000,
+          "run": "loso-octdl-local-20260918-082742-fold3"
+        },
+        {
+          "accuracy": 0.955,
+          "balanced_accuracy": 0.944,
+          "ece": 0.026895751953125074,
+          "macro_auroc": 0.9954360000000001,
+          "macro_f1": 0.9484077014066311,
+          "rows": 1000,
+          "run": "loso-octdl-local-20260918-082742-fold4"
+        },
+        {
+          "accuracy": 0.932,
+          "balanced_accuracy": 0.91,
+          "ece": 0.03057006835937496,
+          "macro_auroc": 0.9961586666666666,
+          "macro_f1": 0.9293297013150443,
+          "rows": 1000,
+          "run": "loso-octdl-local-20260918-082742-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.9528000000000001,
+          "sd": 0.020290391814846712
+        },
+        "balanced_accuracy": {
+          "mean": 0.9414666666666666,
+          "sd": 0.02771842548037513
+        },
+        "ece": {
+          "mean": 0.01955043945312503,
+          "sd": 0.008541282080195502
+        },
+        "macro_auroc": {
+          "mean": 0.9967830666666668,
+          "sd": 0.0010204039190558985
+        },
+        "macro_f1": {
+          "mean": 0.9465251672465709,
+          "sd": 0.025052641425250047
+        }
+      },
+      "runs": [
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold1",
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold2",
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold3",
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold4",
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold5"
+      ],
+      "source": "kermany"
+    },
+    "test-paima": {
+      "bootstrap": {
+        "fold_count": 5,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.9323317955805172,
+            "ci_low": 0.867147195229682,
+            "mean": 0.9024956264674233,
+            "n_valid": 2000,
+            "point": 0.9024115755627008
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.9295834546814039,
+            "ci_low": 0.8676781762641147,
+            "mean": 0.9003394483896734,
+            "n_valid": 2000,
+            "point": 0.9005882657284768
+          },
+          "macro_auroc": {
+            "ci_high": 0.9729368797182916,
+            "ci_low": 0.9241988756011079,
+            "mean": 0.9526527694114965,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9528874236858442
+          },
+          "macro_f1": {
+            "ci_high": 0.9313809746789058,
+            "ci_low": 0.8650372510952957,
+            "mean": 0.9007763506544618,
+            "n_valid": 2000,
+            "point": 0.901581884266756
+          },
+          "recall_amd": {
+            "ci_high": 0.8940979872161021,
+            "ci_low": 0.7705870644436118,
+            "mean": 0.8374741974249462,
+            "n_valid": 2000,
+            "point": 0.8375827814569539
+          },
+          "recall_normal": {
+            "ci_high": 0.978362147726474,
+            "ci_low": 0.9409999529422455,
+            "mean": 0.9632046993544007,
+            "n_valid": 2000,
+            "point": 0.96359375
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 2488,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 65
+      },
+      "class_names": [
+        "normal",
+        "amd"
+      ],
+      "label_unit": "image",
+      "mode": "shared",
+      "per_run": [
+        {
+          "accuracy": 0.9023311897106109,
+          "balanced_accuracy": 0.9013995240066226,
+          "ece": 0.046320384721664,
+          "macro_auroc": 0.9505741346750828,
+          "macro_f1": 0.901998324233979,
+          "rows": 2488,
+          "run": "loso-octdl-local-20260918-082742-fold1"
+        },
+        {
+          "accuracy": 0.9011254019292605,
+          "balanced_accuracy": 0.8987143004966888,
+          "ece": 0.05190755470006031,
+          "macro_auroc": 0.9524299267901489,
+          "macro_f1": 0.8999293674462407,
+          "rows": 2488,
+          "run": "loso-octdl-local-20260918-082742-fold2"
+        },
+        {
+          "accuracy": 0.9019292604501608,
+          "balanced_accuracy": 0.8997050910596027,
+          "ece": 0.02787108589981913,
+          "macro_auroc": 0.9506688806394867,
+          "macro_f1": 0.9008798603926977,
+          "rows": 2488,
+          "run": "loso-octdl-local-20260918-082742-fold3"
+        },
+        {
+          "accuracy": 0.8991157556270096,
+          "balanced_accuracy": 0.8968543046357615,
+          "ece": 0.04119029152431672,
+          "macro_auroc": 0.9535733456643212,
+          "macro_f1": 0.8980105218580963,
+          "rows": 2488,
+          "run": "loso-octdl-local-20260918-082742-fold4"
+        },
+        {
+          "accuracy": 0.907556270096463,
+          "balanced_accuracy": 0.9062681084437086,
+          "ece": 0.024437809297126144,
+          "macro_auroc": 0.9571908306601821,
+          "macro_f1": 0.9070913474027661,
+          "rows": 2488,
+          "run": "loso-octdl-local-20260918-082742-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.9024115755627008,
+          "sd": 0.0031314390965888122
+        },
+        "balanced_accuracy": {
+          "mean": 0.9005882657284768,
+          "sd": 0.0035760649424763954
+        },
+        "ece": {
+          "mean": 0.038345425228597255,
+          "sd": 0.01181903300009142
+        },
+        "macro_auroc": {
+          "mean": 0.9528874236858442,
+          "sd": 0.002714421819318019
+        },
+        "macro_f1": {
+          "mean": 0.901581884266756,
+          "sd": 0.003409761175990786
+        }
+      },
+      "runs": [
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold1",
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold2",
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold3",
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold4",
+        "artifacts/runs/fused/resnet50/loso-octdl-local-20260918-082742-fold5"
+      ],
+      "source": "paima"
+    }
+  }
+}
