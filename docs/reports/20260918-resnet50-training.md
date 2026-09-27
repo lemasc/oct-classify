@@ -172,3 +172,4 @@ $$
 - Fused CV: `artifacts/runs/fused/resnet50/local-20260917-184617-fold{1..5}`
 - LOSO: `artifacts/runs/fused/resnet50/loso-*-local-20260918-082742*`
 - Per-epoch selection data: each run's `history.jsonl`; test and full-source evaluation data: `metrics-test.json` and `evaluations/*/metrics.json`.
+- Follow-up analysis: [20260927-resnet50-analysis.md](20260927-resnet50-analysis.md) adds patient-level confidence intervals, calibration and threshold analysis, error slices, and Grad-CAM for these runs.
