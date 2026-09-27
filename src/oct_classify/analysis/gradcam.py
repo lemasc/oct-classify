@@ -127,7 +127,11 @@ def run_gradcam(
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
     metadata = checkpoint["metadata"]
     model_labels = list(metadata["class_labels"])
-    spec = PreprocessingSpec(image_size=metadata["config"]["data"]["image_size"])
+    data_config = metadata["config"]["data"]
+    # Checkpoints from before `data.padding` existed were trained with black padding.
+    spec = PreprocessingSpec(
+        image_size=data_config["image_size"], padding=data_config.get("padding", "black")
+    )
     mean = np.asarray(metadata["normalization"]["mean"], dtype=np.float32)
     stdev = np.asarray(metadata["normalization"]["stdev"], dtype=np.float32)
     model = build_model(metadata["architecture"], len(model_labels), pretrained=False)

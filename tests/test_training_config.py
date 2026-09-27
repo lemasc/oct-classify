@@ -47,3 +47,10 @@ seed = 1
 
     with pytest.raises(ValueError, match="batch_size"):
         load_training_config(path)
+
+
+def test_load_training_config_reads_median_padding() -> None:
+    assert load_training_config(Path("configs/training/resnet50.toml")).data.padding == "black"
+    config = load_training_config(Path("configs/training/resnet50-median-pad.toml"))
+
+    assert config.data.padding == "median"

@@ -122,7 +122,9 @@ def _baseline(args: argparse.Namespace) -> None:
     spec = _spec_for_source(args.config, args.source)
     manifest_path = args.split_dir / f"{spec.name}.jsonl"
     class_labels = labels_for_available(spec.available_labels)
-    preprocessing = PreprocessingSpec(image_size=config.data.image_size)
+    preprocessing = PreprocessingSpec(
+        image_size=config.data.image_size, padding=config.data.padding
+    )
     train_records = load_split_records(manifest_path, "train")
     val_records = load_split_records(manifest_path, "val")
     test_records = [] if args.skip_test else load_split_records(manifest_path, "test")
@@ -370,7 +372,9 @@ def _run_fused(
     }
     roots = {spec.name: spec.root for spec in specs}
     class_labels = CLASS_ORDER
-    preprocessing = PreprocessingSpec(image_size=config.data.image_size)
+    preprocessing = PreprocessingSpec(
+        image_size=config.data.image_size, padding=config.data.padding
+    )
     train_records = [record for records in records_by_split["train"].values() for record in records]
     seed_everything(config.run.seed)
     mean, stdev = calculate_normalization(roots, train_records, preprocessing, workers=args.workers)
@@ -642,7 +646,10 @@ def _evaluate(args: argparse.Namespace) -> None:
     if len(class_labels) < 2:
         raise ValueError("Model and target source must share at least two labels.")
     config = metadata["config"]
-    preprocessing = PreprocessingSpec(image_size=config["data"]["image_size"])
+    # Checkpoints from before `data.padding` existed were trained with black padding.
+    preprocessing = PreprocessingSpec(
+        image_size=config["data"]["image_size"], padding=config["data"].get("padding", "black")
+    )
     normalization = metadata["normalization"]
     augmentation = AugmentationConfig(**config["augmentation"])
     manifest_path = args.split_dir / f"{source_spec.name}.jsonl"

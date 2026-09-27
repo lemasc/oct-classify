@@ -6,6 +6,7 @@ from collections.abc import Iterable, Mapping
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 from PIL import Image
@@ -18,10 +19,16 @@ class PreprocessingSpec:
     image_size: int = 224
     lower_percentile: float = 1.0
     upper_percentile: float = 99.0
+    # "black": zero padding, percentiles over the whole canvas (the original behaviour).
+    # "median": percentiles over the image content only, padding filled with the content median,
+    # so padding geometry and contrast no longer differ by source aspect ratio.
+    padding: Literal["black", "median"] = "black"
 
     def __post_init__(self) -> None:
         if self.image_size <= 0:
             raise ValueError("image_size must be positive.")
+        if self.padding not in ("black", "median"):
+            raise ValueError("padding must be 'black' or 'median'.")
         if not 0 <= self.lower_percentile < self.upper_percentile <= 100:
             raise ValueError("Intensity percentiles must satisfy 0 <= lower < upper <= 100.")
 
@@ -39,10 +46,28 @@ def preprocess_image(image: Image.Image, spec: PreprocessingSpec | None = None) 
     resized = image.resize(
         (max(1, round(width * scale)), max(1, round(height * scale))), Image.Resampling.BILINEAR
     )
-    canvas = Image.new("RGB", (spec.image_size, spec.image_size))
     offset = ((spec.image_size - resized.width) // 2, (spec.image_size - resized.height) // 2)
+    if spec.padding == "median":
+        content = _scale_percentiles(np.asarray(resized, dtype=np.float32), spec)
+        array = np.empty((spec.image_size, spec.image_size, 3), dtype=np.float32)
+        array[:] = np.median(content.reshape(-1, 3), axis=0)
+        left, top = offset
+        array[top : top + resized.height, left : left + resized.width] = content
+        return array
+    canvas = Image.new("RGB", (spec.image_size, spec.image_size))
     canvas.paste(resized, offset)
-    array = np.asarray(canvas, dtype=np.float32)
+    return _scale_percentiles(np.asarray(canvas, dtype=np.float32), spec)
+
+
+def padding_fill(array: np.ndarray) -> list[float]:
+    """Per-channel fill that matches the padding of `preprocess_image(..., padding="median")`.
+
+    The padding already holds the content median, so the median of the whole canvas is unchanged.
+    """
+    return np.median(array.reshape(-1, array.shape[-1]), axis=0).tolist()
+
+
+def _scale_percentiles(array: np.ndarray, spec: PreprocessingSpec) -> np.ndarray:
     low, high = np.percentile(array, [spec.lower_percentile, spec.upper_percentile])
     if high > low:
         array = np.clip((array - low) / (high - low), 0.0, 1.0)

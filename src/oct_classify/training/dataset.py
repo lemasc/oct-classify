@@ -12,7 +12,7 @@ from torchvision.transforms import InterpolationMode
 from torchvision.transforms import functional as transforms
 
 from oct_classify.data.models import ImageRecord
-from oct_classify.data.preprocessing import PreprocessingSpec, preprocess_image
+from oct_classify.data.preprocessing import PreprocessingSpec, padding_fill, preprocess_image
 from oct_classify.data.taxonomy import UnifiedLabel
 from oct_classify.training.config import AugmentationConfig
 
@@ -83,13 +83,15 @@ class ManifestImageDataset(Dataset[tuple[torch.Tensor, int, torch.Tensor, str, s
             if random.random() < self.augmentation.horizontal_flip_probability:
                 tensor = torch.flip(tensor, dims=(2,))
             if self.augmentation.rotation_degrees:
+                # Rotated-in corners match the padding, so they add no new black edges.
+                fill = padding_fill(array) if self.preprocessing.padding == "median" else 0.0
                 tensor = transforms.rotate(
                     tensor,
                     random.uniform(
                         -self.augmentation.rotation_degrees, self.augmentation.rotation_degrees
                     ),
                     interpolation=InterpolationMode.BILINEAR,
-                    fill=0.0,
+                    fill=fill,
                 )
             if self.augmentation.brightness_jitter:
                 tensor = transforms.adjust_brightness(
