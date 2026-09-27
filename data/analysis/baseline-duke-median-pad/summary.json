@@ -1,0 +1,1040 @@
+{
+  "campaign": "baseline-duke-median-pad",
+  "run_dirs": [
+    "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold1",
+    "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold2",
+    "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold3",
+    "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold4",
+    "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold5"
+  ],
+  "sets": {
+    "eval-duke": {
+      "bootstrap": {
+        "fold_count": 1,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.9692335437330929,
+            "ci_low": 0.8562320351433271,
+            "mean": 0.916050975319905,
+            "n_valid": 2000,
+            "point": 0.9155060352831941
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.9656135774940626,
+            "ci_low": 0.8678992067287136,
+            "mean": 0.9177902316033762,
+            "n_valid": 2000,
+            "point": 0.9168032551973252
+          },
+          "macro_auroc": {
+            "ci_high": 0.9957295838207327,
+            "ci_low": 0.964018691950522,
+            "mean": 0.9819371984459979,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9824208689504013
+          },
+          "macro_f1": {
+            "ci_high": 0.9645132461777456,
+            "ci_low": 0.8504283768404348,
+            "mean": 0.910820600916976,
+            "n_valid": 2000,
+            "point": 0.9126154325417749
+          },
+          "recall_amd": {
+            "ci_high": 1.0,
+            "ci_low": 0.9265905383360522,
+            "mean": 0.9744918883765789,
+            "n_valid": 2000,
+            "point": 0.975103734439834
+          },
+          "recall_dme": {
+            "ci_high": 0.9374304387995723,
+            "ci_low": 0.6654502130522539,
+            "mean": 0.8035826352702614,
+            "n_valid": 2000,
+            "point": 0.8001816530426885
+          },
+          "recall_normal": {
+            "ci_high": 0.9971883786316776,
+            "ci_low": 0.9359800338896955,
+            "mean": 0.9752961711632887,
+            "n_valid": 2000,
+            "point": 0.9751243781094527
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 3231,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 45
+      },
+      "class_names": [
+        "normal",
+        "amd",
+        "dme"
+      ],
+      "eye_level_bootstrap": {
+        "fold_count": 1,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 1.0,
+            "ci_low": 0.9333333333333333,
+            "mean": 0.9780666666666668,
+            "n_valid": 2000,
+            "point": 0.9777777777777777
+          },
+          "balanced_accuracy": {
+            "ci_high": 1.0,
+            "ci_low": 0.9259259259259259,
+            "mean": 0.9779268601508745,
+            "n_valid": 2000,
+            "point": 0.9777777777777779
+          },
+          "macro_auroc": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 1.0
+          },
+          "macro_f1": {
+            "ci_high": 1.0,
+            "ci_low": 0.9260876778234002,
+            "mean": 0.9772740133954889,
+            "n_valid": 2000,
+            "point": 0.9777530589543938
+          },
+          "recall_amd": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          },
+          "recall_dme": {
+            "ci_high": 1.0,
+            "ci_low": 0.7777777777777778,
+            "mean": 0.9337805804526236,
+            "n_valid": 2000,
+            "point": 0.9333333333333333
+          },
+          "recall_normal": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 45,
+        "seed": 20260927,
+        "unit": "eye (mean B-scan probability)",
+        "unit_count": 45
+      },
+      "eye_level_per_run": [
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.03404526115274257,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "local-20260927-duke-median-pad-fold1"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.08380800723534967,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "local-20260927-duke-median-pad-fold2"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.08986709121708236,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "local-20260927-duke-median-pad-fold3"
+        },
+        {
+          "accuracy": 0.8888888888888888,
+          "balanced_accuracy": 0.8888888888888888,
+          "ece": 0.10422622837492061,
+          "macro_auroc": 1.0,
+          "macro_f1": 0.8857142857142858,
+          "rows": 9,
+          "run": "local-20260927-duke-median-pad-fold4"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.04094633781287007,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "local-20260927-duke-median-pad-fold5"
+        }
+      ],
+      "eye_level_pooled_metrics": {
+        "accuracy": 0.9777777777777777,
+        "balanced_accuracy": 0.9777777777777779,
+        "confusion_matrix": [
+          [
+            15,
+            0,
+            0
+          ],
+          [
+            0,
+            15,
+            0
+          ],
+          [
+            1,
+            0,
+            14
+          ]
+        ],
+        "macro_auroc": 1.0,
+        "macro_f1": 0.9777530589543938
+      },
+      "label_unit": "eye",
+      "mode": "pooled",
+      "per_run": [
+        {
+          "accuracy": 0.9612403100775194,
+          "balanced_accuracy": 0.9619482496194824,
+          "ece": 0.015303642805232491,
+          "macro_auroc": 0.9981992127991575,
+          "macro_f1": 0.9635145444293344,
+          "rows": 645,
+          "run": "local-20260927-duke-median-pad-fold1"
+        },
+        {
+          "accuracy": 0.928462709284627,
+          "balanced_accuracy": 0.9273559821706775,
+          "ece": 0.014986964302701649,
+          "macro_auroc": 0.9927721311735919,
+          "macro_f1": 0.9340325565134345,
+          "rows": 657,
+          "run": "local-20260927-duke-median-pad-fold2"
+        },
+        {
+          "accuracy": 0.9114331723027376,
+          "balanced_accuracy": 0.925349866177433,
+          "ece": 0.05178179410728667,
+          "macro_auroc": 0.9848408565654224,
+          "macro_f1": 0.8951465905143431,
+          "rows": 621,
+          "run": "local-20260927-duke-median-pad-fold3"
+        },
+        {
+          "accuracy": 0.8070921985815603,
+          "balanced_accuracy": 0.8111727709951905,
+          "ece": 0.1496994126773049,
+          "macro_auroc": 0.9621238348087932,
+          "macro_f1": 0.7918321880044404,
+          "rows": 705,
+          "run": "local-20260927-duke-median-pad-fold4"
+        },
+        {
+          "accuracy": 0.9834162520729685,
+          "balanced_accuracy": 0.9848360879288715,
+          "ece": 0.03556679493159198,
+          "macro_auroc": 0.9991142203000788,
+          "macro_f1": 0.982522406925125,
+          "rows": 603,
+          "run": "local-20260927-duke-median-pad-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.9183289284638827,
+          "sd": 0.06819384394550328
+        },
+        "balanced_accuracy": {
+          "mean": 0.922132591378331,
+          "sd": 0.06683324683269758
+        },
+        "ece": {
+          "mean": 0.05346772176482354,
+          "sd": 0.055948837090513015
+        },
+        "macro_auroc": {
+          "mean": 0.9874100511294088,
+          "sd": 0.015232686765902857
+        },
+        "macro_f1": {
+          "mean": 0.9134096572773356,
+          "sd": 0.07554302829461851
+        }
+      },
+      "pooled_metrics": {
+        "accuracy": 0.9155060352831941,
+        "balanced_accuracy": 0.9168032551973252,
+        "confusion_matrix": [
+          [
+            1372,
+            29,
+            6
+          ],
+          [
+            8,
+            705,
+            10
+          ],
+          [
+            144,
+            76,
+            881
+          ]
+        ],
+        "macro_auroc": 0.9824208689504014,
+        "macro_f1": 0.9126154325417749
+      },
+      "runs": [
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold1",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold2",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold3",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold4",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold5"
+      ],
+      "source": "duke"
+    },
+    "eval-kermany": {
+      "bootstrap": {
+        "fold_count": 5,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.5627594471773429,
+            "ci_low": 0.4753255824951918,
+            "mean": 0.5196299107679669,
+            "n_valid": 2000,
+            "point": 0.5202
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.37646573426825236,
+            "ci_low": 0.36216810478987416,
+            "mean": 0.36929950308709375,
+            "n_valid": 2000,
+            "point": 0.36933333333333335
+          },
+          "macro_auroc": {
+            "ci_high": 0.8278740794873914,
+            "ci_low": 0.7945622945913248,
+            "mean": 0.8114722349593364,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.8119059111111111
+          },
+          "macro_f1": {
+            "ci_high": 0.30506175539729863,
+            "ci_low": 0.27330267251378043,
+            "mean": 0.2891186806899764,
+            "n_valid": 2000,
+            "point": 0.2895789323312631
+          },
+          "recall_amd": {
+            "ci_high": 0.9807696078431372,
+            "ci_low": 0.964891286443749,
+            "mean": 0.9727615212206225,
+            "n_valid": 2000,
+            "point": 0.9728000000000001
+          },
+          "recall_dme": {
+            "ci_high": 0.15440363636363635,
+            "ci_low": 0.11391289951050966,
+            "mean": 0.1335130213882241,
+            "n_valid": 2000,
+            "point": 0.1336
+          },
+          "recall_normal": {
+            "ci_high": 0.004149377593360996,
+            "ci_low": 0.0,
+            "mean": 0.0016239666524345843,
+            "n_valid": 2000,
+            "point": 0.0016
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 1000,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 635
+      },
+      "class_names": [
+        "normal",
+        "amd",
+        "dme"
+      ],
+      "label_unit": "image",
+      "mode": "shared",
+      "per_run": [
+        {
+          "accuracy": 0.539,
+          "balanced_accuracy": 0.4126666666666667,
+          "ece": 0.31263623046875,
+          "macro_auroc": 0.8024508888888889,
+          "macro_f1": 0.36120564809241557,
+          "rows": 1000,
+          "run": "local-20260927-duke-median-pad-fold1"
+        },
+        {
+          "accuracy": 0.497,
+          "balanced_accuracy": 0.3433333333333333,
+          "ece": 0.458772705078125,
+          "macro_auroc": 0.7418842222222223,
+          "macro_f1": 0.26009424585552704,
+          "rows": 1000,
+          "run": "local-20260927-duke-median-pad-fold2"
+        },
+        {
+          "accuracy": 0.563,
+          "balanced_accuracy": 0.41933333333333334,
+          "ece": 0.35366796875000006,
+          "macro_auroc": 0.8779293333333333,
+          "macro_f1": 0.3691755079500672,
+          "rows": 1000,
+          "run": "local-20260927-duke-median-pad-fold3"
+        },
+        {
+          "accuracy": 0.502,
+          "balanced_accuracy": 0.33666666666666667,
+          "ece": 0.46516796874999994,
+          "macro_auroc": 0.8657691111111111,
+          "macro_f1": 0.23024478223644504,
+          "rows": 1000,
+          "run": "local-20260927-duke-median-pad-fold4"
+        },
+        {
+          "accuracy": 0.5,
+          "balanced_accuracy": 0.33466666666666667,
+          "ece": 0.4998129882812499,
+          "macro_auroc": 0.771496,
+          "macro_f1": 0.22717447752186057,
+          "rows": 1000,
+          "run": "local-20260927-duke-median-pad-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.5202,
+          "sd": 0.02942278029010853
+        },
+        "balanced_accuracy": {
+          "mean": 0.36933333333333335,
+          "sd": 0.042786290639253446
+        },
+        "ece": {
+          "mean": 0.418011572265625,
+          "sd": 0.08034414930767414
+        },
+        "macro_auroc": {
+          "mean": 0.8119059111111111,
+          "sd": 0.05891886767466086
+        },
+        "macro_f1": {
+          "mean": 0.2895789323312631,
+          "sd": 0.07026771190432086
+        }
+      },
+      "runs": [
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold1",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold2",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold3",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold4",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold5"
+      ],
+      "source": "kermany"
+    },
+    "eval-octdl": {
+      "bootstrap": {
+        "fold_count": 5,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.793081932773109,
+            "ci_low": 0.6387644350174944,
+            "mean": 0.719689522271242,
+            "n_valid": 2000,
+            "point": 0.7203125
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.4809243508724244,
+            "ci_low": 0.3883008307966706,
+            "mean": 0.4341360046301362,
+            "n_valid": 2000,
+            "point": 0.43523320158102763
+          },
+          "macro_auroc": {
+            "ci_high": 0.8324222956600202,
+            "ci_low": 0.7192497914574175,
+            "mean": 0.7816098224173644,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.7821332586124693
+          },
+          "macro_f1": {
+            "ci_high": 0.4644472030041674,
+            "ci_low": 0.3574624004628766,
+            "mean": 0.41261151216048814,
+            "n_valid": 2000,
+            "point": 0.4173938763456168
+          },
+          "recall_amd": {
+            "ci_high": 0.9527281863864778,
+            "ci_low": 0.9118626684050414,
+            "mean": 0.9325559208474173,
+            "n_valid": 2000,
+            "point": 0.9326086956521739
+          },
+          "recall_dme": {
+            "ci_high": 0.34285714285714286,
+            "ci_low": 0.07692307692307693,
+            "mean": 0.20667010453725893,
+            "n_valid": 2000,
+            "point": 0.20909090909090908
+          },
+          "recall_normal": {
+            "ci_high": 0.19215686274509805,
+            "ci_low": 0.1285714285714286,
+            "mean": 0.16318198850573212,
+            "n_valid": 2000,
+            "point": 0.164
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 256,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 99
+      },
+      "class_names": [
+        "normal",
+        "amd",
+        "dme"
+      ],
+      "label_unit": "image",
+      "mode": "shared",
+      "per_run": [
+        {
+          "accuracy": 0.734375,
+          "balanced_accuracy": 0.42061923583662714,
+          "ece": 0.1456470489501953,
+          "macro_auroc": 0.8172818496794858,
+          "macro_f1": 0.4187952320136228,
+          "rows": 256,
+          "run": "local-20260927-duke-median-pad-fold1"
+        },
+        {
+          "accuracy": 0.68359375,
+          "balanced_accuracy": 0.41040843214756256,
+          "ece": 0.2592020034790039,
+          "macro_auroc": 0.7027879017401232,
+          "macro_f1": 0.37228883559818815,
+          "rows": 256,
+          "run": "local-20260927-duke-median-pad-fold2"
+        },
+        {
+          "accuracy": 0.73046875,
+          "balanced_accuracy": 0.6166403162055335,
+          "ece": 0.13047027587890625,
+          "macro_auroc": 0.8594767322528245,
+          "macro_f1": 0.6206045125585357,
+          "rows": 256,
+          "run": "local-20260927-duke-median-pad-fold3"
+        },
+        {
+          "accuracy": 0.734375,
+          "balanced_accuracy": 0.3903096179183135,
+          "ece": 0.1683664321899414,
+          "macro_auroc": 0.7969098339085675,
+          "macro_f1": 0.38367009334751273,
+          "rows": 256,
+          "run": "local-20260927-duke-median-pad-fold4"
+        },
+        {
+          "accuracy": 0.71875,
+          "balanced_accuracy": 0.3381884057971014,
+          "ece": 0.2775268554687499,
+          "macro_auroc": 0.7342099754813453,
+          "macro_f1": 0.2916107082102247,
+          "rows": 256,
+          "run": "local-20260927-duke-median-pad-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.7203125,
+          "sd": 0.02150212335081701
+        },
+        "balanced_accuracy": {
+          "mean": 0.43523320158102763,
+          "sd": 0.10627111456839605
+        },
+        "ece": {
+          "mean": 0.19624252319335936,
+          "sd": 0.06751667536914428
+        },
+        "macro_auroc": {
+          "mean": 0.7821332586124693,
+          "sd": 0.06330108662080726
+        },
+        "macro_f1": {
+          "mean": 0.4173938763456168,
+          "sd": 0.12276979483414703
+        }
+      },
+      "runs": [
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold1",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold2",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold3",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold4",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold5"
+      ],
+      "source": "octdl"
+    },
+    "eval-paima": {
+      "bootstrap": {
+        "fold_count": 5,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.708453521734444,
+            "ci_low": 0.6300484152376902,
+            "mean": 0.6710715194376737,
+            "n_valid": 2000,
+            "point": 0.669935691318328
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.7075697500263175,
+            "ci_low": 0.632157732221743,
+            "mean": 0.6716823826661953,
+            "n_valid": 2000,
+            "point": 0.6711304842715232
+          },
+          "macro_auroc": {
+            "ci_high": 0.8264650642179757,
+            "ci_low": 0.72405777569629,
+            "mean": 0.7799638988583388,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.7790427100579469
+          },
+          "macro_f1": {
+            "ci_high": 0.6941496710434434,
+            "ci_low": 0.6092015546231596,
+            "mean": 0.6534873372670776,
+            "n_valid": 2000,
+            "point": 0.6544990411217881
+          },
+          "recall_amd": {
+            "ci_high": 0.757328133365484,
+            "ci_low": 0.659532176267351,
+            "mean": 0.7129071990101289,
+            "n_valid": 2000,
+            "point": 0.7124172185430464
+          },
+          "recall_normal": {
+            "ci_high": 0.6946963710857478,
+            "ci_low": 0.5624375974910054,
+            "mean": 0.6304575663222616,
+            "n_valid": 2000,
+            "point": 0.6298437499999999
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 2488,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 65
+      },
+      "class_names": [
+        "normal",
+        "amd"
+      ],
+      "label_unit": "image",
+      "mode": "shared",
+      "per_run": [
+        {
+          "accuracy": 0.6290192926045016,
+          "balanced_accuracy": 0.622643315397351,
+          "ece": 0.13705905534063503,
+          "macro_auroc": 0.7038849079056292,
+          "macro_f1": 0.6066753504113646,
+          "rows": 2488,
+          "run": "local-20260927-duke-median-pad-fold1"
+        },
+        {
+          "accuracy": 0.677652733118971,
+          "balanced_accuracy": 0.6807817673841059,
+          "ece": 0.13322443824105706,
+          "macro_auroc": 0.7795057688327814,
+          "macro_f1": 0.6751124761956865,
+          "rows": 2488,
+          "run": "local-20260927-duke-median-pad-fold2"
+        },
+        {
+          "accuracy": 0.7704983922829582,
+          "balanced_accuracy": 0.7677100579470199,
+          "ece": 0.09514772470357716,
+          "macro_auroc": 0.8382576443501655,
+          "macro_f1": 0.7672259053116939,
+          "rows": 2488,
+          "run": "local-20260927-duke-median-pad-fold3"
+        },
+        {
+          "accuracy": 0.5635048231511254,
+          "balanced_accuracy": 0.5730805049668874,
+          "ece": 0.26912421812198556,
+          "macro_auroc": 0.7887069601096854,
+          "macro_f1": 0.5156565602245717,
+          "rows": 2488,
+          "run": "local-20260927-duke-median-pad-fold4"
+        },
+        {
+          "accuracy": 0.7090032154340836,
+          "balanced_accuracy": 0.7114367756622517,
+          "ece": 0.10338825581541397,
+          "macro_auroc": 0.7848582690914736,
+          "macro_f1": 0.7078249134656247,
+          "rows": 2488,
+          "run": "local-20260927-duke-median-pad-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.669935691318328,
+          "sd": 0.07858174467158854
+        },
+        "balanced_accuracy": {
+          "mean": 0.6711304842715232,
+          "sd": 0.07584550485988972
+        },
+        "ece": {
+          "mean": 0.14758873844453374,
+          "sd": 0.07034170660756453
+        },
+        "macro_auroc": {
+          "mean": 0.7790427100579469,
+          "sd": 0.0481729606391454
+        },
+        "macro_f1": {
+          "mean": 0.6544990411217881,
+          "sd": 0.09687652988692176
+        }
+      },
+      "runs": [
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold1",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold2",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold3",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold4",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold5"
+      ],
+      "source": "paima"
+    },
+    "test-duke": {
+      "bootstrap": {
+        "fold_count": 1,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.9692335437330929,
+            "ci_low": 0.8562320351433271,
+            "mean": 0.916050975319905,
+            "n_valid": 2000,
+            "point": 0.9155060352831941
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.9656135774940626,
+            "ci_low": 0.8678992067287136,
+            "mean": 0.9177902316033762,
+            "n_valid": 2000,
+            "point": 0.9168032551973252
+          },
+          "macro_auroc": {
+            "ci_high": 0.9957295838207327,
+            "ci_low": 0.964018691950522,
+            "mean": 0.9819371984459979,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9824208689504013
+          },
+          "macro_f1": {
+            "ci_high": 0.9645132461777456,
+            "ci_low": 0.8504283768404348,
+            "mean": 0.910820600916976,
+            "n_valid": 2000,
+            "point": 0.9126154325417749
+          },
+          "recall_amd": {
+            "ci_high": 1.0,
+            "ci_low": 0.9265905383360522,
+            "mean": 0.9744918883765789,
+            "n_valid": 2000,
+            "point": 0.975103734439834
+          },
+          "recall_dme": {
+            "ci_high": 0.9374304387995723,
+            "ci_low": 0.6654502130522539,
+            "mean": 0.8035826352702614,
+            "n_valid": 2000,
+            "point": 0.8001816530426885
+          },
+          "recall_normal": {
+            "ci_high": 0.9971883786316776,
+            "ci_low": 0.9359800338896955,
+            "mean": 0.9752961711632887,
+            "n_valid": 2000,
+            "point": 0.9751243781094527
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 3231,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 45
+      },
+      "class_names": [
+        "normal",
+        "amd",
+        "dme"
+      ],
+      "eye_level_bootstrap": {
+        "fold_count": 1,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 1.0,
+            "ci_low": 0.9333333333333333,
+            "mean": 0.9780666666666668,
+            "n_valid": 2000,
+            "point": 0.9777777777777777
+          },
+          "balanced_accuracy": {
+            "ci_high": 1.0,
+            "ci_low": 0.9259259259259259,
+            "mean": 0.9779268601508745,
+            "n_valid": 2000,
+            "point": 0.9777777777777779
+          },
+          "macro_auroc": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 1.0
+          },
+          "macro_f1": {
+            "ci_high": 1.0,
+            "ci_low": 0.9260876778234002,
+            "mean": 0.9772740133954889,
+            "n_valid": 2000,
+            "point": 0.9777530589543938
+          },
+          "recall_amd": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          },
+          "recall_dme": {
+            "ci_high": 1.0,
+            "ci_low": 0.7777777777777778,
+            "mean": 0.9337805804526236,
+            "n_valid": 2000,
+            "point": 0.9333333333333333
+          },
+          "recall_normal": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 45,
+        "seed": 20260927,
+        "unit": "eye (mean B-scan probability)",
+        "unit_count": 45
+      },
+      "eye_level_per_run": [
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.03404526115274257,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "local-20260927-duke-median-pad-fold1"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.08380800723534967,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "local-20260927-duke-median-pad-fold2"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.08986709121708236,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "local-20260927-duke-median-pad-fold3"
+        },
+        {
+          "accuracy": 0.8888888888888888,
+          "balanced_accuracy": 0.8888888888888888,
+          "ece": 0.10422622837492061,
+          "macro_auroc": 1.0,
+          "macro_f1": 0.8857142857142858,
+          "rows": 9,
+          "run": "local-20260927-duke-median-pad-fold4"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.04094633781287007,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "local-20260927-duke-median-pad-fold5"
+        }
+      ],
+      "eye_level_pooled_metrics": {
+        "accuracy": 0.9777777777777777,
+        "balanced_accuracy": 0.9777777777777779,
+        "confusion_matrix": [
+          [
+            15,
+            0,
+            0
+          ],
+          [
+            0,
+            15,
+            0
+          ],
+          [
+            1,
+            0,
+            14
+          ]
+        ],
+        "macro_auroc": 1.0,
+        "macro_f1": 0.9777530589543938
+      },
+      "label_unit": "eye",
+      "mode": "pooled",
+      "per_run": [
+        {
+          "accuracy": 0.9612403100775194,
+          "balanced_accuracy": 0.9619482496194824,
+          "ece": 0.015303642805232491,
+          "macro_auroc": 0.9981992127991575,
+          "macro_f1": 0.9635145444293344,
+          "rows": 645,
+          "run": "local-20260927-duke-median-pad-fold1"
+        },
+        {
+          "accuracy": 0.928462709284627,
+          "balanced_accuracy": 0.9273559821706775,
+          "ece": 0.014986964302701649,
+          "macro_auroc": 0.9927721311735919,
+          "macro_f1": 0.9340325565134345,
+          "rows": 657,
+          "run": "local-20260927-duke-median-pad-fold2"
+        },
+        {
+          "accuracy": 0.9114331723027376,
+          "balanced_accuracy": 0.925349866177433,
+          "ece": 0.05178179410728667,
+          "macro_auroc": 0.9848408565654224,
+          "macro_f1": 0.8951465905143431,
+          "rows": 621,
+          "run": "local-20260927-duke-median-pad-fold3"
+        },
+        {
+          "accuracy": 0.8070921985815603,
+          "balanced_accuracy": 0.8111727709951905,
+          "ece": 0.1496994126773049,
+          "macro_auroc": 0.9621238348087932,
+          "macro_f1": 0.7918321880044404,
+          "rows": 705,
+          "run": "local-20260927-duke-median-pad-fold4"
+        },
+        {
+          "accuracy": 0.9834162520729685,
+          "balanced_accuracy": 0.9848360879288715,
+          "ece": 0.03556679493159198,
+          "macro_auroc": 0.9991142203000788,
+          "macro_f1": 0.982522406925125,
+          "rows": 603,
+          "run": "local-20260927-duke-median-pad-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.9183289284638827,
+          "sd": 0.06819384394550328
+        },
+        "balanced_accuracy": {
+          "mean": 0.922132591378331,
+          "sd": 0.06683324683269758
+        },
+        "ece": {
+          "mean": 0.05346772176482354,
+          "sd": 0.055948837090513015
+        },
+        "macro_auroc": {
+          "mean": 0.9874100511294088,
+          "sd": 0.015232686765902857
+        },
+        "macro_f1": {
+          "mean": 0.9134096572773356,
+          "sd": 0.07554302829461851
+        }
+      },
+      "pooled_metrics": {
+        "accuracy": 0.9155060352831941,
+        "balanced_accuracy": 0.9168032551973252,
+        "confusion_matrix": [
+          [
+            1372,
+            29,
+            6
+          ],
+          [
+            8,
+            705,
+            10
+          ],
+          [
+            144,
+            76,
+            881
+          ]
+        ],
+        "macro_auroc": 0.9824208689504014,
+        "macro_f1": 0.9126154325417749
+      },
+      "runs": [
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold1",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold2",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold3",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold4",
+        "artifacts/runs/duke/resnet50/local-20260927-duke-median-pad-fold5"
+      ],
+      "source": "duke"
+    }
+  }
+}
