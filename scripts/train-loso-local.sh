@@ -12,12 +12,31 @@
 # baked into each fold-N directory, so a single top-level
 # artifacts/splits/<source>.jsonl is enough to evaluate the held-out source.
 #
-# Uses resnet50-loso.toml (batch_size=12) instead of the default
+# Uses resnet50-loso-median-pad.toml (batch_size=12, median padding) instead of the default
 # resnet50.toml (batch_size=16): `train fused` requires data.batch_size to
 # divide evenly across the number of --sources, and LOSO always trains on
 # exactly 3 of the 4 sources.
 
+# Usage: scripts/train-loso-local.sh [--workers N]
+# --workers N caps the processes used for the normalization-statistics pass at
+# the start of each `train fused` run (default: every CPU core).
+
 set -euo pipefail
+
+worker_args=()
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --workers)
+            [[ $# -ge 2 && "$2" =~ ^[1-9][0-9]*$ ]] || { echo "--workers needs a positive integer" >&2; exit 2; }
+            worker_args=(--workers "$2")
+            shift 2
+            ;;
+        *)
+            echo "Unknown argument: $1" >&2
+            exit 2
+            ;;
+    esac
+done
 
 sources=(duke kermany octdl paima)
 repo_root="$(git rev-parse --show-toplevel)"
@@ -48,9 +67,10 @@ for held_out in "${sources[@]}"; do
         --sources "${train_sources[@]}" \
         --split-dir "$split_dir" \
         --folds "$folds" \
-        --training-config configs/training/resnet50-loso.toml \
+        --training-config configs/training/resnet50-loso-median-pad.toml \
         --run-name "$run_name" \
         --device cuda \
+        "${worker_args[@]}" \
         >"$log_file" \
         2>&1
 

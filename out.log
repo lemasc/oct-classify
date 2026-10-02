@@ -1,0 +1,21 @@
+nohup: ignoring input
+=== LOSO holding out duke; training on kermany octdl paima (local-20261001-132356) ===
+=== Evaluating loso-duke-local-20261001-132356 on held-out duke (full source) ===
+=== LOSO holding out kermany; training on duke octdl paima (local-20261001-132356) ===
+=== Evaluating loso-kermany-local-20261001-132356-fold1 on held-out kermany (full source) ===
+=== Evaluating loso-kermany-local-20261001-132356-fold2 on held-out kermany (full source) ===
+=== Evaluating loso-kermany-local-20261001-132356-fold3 on held-out kermany (full source) ===
+=== Evaluating loso-kermany-local-20261001-132356-fold4 on held-out kermany (full source) ===
+=== Evaluating loso-kermany-local-20261001-132356-fold5 on held-out kermany (full source) ===
+=== LOSO holding out octdl; training on duke kermany paima (local-20261001-132356) ===
+=== Evaluating loso-octdl-local-20261001-132356-fold1 on held-out octdl (full source) ===
+=== Evaluating loso-octdl-local-20261001-132356-fold2 on held-out octdl (full source) ===
+=== Evaluating loso-octdl-local-20261001-132356-fold3 on held-out octdl (full source) ===
+=== Evaluating loso-octdl-local-20261001-132356-fold4 on held-out octdl (full source) ===
+=== Evaluating loso-octdl-local-20261001-132356-fold5 on held-out octdl (full source) ===
+=== LOSO holding out paima; training on duke kermany octdl (local-20261001-132356) ===
+=== Evaluating loso-paima-local-20261001-132356-fold1 on held-out paima (full source) ===
+=== Evaluating loso-paima-local-20261001-132356-fold2 on held-out paima (full source) ===
+=== Evaluating loso-paima-local-20261001-132356-fold3 on held-out paima (full source) ===
+=== Evaluating loso-paima-local-20261001-132356-fold4 on held-out paima (full source) ===
+=== Evaluating loso-paima-local-20261001-132356-fold5 on held-out paima (full source) ===
