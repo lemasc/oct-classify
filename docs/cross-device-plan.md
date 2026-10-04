@@ -35,7 +35,7 @@ predicted normal; in held-out OCTDL, 25% of DME is predicted AMD.
 | 4 | Data-volume control: fused training with Kermany DME cut down to about 120 patients, or 50% data | How much of the held-out-Kermany drop is less data rather than a new device? | Fused CV | todo | |
 | 5 | Domain-specific pretraining: OCT foundation model, or MAE pretraining that includes the held-out source's images without labels | Does OCT pretraining, or adapting to the target without labels, help? | Pretraining + LOSO | todo | |
 | 6 | Binary ResNet-50 runs comparable to the papers: Kermany↔Duke, plus binary LOSO | How do our numbers compare to OCT-SelfNet's ResNet-50 cross-dataset numbers? | Several runs | optional | |
-| 7 | Per-source logit bias diagnostic: fit a class-bias shift on the held-out source's labels (patient cross-fit) and rescore existing LOSO predictions | Is the gap a decision-cutoff or label-prior shift rather than a feature problem? | No | todo | |
+| 7 | Per-source logit bias diagnostic: fit a class-bias shift on the held-out source's labels (patient cross-fit) and rescore existing LOSO predictions | Is the gap a decision-cutoff or label-prior shift rather than a feature problem? | No | done | [20261004-logit-bias.md](reports/20261004-logit-bias.md) |
 
 Status values: `todo`, `running`, `done`, `dropped` (record the reason below).
 
@@ -60,3 +60,9 @@ Status values: `todo`, `running`, `done`, `dropped` (record the reason below).
   training and decides how much they are worth: if an oracle per-source bias closes most of the Kermany
   and OCTDL gap, the cause is calibration or labeling. It uses target labels, so report it as an upper
   bound on a diagnostic, not a deployable method.
+- 2026-10-04 (exp. 7 result): A per-source bias does not close the 3-class gap. The best in-sample bias for
+  macro-F1 lifts held-out Kermany only 73.2 to 76.4 (seen 95.6) and OCTDL and Duke by about 1 point, so
+  the DME problem is in the features, not the cutoff. The bias closes 52% of Kermany's binary gap (93.2
+  to 95.9; normal recall 89 to 96, AUROC unchanged) but only 15% of PAIMA's, whose AUROC drop is a ranking
+  problem. Calibration and label-prior shift are ruled out as the main cause. Next: experiment 4 (data
+  volume) first, then 3 (augmentation), judged mainly on PAIMA.
