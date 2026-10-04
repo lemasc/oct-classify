@@ -10,6 +10,7 @@ from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 
+import numpy as np
 import torch
 from torch import nn
 from torch.optim import AdamW
@@ -17,10 +18,16 @@ from torch.utils.data import DataLoader, Sampler
 from torch.utils.tensorboard import SummaryWriter
 
 from oct_classify.data.config import load_dataset_specs
+from oct_classify.data.models import ImageRecord
 from oct_classify.data.preprocessing import PreprocessingSpec, calculate_normalization
 from oct_classify.data.splits import file_sha256
 from oct_classify.data.taxonomy import UnifiedLabel
 from oct_classify.models import build_model
+from oct_classify.training.bn_adaptation import (
+    EARLY_LAYER_PREFIXES,
+    adapt_batch_norm,
+    split_groups,
+)
 from oct_classify.training.config import AugmentationConfig, load_training_config
 from oct_classify.training.dataset import (
     CLASS_ORDER,
@@ -29,13 +36,18 @@ from oct_classify.training.dataset import (
     load_split_records,
 )
 from oct_classify.training.engine import (
+    EpochResult,
     checkpoint_state,
     load_checkpoint,
     run_epoch,
     run_source_evaluations,
     seed_everything,
 )
-from oct_classify.training.evaluation import calculate_grouped_metrics, calculate_metrics
+from oct_classify.training.evaluation import (
+    EvaluationResult,
+    calculate_grouped_metrics,
+    calculate_metrics,
+)
 from oct_classify.training.outputs import create_run_directory, write_json, write_predictions
 from oct_classify.training.partial_labels import MaskedCrossEntropyLoss
 from oct_classify.training.sampling import SourceClassBalancedBatchSampler
@@ -625,6 +637,21 @@ def _fused(args: argparse.Namespace) -> None:
     print(f"Wrote {args.folds}-fold fused CV summary to {summary_path}")
 
 
+def _merge_epoch_results(results: list[EpochResult], class_names: tuple[str, ...]) -> EpochResult:
+    """Concatenate predictions from disjoint record subsets and rescore them together."""
+    targets = np.concatenate([result.evaluation.targets for result in results])
+    probabilities = np.concatenate([result.evaluation.probabilities for result in results])
+    counts = [len(result.paths) for result in results]
+    loss = sum(result.loss * count for result, count in zip(results, counts, strict=True))
+    evaluation: EvaluationResult = calculate_metrics(targets, probabilities, class_names)
+    return EpochResult(
+        loss / sum(counts),
+        evaluation,
+        [path for result in results for path in result.paths],
+        [source for result in results for source in result.sources],
+    )
+
+
 def _evaluate(args: argparse.Namespace) -> None:
     class _RestrictedClassifier(nn.Module):
         def __init__(self, model: nn.Module, indices: list[int]) -> None:
@@ -659,44 +686,106 @@ def _evaluate(args: argparse.Namespace) -> None:
         records = list(read_jsonl(manifest_path))
     else:
         records = load_split_records(manifest_path, "test")
-    dataset = ManifestImageDataset(
-        source_spec.root,
-        records,
-        class_labels,
-        preprocessing,
-        normalization["mean"],
-        normalization["stdev"],
-        augmentation,
-        training=False,
-    )
-    loader = _loader(
-        dataset,
-        config["data"]["batch_size"],
-        config["data"]["num_workers"],
-        shuffle=False,
-        seed=config["run"]["seed"],
-    )
-    device = _device(args.device)
-    model = build_model(metadata["architecture"], len(model_labels), pretrained=False)
-    model.load_state_dict(checkpoint["model_state"])
-    indices = [model_labels.index(label) for label in class_labels]
-    restricted_model = _RestrictedClassifier(model, indices).to(device)
-    with torch.no_grad():
-        result = run_epoch(
-            restricted_model,
-            loader,
-            MaskedCrossEntropyLoss(),
-            device,
-            tuple(label.value for label in class_labels),
-            max_batches=args.max_eval_batches,
-        )
     output = args.output or args.checkpoint.parent / "evaluations" / source_spec.name
     output.mkdir(parents=True, exist_ok=True)
+
+    def loader_for(
+        subset: list[ImageRecord], *, shuffle: bool
+    ) -> DataLoader[tuple[torch.Tensor, int, torch.Tensor, str, str]]:
+        dataset = ManifestImageDataset(
+            source_spec.root,
+            subset,
+            class_labels,
+            preprocessing,
+            normalization["mean"],
+            normalization["stdev"],
+            augmentation,
+            training=False,
+        )
+        return _loader(
+            dataset,
+            config["data"]["batch_size"],
+            config["data"]["num_workers"],
+            shuffle=shuffle,
+            seed=config["run"]["seed"],
+        )
+
+    def fresh_model() -> nn.Module:
+        model = build_model(metadata["architecture"], len(model_labels), pretrained=False)
+        model.load_state_dict(checkpoint["model_state"])
+        return model.to(device)
+
+    def predict(model: nn.Module, subset: list[ImageRecord]) -> EpochResult:
+        indices = [model_labels.index(label) for label in class_labels]
+        with torch.no_grad():
+            return run_epoch(
+                _RestrictedClassifier(model, indices),
+                loader_for(subset, shuffle=False),
+                MaskedCrossEntropyLoss(),
+                device,
+                label_names,
+                max_batches=args.max_eval_batches,
+            )
+
+    device = _device(args.device)
+    label_names = tuple(label.value for label in class_labels)
+    bn_adaptation: dict[str, object] | None = None
+    if args.adapt_bn:
+        prefixes = None
+        if args.adapt_bn_layers == "early":
+            if metadata["architecture"] not in EARLY_LAYER_PREFIXES:
+                raise ValueError(
+                    f"No early BatchNorm layers defined for {metadata['architecture']}."
+                )
+            prefixes = EARLY_LAYER_PREFIXES[metadata["architecture"]]
+        # Cross-fit: each patient fold is predicted with statistics from the other folds only.
+        folds = split_groups(records, args.adapt_bn_folds, args.adapt_bn_seed)
+        fold_results = []
+        fold_summaries = []
+        for held_index, held in enumerate(folds):
+            adapt_records = [
+                record for index, fold in enumerate(folds) if index != held_index for record in fold
+            ]
+            model = fresh_model()
+            adapted = adapt_batch_norm(
+                model,
+                loader_for(adapt_records, shuffle=True),
+                device,
+                prefixes=prefixes,
+                max_batches=args.max_eval_batches,
+            )
+            fold_results.append(predict(model, held))
+            fold_summaries.append(
+                {
+                    "predicted_groups": len({record.group_key for record in held}),
+                    "predicted_images": len(fold_results[-1].paths),
+                    "adaptation_images": adapted,
+                }
+            )
+        result = _merge_epoch_results(fold_results, label_names)
+        bn_adaptation = {
+            "method": "adabn",
+            "layers": args.adapt_bn_layers,
+            "folds": args.adapt_bn_folds,
+            "seed": args.adapt_bn_seed,
+            "split_unit": "source:group_id, stratified by majority label",
+            "by_fold": fold_summaries,
+        }
+        write_json(
+            output / "bn-adaptation-folds.json",
+            {
+                "seed": args.adapt_bn_seed,
+                "folds": [sorted({record.path for record in fold}) for fold in folds],
+            },
+        )
+    else:
+        result = predict(fresh_model(), records)
     metrics_payload = {
         "checkpoint": str(args.checkpoint),
         "target_source": source_spec.name,
         "class_labels": [label.value for label in class_labels],
         "full_source": args.full_source,
+        "bn_adaptation": bn_adaptation,
         "loss": result.loss,
         **result.evaluation.metrics,
     }
@@ -810,7 +899,30 @@ def main(argv: Sequence[str] | None = None) -> None:
         ),
     )
     evaluate.add_argument(
-        "--max-eval-batches", type=int, help="Cap test batches for a local smoke test."
+        "--max-eval-batches",
+        type=int,
+        help="Cap test (and BatchNorm adaptation) batches for a local smoke test.",
+    )
+    evaluate.add_argument(
+        "--adapt-bn",
+        action="store_true",
+        help=(
+            "AdaBN: re-estimate BatchNorm running statistics on the evaluated records before "
+            "predicting. Patients are cross-fitted, so each image is predicted with statistics "
+            "from other patients only."
+        ),
+    )
+    evaluate.add_argument(
+        "--adapt-bn-layers",
+        choices=["all", "early"],
+        default="all",
+        help="BatchNorm layers that --adapt-bn re-estimates: all, or only the stem and first stage.",
+    )
+    evaluate.add_argument(
+        "--adapt-bn-folds", type=int, default=2, help="Patient folds for --adapt-bn cross-fitting."
+    )
+    evaluate.add_argument(
+        "--adapt-bn-seed", type=int, default=20261004, help="Seed for the --adapt-bn patient split."
     )
     evaluate.set_defaults(handler=_evaluate)
     args = parser.parse_args(argv)
