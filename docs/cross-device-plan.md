@@ -9,8 +9,9 @@
 Why does performance drop when testing on a device (source) not seen in training, and which changes close the gap?
 
 LOSO evidence so far: macro-F1 is 96–100 when the test source was in training, but drops for unseen
-sources. Held-out Kermany falls to 73 macro-F1. DME recall drops most: in held-out Duke, 25% of DME is
-predicted normal; in held-out OCTDL, 25% of DME is predicted AMD.
+sources. Held-out Kermany falls to 73 macro-F1. DME recall drops most (median-padding reference, checkpoints
+pooled): in held-out Duke, 20% of DME is predicted normal; in held-out OCTDL, 19% of DME is predicted AMD;
+in held-out Kermany, 19% goes to normal and 16% to AMD.
 
 ## Measurement Rules
 
