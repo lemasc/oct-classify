@@ -22,15 +22,15 @@ predicted normal; in held-out OCTDL, 25% of DME is predicted AMD.
 
 ## Prerequisite
 
-- [ ] Replace the unweighted `validation_mean_macro_f1` checkpoint-selection metric with a size-weighted
-      or Kermany/PAIMA-based metric before any new training run. Do not change the reference runs.
+- [x] Checkpoint selection weights sources by validation size. Already done in `f6d1315` (2026-09-17),
+      before both LOSO campaigns, so the reference runs already use it.
 
 ## Experiments
 
 | # | Experiment | Question | Training needed? | Status | Report |
 |---|---|---|---|---|---|
 | 1 | Binary rescoring of existing LOSO predictions (normal/AMD images and logits only) | How much of the gap is specific to DME? | No | done | [20261004-binary-rescore.md](reports/20261004-binary-rescore.md) |
-| 2 | AdaBN: re-estimate BatchNorm statistics on the held-out source's unlabeled images | Do intensity and contrast differences between devices explain the gap? | No | todo | |
+| 2 | AdaBN: re-estimate BatchNorm statistics on the held-out source's unlabeled images | Do intensity and contrast differences between devices explain the gap? | No | done | [20261004-adabn.md](reports/20261004-adabn.md) |
 | 3 | Augmentation that mimics device differences (speckle, gamma/contrast, blur, random padding/crop) | Does making training images look more varied close the gap? | 4 LOSO runs | todo | |
 | 4 | Data-volume control: fused training with Kermany DME cut down to about 120 patients, or 50% data | How much of the held-out-Kermany drop is less data rather than a new device? | Fused CV | todo | |
 | 5 | Domain-specific pretraining: OCT foundation model, or MAE pretraining that includes the held-out source's images without labels | Does OCT pretraining, or adapting to the target without labels, help? | Pretraining + LOSO | todo | |
@@ -49,3 +49,9 @@ Status values: `todo`, `running`, `done`, `dropped` (record the reason below).
   AUROC 99.0 but normal recall falls to 89.3. Next: run experiment 2 (AdaBN) and check whether it fixes
   Kermany's normal recall and over-calling of DME; make PAIMA the main binary test; give experiment 4
   higher priority; experiment 6 is now optional.
+- 2026-10-04 (exp. 2): AdaBN does not close the gap. Re-estimating all BatchNorm layers gives held-out
+  Kermany +1.1 macro-F1 (DME recall 65.5 to 78.6), moves PAIMA by less than 1 point, and costs OCTDL
+  about 20 points by pushing predictions into DME. Adapting only the stem and `layer1` is no better.
+  Kermany's binary normal recall stays at 89, so its decision-cutoff shift is not a BatchNorm-statistics
+  effect. Drop test-time BatchNorm adaptation. Next: experiments 3 (augmentation) and 4 (data volume). Keep
+  per-source normalization during training (project plan §6) as a candidate.
