@@ -35,6 +35,7 @@ predicted normal; in held-out OCTDL, 25% of DME is predicted AMD.
 | 4 | Data-volume control: fused training with Kermany DME cut down to about 120 patients, or 50% data | How much of the held-out-Kermany drop is less data rather than a new device? | Fused CV | todo | |
 | 5 | Domain-specific pretraining: OCT foundation model, or MAE pretraining that includes the held-out source's images without labels | Does OCT pretraining, or adapting to the target without labels, help? | Pretraining + LOSO | todo | |
 | 6 | Binary ResNet-50 runs comparable to the papers: Kermany↔Duke, plus binary LOSO | How do our numbers compare to OCT-SelfNet's ResNet-50 cross-dataset numbers? | Several runs | optional | |
+| 7 | Per-source logit bias diagnostic: fit a class-bias shift on the held-out source's labels (patient cross-fit) and rescore existing LOSO predictions | Is the gap a decision-cutoff or label-prior shift rather than a feature problem? | No | todo | |
 
 Status values: `todo`, `running`, `done`, `dropped` (record the reason below).
 
@@ -55,3 +56,7 @@ Status values: `todo`, `running`, `done`, `dropped` (record the reason below).
   Kermany's binary normal recall stays at 89, so its decision-cutoff shift is not a BatchNorm-statistics
   effect. Drop test-time BatchNorm adaptation. Next: experiments 3 (augmentation) and 4 (data volume). Keep
   per-source normalization during training (project plan §6) as a candidate.
+- 2026-10-04 (exp. 7): Added the logit bias diagnostic and run it before experiments 3 and 4. It needs no
+  training and decides how much they are worth: if an oracle per-source bias closes most of the Kermany
+  and OCTDL gap, the cause is calibration or labeling. It uses target labels, so report it as an upper
+  bound on a diagnostic, not a deployable method.
