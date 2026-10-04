@@ -29,7 +29,7 @@ predicted normal; in held-out OCTDL, 25% of DME is predicted AMD.
 
 | # | Experiment | Question | Training needed? | Status | Report |
 |---|---|---|---|---|---|
-| 1 | Binary rescoring of existing LOSO predictions (normal/AMD images and logits only) | How much of the gap is specific to DME? | No | todo | |
+| 1 | Binary rescoring of existing LOSO predictions (normal/AMD images and logits only) | How much of the gap is specific to DME? | No | done | [20261004-binary-rescore.md](reports/20261004-binary-rescore.md) |
 | 2 | AdaBN: re-estimate BatchNorm statistics on the held-out source's unlabeled images | Do intensity and contrast differences between devices explain the gap? | No | todo | |
 | 3 | Augmentation that mimics device differences (speckle, gamma/contrast, blur, random padding/crop) | Does making training images look more varied close the gap? | 4 LOSO runs | todo | |
 | 4 | Data-volume control: fused training with Kermany DME cut down to about 120 patients, or 50% data | How much of the held-out-Kermany drop is less data rather than a new device? | Fused CV | todo | |
@@ -43,3 +43,9 @@ Status values: `todo`, `running`, `done`, `dropped` (record the reason below).
 - 2026-10-04: Keep DME. Report the binary Normal-vs-AMD view as a secondary result, not as a replacement task.
 - 2026-10-04: Deprioritize more padding or hyperparameter tuning of the fused model, and a ResNet-vs-ViT
   comparison that doesn't change the pretraining.
+- 2026-10-04 (exp. 1): Most of the held-out-source gap is DME. Binary macro-F1, fused CV vs LOSO:
+  Kermany 98.4 vs 93.2 (3-class: 95.6 vs 73.2), OCTDL 96.9 vs 96.6, Duke B-scan 98.3 vs 96.8.
+  PAIMA has no DME and still drops (90.3 vs 86.2, AUROC 95.6 vs 92.7). Held-out Kermany keeps binary
+  AUROC 99.0 but normal recall falls to 89.3. Next: run experiment 2 (AdaBN) and check whether it fixes
+  Kermany's normal recall and over-calling of DME; make PAIMA the main binary test; give experiment 4
+  higher priority; experiment 6 is now optional.
