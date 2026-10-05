@@ -33,7 +33,7 @@ in held-out Kermany, 19% goes to normal and 16% to AMD.
 | 1 | Binary rescoring of existing LOSO predictions (normal/AMD images and logits only) | How much of the gap is specific to DME? | No | done | [20261004-binary-rescore.md](reports/20261004-binary-rescore.md) |
 | 2 | AdaBN: re-estimate BatchNorm statistics on the held-out source's unlabeled images | Do intensity and contrast differences between devices explain the gap? | No | done | [20261004-adabn.md](reports/20261004-adabn.md) |
 | 3 | Augmentation that mimics device differences (speckle, gamma/contrast, blur, random padding/crop) | Does making training images look more varied close the gap? | 4 LOSO runs | todo | |
-| 4 | Data-volume control: fused training with Kermany DME cut down to about 120 patients, or 50% data | How much of the held-out-Kermany drop is less data rather than a new device? | Fused CV | todo | |
+| 4 | Data-volume control: fused training with Kermany DME cut down to about 120 patients, or 50% data | How much of the held-out-Kermany drop is less data rather than a new device? | Fused CV | done | [20261005-kermany-dme-cut.md](reports/20261005-kermany-dme-cut.md) |
 | 5 | Domain-specific pretraining: OCT foundation model, or MAE pretraining that includes the held-out source's images without labels | Does OCT pretraining, or adapting to the target without labels, help? | Pretraining + LOSO | todo | |
 | 6 | Binary ResNet-50 runs comparable to the papers: Kermany↔Duke, plus binary LOSO | How do our numbers compare to OCT-SelfNet's ResNet-50 cross-dataset numbers? | Several runs | optional | |
 | 7 | Per-source logit bias diagnostic: fit a class-bias shift on the held-out source's labels (patient cross-fit) and rescore existing LOSO predictions | Is the gap a decision-cutoff or label-prior shift rather than a feature problem? | No | done | [20261004-logit-bias.md](reports/20261004-logit-bias.md) |
@@ -67,3 +67,9 @@ Status values: `todo`, `running`, `done`, `dropped` (record the reason below).
   to 95.9; normal recall 89 to 96, AUROC unchanged) but only 15% of PAIMA's, whose AUROC drop is a ranking
   problem. Calibration and label-prior shift are ruled out as the main cause. Next: experiment 4 (data
   volume) first, then 3 (augmentation), judged mainly on PAIMA.
+- 2026-10-05 (exp. 4): Cutting Kermany train DME to 122 patients (the amount LOSO-Kermany has) leaves seen
+  Kermany at 97.1 macro-F1 (reference 95.6, Δ +1.5 [+0.8, +2.2]), against 73.2 when the device is held out.
+  Data volume is therefore not the cause of the held-out-Kermany drop; the device is. OCTDL and PAIMA do not
+  move. Duke macro-F1 falls 2.1 (CI [-4.3, -0.1], DME recall 91.1 to 84.6), a weak lead from 45 eyes. The
+  intervals cover test-patient sampling only; per-fold Kermany Δ ranges from -2.4 to +8.6. The cut removes only
+  DME, so it does not cover the 50%-data variant. Next: experiment 3 (augmentation), judged mainly on PAIMA.
