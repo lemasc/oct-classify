@@ -19,6 +19,7 @@ trains the usual fused model with Kermany's device present but its DME cut to th
 
 ```bash
 uv run python .scratchpad/a5096ac_kermany-dme120/bootstrap_dme_cut.py   # writes bootstrap_dme_cut.json
+uv run python .scratchpad/1e23970_dme-cut-logit-bias/bias_dme_cut.py     # bias follow-up, writes table.md
 ```
 
 ## Method
@@ -75,6 +76,30 @@ Percent, point estimate; Δ = cut minus reference with its 95% interval. **Bold*
 Pooled over folds, the DME-cut model's per-class DME behaviour on Kermany is precision 96.0 and recall 97.0
 (reference 91.0 and 98.4). Duke DME is predicted as normal 11.6% of the time against 7.0%.
 
+### Follow-up: per-source logit bias on both arms
+
+Tests the prior-effect explanation below with the experiment 7 bias tooling
+([20261004-logit-bias.md](20261004-logit-bias.md)) applied to both arms' saved predictions. The bias uses the
+test source's labels (cross-fit across patient halves, or in-sample "oracle"), so it is a diagnostic only. A
+bias cannot change AUROC, so only macro-F1 and DME recall are shown. Δ = cut minus reference, paired.
+
+| Source | View | Variant | Reference | DME cut | Δ macro-F1 |
+|---|---|---|---:|---:|---|
+| Kermany | 3-class | none | 95.6 | 97.1 | **+1.5 [+0.8, +2.2]** |
+| | | bias cross-fit | 97.5 | 97.6 | +0.2 [-0.4, +0.7] |
+| | | bias oracle | 97.5 | 97.9 | +0.4 [-0.2, +0.9] |
+| Duke | 3-class | none | 95.5 | 93.3 | **-2.1 [-4.3, -0.1]** |
+| | | bias cross-fit | 94.8 | 93.5 | -1.3 [-3.4, +0.7] |
+| | | bias oracle | 96.5 | 94.9 | -1.5 [-3.7, +0.5] |
+| OCTDL | 3-class | none | 96.8 | 96.8 | -0.0 [-1.2, +1.0] |
+| | | bias cross-fit | 96.7 | 96.1 | -0.6 [-2.1, +0.6] |
+| | | bias oracle | 96.8 | 96.5 | -0.4 [-1.4, +0.7] |
+
+Binary Normal-vs-AMD Δ stays between -1.0 and +0.3 at every setting. Only OCTDL cross-fit excludes 0
+(-1.0 [-2.1, -0.2]) and the oracle fit does not reproduce it. Duke 3-class DME recall Δ goes from -6.5 to -4.0
+(cross-fit, CI [-8.1, -0.3]) and -3.1 (oracle, CI includes 0). Full table in
+`.scratchpad/1e23970_dme-cut-logit-bias/table.md`.
+
 ## Interpretation
 
 - **The held-out-Kermany drop is device shift, not DME volume.** Cutting Kermany DME by about 80% leaves
@@ -82,11 +107,14 @@ Pooled over folds, the DME-cut model's per-class DME behaviour on Kermany is pre
   the Kermany device itself. This is consistent with the logit-bias result that the gap is in the features.
 - **The Kermany gain is probably a prior effect, not a better model.** With less DME in training, the model
   over-calls DME less on the balanced Kermany test set (DME precision 91.0 to 96.0, recall 98.4 to
-  97.0). Macro-AUROC does not move (+0.1 [-0.0, +0.2]), so ranking is unchanged. I did not test this
-  explanation directly.
+  97.0). Macro-AUROC does not move (+0.1 [-0.0, +0.2]), so ranking is unchanged. The bias follow-up
+  supports this: re-biasing lifts the reference arm 95.6 to 97.5 but the cut arm only 97.1 to 97.6, and the paired
+  gap shrinks from +1.5 to +0.2 (cross-fit, CI [-0.4, +0.7]). Once calibrated the arms are indistinguishable.
 - **Duke DME loses recall.** The cut raises the share of Duke DME predicted normal (7.0% to 11.6%) and
   macro-F1 falls 2.1 (CI barely excludes 0). Fewer and less varied DME training patients plausibly hurt a
-  source whose DME looks different from Kermany's. This is a weak lead from 45 eyes, not an established effect.
+  source whose DME looks different from Kermany's. This is a weak lead from 45 eyes, not an established effect. Part of it is a
+  cutoff shift: under a per-source bias the macro-F1 Δ shrinks to -1.3 / -1.5 with intervals including 0, and DME
+  recall Δ to -4.0 / -3.1.
 - **OCTDL and PAIMA are unaffected** in macro-F1 and AUROC. OCTDL DME recall rises 2.7 with a CI touching 0.
 - **The binary view shows no effect anywhere.** The cut matters only for the DME decision.
 
@@ -99,6 +127,9 @@ Pooled over folds, the DME-cut model's per-class DME behaviour on Kermany is pre
 - **The cut removes only DME.** Kermany is now imbalanced in training (about 6.1k normal, 6.1k AMD and 1.5k DME
   images). This tests less DME diversity, not less Kermany data overall. The plan's "50% data" variant is
   not covered.
+- **The cut arm still sees Kermany DME.** It trains on 122 Kermany DME patients, LOSO-Kermany on none. So
+  "device, not volume" cannot separate an unseen device from unseen in-device DME. A zero-Kermany-DME control is
+  experiment 4b in the plan.
 - **The LOSO comparison is indirect.** The LOSO models use different training sources and different folds.
 - **Duke is 45 eyes** (30 normal/AMD units), pooled out-of-fold, so its intervals are wide.
 - **Epoch counts differ** (cut 29/20/18/41/39, reference 21/30/34/22/26). Checkpoint selection may add
