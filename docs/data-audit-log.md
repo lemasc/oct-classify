@@ -96,3 +96,15 @@ PAIMA train/test pHash-distance-two candidates were manually reviewed. Most were
 remain review observations rather than automatic exclusions. No PAIMA records were removed and the tracked
 split assignments remain unchanged. This supports retaining the locked distance-zero-only linkage and
 quarantine policy.
+
+## 2026-10-08: Acquisition-Artifact EDA (no manifest changes)
+
+Per-image features at native resolution: `uv run python scripts/extract_eda_features.py --workers 12`
+(writes the git-ignored `artifacts/eda/features.csv`); explored in `notebooks/eda_acquisition_artifacts.py`.
+
+- Border-connected white fill: Duke 98%, Kermany 61%, OCTDL 0.8%, PAIMA 0%.
+- Percentile normalization compresses tissue where fill exists: median tissue ceiling 0.73 (Duke), 0.75 (Kermany 512-wide), 1.0 (PAIMA, OCTDL, Kermany 768/1536-wide).
+- Canvas size leaks the label: Kermany 512x512 is 74% of DME and absent elsewhere; Duke Normal is 100% 512 wide. Image geometry alone gives 0.66 (Duke) and 0.58 (Kermany) patient-grouped balanced accuracy, chance 0.33.
+- Kermany's supplied test split is dominated by 1024-wide images, which are rare in train.
+- Duke black edge fill: 31% of DME, 5% of AMD, 0.1% of Normal.
+- PAIMA "200 µm" scale bar is bottom-left in 98.8% of images (label-neutral).
