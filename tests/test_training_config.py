@@ -54,3 +54,9 @@ def test_load_training_config_reads_median_padding() -> None:
     config = load_training_config(Path("configs/training/resnet50-median-pad.toml"))
 
     assert config.data.padding == "median"
+
+
+def test_load_training_config_reads_fill_aware_padding() -> None:
+    for name in ("resnet50-loso-fill-aware", "resnet50-fused-fill-aware"):
+        config = load_training_config(Path(f"configs/training/{name}.toml"))
+        assert config.data.padding == "fill_aware"

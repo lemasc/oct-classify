@@ -47,7 +47,7 @@ uv run oct-classify train fused \
     --sources "${train_sources[@]}" \
     --split-dir "$split_dir" \
     --folds "$folds" \
-    --training-config configs/training/resnet50-loso.toml \
+    --training-config "${TRAINING_CONFIG:-configs/training/resnet50-loso.toml}" \
     --run-name "$run_name" \
     --device cuda \
     >"$log_file" \

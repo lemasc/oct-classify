@@ -11,6 +11,7 @@ from typing import Literal
 import numpy as np
 from PIL import Image
 
+from oct_classify.data.fill import redraw_fill, white_fill_mask
 from oct_classify.data.models import ImageRecord
 
 
@@ -22,13 +23,15 @@ class PreprocessingSpec:
     # "black": zero padding, percentiles over the whole canvas (the original behaviour).
     # "median": percentiles over the image content only, padding filled with the content median,
     # so padding geometry and contrast no longer differ by source aspect ratio.
-    padding: Literal["black", "median"] = "black"
+    # "fill_aware": as "median", and additionally white rotation/crop fill is excluded from the
+    # percentiles and re-drawn from nearby background, so its presence no longer compresses tissue.
+    padding: Literal["black", "median", "fill_aware"] = "black"
 
     def __post_init__(self) -> None:
         if self.image_size <= 0:
             raise ValueError("image_size must be positive.")
-        if self.padding not in ("black", "median"):
-            raise ValueError("padding must be 'black' or 'median'.")
+        if self.padding not in ("black", "median", "fill_aware"):
+            raise ValueError("padding must be 'black', 'median' or 'fill_aware'.")
         if not 0 <= self.lower_percentile < self.upper_percentile <= 100:
             raise ValueError("Intensity percentiles must satisfy 0 <= lower < upper <= 100.")
 
@@ -41,14 +44,24 @@ def preprocess_image(image: Image.Image, spec: PreprocessingSpec | None = None) 
         image = Image.alpha_composite(background, image.convert("RGBA")).convert("RGB")
     else:
         image = image.convert("RGB")
+    fill = None
+    if spec.padding == "fill_aware":
+        rgb = np.asarray(image)
+        white = white_fill_mask(rgb)
+        if white.any():
+            image, fill = Image.fromarray(redraw_fill(rgb, white)), white
     width, height = image.size
     scale = min(spec.image_size / width, spec.image_size / height)
     resized = image.resize(
         (max(1, round(width * scale)), max(1, round(height * scale))), Image.Resampling.BILINEAR
     )
     offset = ((spec.image_size - resized.width) // 2, (spec.image_size - resized.height) // 2)
-    if spec.padding == "median":
-        content = _scale_percentiles(np.asarray(resized, dtype=np.float32), spec)
+    if spec.padding in ("median", "fill_aware"):
+        tissue = None
+        if fill is not None:
+            mask_image = Image.fromarray(fill.astype(np.uint8) * 255)
+            tissue = np.asarray(mask_image.resize(resized.size, Image.Resampling.NEAREST)) == 0
+        content = _scale_percentiles(np.asarray(resized, dtype=np.float32), spec, tissue)
         array = np.empty((spec.image_size, spec.image_size, 3), dtype=np.float32)
         array[:] = np.median(content.reshape(-1, 3), axis=0)
         left, top = offset
@@ -67,8 +80,12 @@ def padding_fill(array: np.ndarray) -> list[float]:
     return np.median(array.reshape(-1, array.shape[-1]), axis=0).tolist()
 
 
-def _scale_percentiles(array: np.ndarray, spec: PreprocessingSpec) -> np.ndarray:
-    low, high = np.percentile(array, [spec.lower_percentile, spec.upper_percentile])
+def _scale_percentiles(
+    array: np.ndarray, spec: PreprocessingSpec, tissue: np.ndarray | None = None
+) -> np.ndarray:
+    """Scale to [0, 1] by percentiles over `array`, or only over its `tissue` pixels if given."""
+    sample = array if tissue is None else array[tissue]
+    low, high = np.percentile(sample, [spec.lower_percentile, spec.upper_percentile])
     if high > low:
         array = np.clip((array - low) / (high - low), 0.0, 1.0)
     else:

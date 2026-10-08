@@ -84,7 +84,7 @@ class ManifestImageDataset(Dataset[tuple[torch.Tensor, int, torch.Tensor, str, s
                 tensor = torch.flip(tensor, dims=(2,))
             if self.augmentation.rotation_degrees:
                 # Rotated-in corners match the padding, so they add no new black edges.
-                fill = padding_fill(array) if self.preprocessing.padding == "median" else 0.0
+                fill = 0.0 if self.preprocessing.padding == "black" else padding_fill(array)
                 tensor = transforms.rotate(
                     tensor,
                     random.uniform(

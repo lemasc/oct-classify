@@ -81,8 +81,8 @@ def load_training_config(path: Path) -> TrainingConfig:
         raise ValueError("data.image_size and data.batch_size must be positive.")
     if config.data.num_workers < 0:
         raise ValueError("data.num_workers must not be negative.")
-    if config.data.padding not in ("black", "median"):
-        raise ValueError("data.padding must be 'black' or 'median'.")
+    if config.data.padding not in ("black", "median", "fill_aware"):
+        raise ValueError("data.padding must be 'black', 'median' or 'fill_aware'.")
     if not 0 <= config.augmentation.horizontal_flip_probability <= 1:
         raise ValueError("augmentation.horizontal_flip_probability must be between 0 and 1.")
     if config.augmentation.rotation_degrees < 0:

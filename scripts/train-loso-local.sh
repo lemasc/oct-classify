@@ -17,7 +17,8 @@
 # divide evenly across the number of --sources, and LOSO always trains on
 # exactly 3 of the 4 sources.
 
-# Usage: scripts/train-loso-local.sh [--workers N]
+# Usage: [TRAINING_CONFIG=configs/training/resnet50-loso-fill-aware.toml] scripts/train-loso-local.sh [--workers N]
+# TRAINING_CONFIG selects the training config (default: the median-padding LOSO config).
 # --workers N caps the processes used for the normalization-statistics pass at
 # the start of each `train fused` run (default: every CPU core).
 
@@ -38,6 +39,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+training_config="${TRAINING_CONFIG:-configs/training/resnet50-loso-median-pad.toml}"
 sources=(duke kermany octdl paima)
 repo_root="$(git rev-parse --show-toplevel)"
 run_id="local-$(date +%Y%m%d-%H%M%S)"
@@ -67,7 +69,7 @@ for held_out in "${sources[@]}"; do
         --sources "${train_sources[@]}" \
         --split-dir "$split_dir" \
         --folds "$folds" \
-        --training-config configs/training/resnet50-loso-median-pad.toml \
+        --training-config "$training_config" \
         --run-name "$run_name" \
         --device cuda \
         "${worker_args[@]}" \
