@@ -5,7 +5,7 @@ pretrained = true
 [data]
 image_size = 224
 batch_size = 16
-num_workers = 2
+num_workers = 6
 padding = "fill_aware"
 
 [augmentation]
