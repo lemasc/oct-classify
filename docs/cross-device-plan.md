@@ -34,7 +34,7 @@ in held-out Kermany, 19% goes to normal and 16% to AMD.
 | 2 | AdaBN: re-estimate BatchNorm statistics on the held-out source's unlabeled images | Do intensity and contrast differences between devices explain the gap? | No | done | [20261004-adabn.md](reports/20261004-adabn.md) |
 | 3 | Augmentation that mimics device differences (speckle, gamma/contrast, blur, random padding/crop) | Does making training images look more varied close the gap? | 4 LOSO runs | todo | |
 | 4 | Data-volume control: fused training with Kermany DME cut down to about 120 patients, or 50% data | How much of the held-out-Kermany drop is less data rather than a new device? | Fused CV | done | [20261005-kermany-dme-cut.md](reports/20261005-kermany-dme-cut.md) |
-| 4b | Zero-DME control: fused training with all Kermany train DME removed (normal/AMD kept) | Does DME learned on other devices transfer to a Kermany device that is otherwise seen? Separates unseen device from unseen in-device DME | Fused CV | todo | |
+| 4b | Zero-DME control: fused training with all Kermany train DME removed (normal/AMD kept) | Does DME learned on other devices transfer to a Kermany device that is otherwise seen? Separates unseen device from unseen in-device DME | Fused CV | done | [20261008-kermany-zero-dme.md](reports/20261008-kermany-zero-dme.md) |
 | 5 | Domain-specific pretraining: OCT foundation model, or MAE pretraining that includes the held-out source's images without labels | Does OCT pretraining, or adapting to the target without labels, help? | Pretraining + LOSO | todo | |
 | 6 | Binary ResNet-50 runs comparable to the papers: Kermany↔Duke, plus binary LOSO | How do our numbers compare to OCT-SelfNet's ResNet-50 cross-dataset numbers? | Several runs | optional | |
 | 7 | Per-source logit bias diagnostic: fit a class-bias shift on the held-out source's labels (patient cross-fit) and rescore existing LOSO predictions | Is the gap a decision-cutoff or label-prior shift rather than a feature problem? | No | done | [20261004-logit-bias.md](reports/20261004-logit-bias.md) |
@@ -81,3 +81,9 @@ Status values: `todo`, `running`, `done`, `dropped` (record the reason below).
   (zero Kermany DME, normal/AMD kept) and run it before experiment 3: if seen-device Kermany stays near 90 or higher
   the gap is device-wide and augmentation or per-source normalization is the lever; if it falls toward 73 the
   problem is DME appearance not transferring, and experiments 3 and 5 should target DME.
+- 2026-10-08 (exp. 4b): With all Kermany DME removed and the device otherwise seen, Kermany scores 90.0 macro-F1
+  (reference 95.6, Δ -5.6 [-6.7, -4.5]; bias cross-fit 93.8), against 73.2 held out. So missing in-device DME explains
+  about a quarter of the gap and the rest is device-wide. DME from other devices transfers (DME recall 95.8); normal
+  is over-called as DME (20%). Duke DME recall falls 91.1 to 74.5 (CI barely excludes 0, 45 eyes). PAIMA binary also
+  falls 4.7 (CI [-6.8, -3.0]) with no DME link and no repeat seed, so treat it as unexplained. Next: experiment 3
+  (augmentation), judged on Kermany normal/AMD behaviour and PAIMA; experiment 5 targets device shift, not only DME.
