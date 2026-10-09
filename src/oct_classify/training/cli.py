@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from collections import Counter
 from collections.abc import Sequence
 from dataclasses import replace
@@ -29,6 +30,7 @@ from oct_classify.training.dataset import (
     load_split_records,
 )
 from oct_classify.training.engine import (
+    NonFiniteLossError,
     checkpoint_state,
     load_checkpoint,
     run_epoch,
@@ -357,6 +359,48 @@ def _baseline(args: argparse.Namespace) -> None:
     print(f"Wrote run artifacts to {run_directory}")
 
 
+def _record_non_finite_failure(
+    run_directory: Path,
+    error: NonFiniteLossError,
+    model: nn.Module,
+    optimizer: torch.optim.Optimizer,
+    last_completed_epoch: int,
+    best_macro_f1: float,
+    epochs_without_improvement: int,
+    metadata: dict[str, object],
+) -> None:
+    torch.save(
+        checkpoint_state(
+            model, optimizer, last_completed_epoch, best_macro_f1, epochs_without_improvement, metadata
+        ),
+        run_directory / "checkpoint-failed.pt",
+    )
+    write_json(
+        run_directory / "failure.json",
+        {
+            "error": str(error),
+            "phase": "train" if error.training else "validation",
+            "source": error.source,
+            "batch_index": error.batch_index,
+            "checkpoint_epoch": last_completed_epoch,
+            "non_finite_paths": error.non_finite_paths,
+            "batch": [
+                {
+                    "path": path,
+                    "source": source,
+                    "target": target,
+                    # write_json rejects NaN/inf, so keep them as "nan"/"inf" strings.
+                    "logits": [value if math.isfinite(value) else str(value) for value in logits],
+                }
+                for path, source, target, logits in zip(
+                    error.paths, error.sources, error.targets, error.logits
+                )
+            ],
+        },
+    )
+    print(f"{error}\nWrote checkpoint-failed.pt and failure.json to {run_directory}", flush=True)
+
+
 def _run_fused(
     args: argparse.Namespace,
     config,
@@ -493,16 +537,32 @@ def _run_fused(
     writer = SummaryWriter(log_dir=str(run_directory / "events"))
     with history_path.open("a", encoding="utf-8") as history:
         for epoch in range(start_epoch, config.optimization.epochs):
-            train_result = run_epoch(
-                model, train_loader, criterion, device, tuple(label.value for label in class_labels), optimizer=optimizer,
-                max_batches=args.max_train_batches,
-            )
-            with torch.no_grad():
-                validation_results, validation_score = run_source_evaluations(
-                    model, source_loaders["val"], criterion, device,
-                    tuple(label.value for label in class_labels), source_label_indices,
-                    max_batches=args.max_eval_batches,
+            try:
+                train_result = run_epoch(
+                    model, train_loader, criterion, device, tuple(label.value for label in class_labels),
+                    optimizer=optimizer, max_batches=args.max_train_batches,
                 )
+            except NonFiniteLossError as error:
+                # The loss is checked before backward, so the weights are still the last good ones.
+                _record_non_finite_failure(
+                    run_directory, error, model, optimizer, epoch - 1, best_macro_f1,
+                    epochs_without_improvement, metadata,
+                )
+                raise
+            try:
+                with torch.no_grad():
+                    validation_results, validation_score = run_source_evaluations(
+                        model, source_loaders["val"], criterion, device,
+                        tuple(label.value for label in class_labels), source_label_indices,
+                        max_batches=args.max_eval_batches,
+                    )
+            except NonFiniteLossError as error:
+                # Training for this epoch finished; resuming skips only its validation.
+                _record_non_finite_failure(
+                    run_directory, error, model, optimizer, epoch, best_macro_f1,
+                    epochs_without_improvement, metadata,
+                )
+                raise
             validation_metrics = {
                 source: {"loss": result.loss, **result.evaluation.metrics}
                 for source, result in validation_results.items()

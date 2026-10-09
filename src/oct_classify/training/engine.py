@@ -21,6 +21,41 @@ class EpochResult:
     sources: list[str]
 
 
+class NonFiniteLossError(RuntimeError):
+    """A batch produced a non-finite loss; carries what is needed to diagnose it."""
+
+    def __init__(
+        self,
+        *,
+        training: bool,
+        batch_index: int,
+        paths: list[str],
+        sources: list[str],
+        targets: list[int],
+        logits: list[list[float]],
+        source: str | None = None,
+    ) -> None:
+        self.training = training
+        self.batch_index = batch_index
+        self.paths = paths
+        self.sources = sources
+        self.targets = targets
+        self.logits = logits
+        self.source = source
+        super().__init__()
+
+    @property
+    def non_finite_paths(self) -> list[str]:
+        return [path for path, row in zip(self.paths, self.logits) if not all(np.isfinite(row))]
+
+    def __str__(self) -> str:
+        where = f" of {self.source}" if self.source else ""
+        return (
+            f"Non-finite loss in {'training' if self.training else 'evaluation'} batch "
+            f"{self.batch_index}{where}; images with non-finite logits: {self.non_finite_paths or 'none (loss only)'}"
+        )
+
+
 def seed_everything(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
@@ -61,9 +96,20 @@ def run_epoch(
         available_masks = available_masks.to(device, non_blocking=True)
         if training:
             optimizer.zero_grad(set_to_none=True)
-        with torch.amp.autocast(device.type, enabled=device.type == "cuda"):
+        # fp16 only while training. Evaluation runs in fp32: fp16 overflowed to NaN logits on some
+        # validation volumes (see docs/reports/20261009-fp16-validation-nan.md).
+        with torch.amp.autocast(device.type, enabled=device.type == "cuda" and training):
             logits = model(images)
             loss = criterion(logits, batch_targets, available_masks)
+        if not torch.isfinite(loss):
+            raise NonFiniteLossError(
+                training=training,
+                batch_index=batch_index,
+                paths=list(batch_paths),
+                sources=list(batch_sources),
+                targets=batch_targets.cpu().tolist(),
+                logits=logits.detach().float().cpu().tolist(),
+            )
         if training:
             scaler.scale(loss).backward()
             scaler.step(optimizer)
@@ -107,18 +153,21 @@ def run_source_evaluations(
     octdl) can't dominate checkpoint selection and early stopping with epoch-to-epoch
     noise the way an unweighted mean would.
     """
-    results = {
-        source: run_epoch(
-            model,
-            loader,
-            criterion,
-            device,
-            tuple(class_names[index] for index in class_label_indices[source]),
-            max_batches=max_batches,
-            metric_label_indices=class_label_indices[source],
-        )
-        for source, loader in loaders.items()
-    }
+    results: dict[str, EpochResult] = {}
+    for source, loader in loaders.items():
+        try:
+            results[source] = run_epoch(
+                model,
+                loader,
+                criterion,
+                device,
+                tuple(class_names[index] for index in class_label_indices[source]),
+                max_batches=max_batches,
+                metric_label_indices=class_label_indices[source],
+            )
+        except NonFiniteLossError as error:
+            error.source = source
+            raise
     weights = np.array([len(result.paths) for result in results.values()], dtype=float)
     macro_f1s = np.array([float(result.evaluation.metrics["macro_f1"]) for result in results.values()])
     score = float(np.average(macro_f1s, weights=weights))
