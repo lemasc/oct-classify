@@ -16,6 +16,12 @@ size moves its prediction toward the label Duke attaches to that size:
 | 768×496, cropped to 512 wide | 36.6% → **8.3%** | 5.0% → 5.8% |
 | 1024×496, cropped to 512 wide | 9.1% → 19.9% | 22.5% → **10.0%** |
 
+> **Correction (exp. 1c, [report](20261010-heldout-size-test.md)):** doubling an image's width with mirrored tissue
+> pushes predictions toward AMD on its own. The pad-to-1024 arm below doubles the width, so part of its AMD shift may
+> come from the mirroring rather than Duke's 1024 = AMD link, and it is a weaker control than the next paragraph says.
+> The conclusion still stands on the arms without heavy mirroring: cropping 768×496 images removes their DME pull,
+> cropping 1024×496 images halves their AMD pull, and padding by 1.5× (to 768) pushes toward DME, not AMD.
+
 The two padding arms are the cleanest test. They use the same images, the same kind of mirrored padding and the
 same tissue, and differ only in the final width. One sends normal images to DME, the other sends them to AMD,
 matching Duke's two single-label sizes. Neither the padding seam nor the smaller tissue can explain that: the
