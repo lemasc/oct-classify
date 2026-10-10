@@ -41,9 +41,9 @@ with the current data).
 | Less training data for the held-out device | ruled out | Seen Kermany with DME cut to 122 patients still scores 97.1 (*) | — |
 | White rotation fill, padding, skewed normalization | ruled out | Fill-aware LOSO moves macro-F1 by at most 0.6 vs median on Kermany, OCTDL and PAIMA. Kermany gains just as much on images that have no fill | — |
 | DME seen only on other devices | partial | Removing Kermany's DME from training (device otherwise seen) costs ~6 points (*), about half of the ~13-point test-split gap | exp. 3, 5 |
-| Image size predicts the class | partial, confirmed cause | In Duke, every 768×496 image is DME and every 1024×496 image is AMD. Held-out Kermany errors cluster at those sizes (exp. 1). Padding the same 512×496 images to 768 wide sends 60% of normal images to DME; padding them to 1024 wide sends 32% to AMD instead (exp. 1b). Share of the gap not yet measured | exp. 3a, 1c |
+| Image size predicts the class | partial, confirmed cause | In Duke, every 768×496 image is DME and every 1024×496 image is AMD. Held-out Kermany errors cluster at those sizes (exp. 1). Padding Kermany 512×496 images to 768 wide sends 60% of normal images to DME; cropping 768×496 images to 512 removes most of their DME pull (exp. 1b). Padding Duke's 512×496 images by 16 rows to 512×512 (Kermany's DME-only size, no letterbox bands) sends 99% of normal images to DME (exp. 1c). PAIMA and OCTDL also respond to geometry (exp. 1c). Share of the gap not yet measured | exp. 3a |
 | Device appearance (speckle, contrast, resolution, texture) | open | Whatever remains after missing DME and image size | exp. 3b, 5 |
-| PAIMA ranking drop | open | AUROC 95.6 seen vs 92.7 held out; a cutoff shift doesn't fix it (*) | exp. 3, 5 |
+| PAIMA ranking drop | partial | AUROC 95.6 seen vs 92.7 held out; a cutoff shift doesn't fix it (*). Cropping PAIMA's images to 512 wide at test time raises AUROC to 95.2; padding to 1024 lowers it to 88.5 (exp. 1c). Not yet separated into shape vs tissue scale | exp. 3a |
 | Label units differ (Duke per eye, PAIMA per B-scan) | known limit | Caps how well Duke and PAIMA can agree. Cannot be fixed without relabeling | — |
 
 (*) From experiments on the `docs/cross-device-plan` branch: binary rescoring, AdaBN, logit bias, Kermany DME cut
@@ -83,9 +83,9 @@ Status values: `todo`, `running`, `done`, `dropped` (record the reason in the de
 |---|---|---|---|---|---|
 | 1 | Image-size breakdown of existing predictions | Do errors depend on image size? | No training | done | [20261010-kermany-canvas-breakdown.md](reports/20261010-kermany-canvas-breakdown.md) |
 | 1b | Rescore held-out Kermany after cropping or padding images to other sizes | Does the model read image size? | No training | done | [20261010-kermany-size-test.md](reports/20261010-kermany-size-test.md) |
-| 1c | Same test on held-out PAIMA, Duke and OCTDL | Does the size cue affect the other held-out sources? | No training | todo | |
+| 1c | Same test on held-out PAIMA, Duke and OCTDL | Does the size cue affect the other held-out sources? | No training | done | [20261010-heldout-size-test.md](reports/20261010-heldout-size-test.md) |
 | 2 | Seed noise floor: 2 extra seeds of the reference, held-out Kermany and PAIMA | How big must a change be to count? | ~10 LOSO models | todo | |
-| 3a | Remove the size cue in training: random mirror padding vs square crop | Does removing the size cue close the gap, and at what cost? | LOSO, Kermany first (2 arms × 5 models) | todo | |
+| 3a | Remove the size cue in training: random mirror padding vs square crop | Does removing the size cue close the gap, and at what cost? | LOSO, Kermany and PAIMA (2 arms × 2 targets × 5 models) | todo | |
 | 3b | Appearance augmentation: speckle, gamma/contrast, blur | Does varying how images look close the gap? | LOSO, Kermany + PAIMA first | todo | |
 | 4 | Fused CV with fill-aware padding | Is the seen-device score inflated by fill? | Fused CV (config exists) | todo | |
 | 5a | OCT foundation model, fine-tuned under LOSO | Do OCT-specific features transfer across devices better than ImageNet ones? | LOSO | todo | |
@@ -177,8 +177,11 @@ The two arms run separately so a gain can be attributed to one kind of differenc
 - **3a geometry:** remove the size cue during training, so Duke's 768×496 and 1024×496 images no longer carry
   their label in their shape. Two arms, chosen with the shape probe in `notebooks/size_shortcut.py`:
   - **3a-pad, random mirror padding** (main candidate): during training, mirror each image's tissue sideways to a
-    random width between its own and 3.2× its height, then letterbox. Test images are unchanged. Keeps every pixel
-    of tissue. In the probe it hides 768 px well (34% recognized) and 1024 px partly (64%).
+    random wider width, then letterbox. Test images are unchanged. Keeps every pixel of tissue. In the probe (range
+    up to 3.2× the height) it hides 768 px well (34% recognized) and 1024 px partly (64%). Exp. 1c showed that
+    doubling an image with mirrored tissue pushes current models toward AMD, so cap the added width (for example at
+    50% of the image's own width), rerun the notebook probe with the cap, and check after training whether heavy
+    mirroring still moves predictions. A cap of 50% lets a 512 image reach 768 but not 1024, so it hides 1024 less.
   - **3a-crop, square crop** (comparison): train on a random height × height window; at test, average predictions
     over several windows across the width. Hides shape best (23% at 768, 33% at 1024) but can cut lesions away while
     the label still says disease. Needs a change to evaluation as well as training.
@@ -187,15 +190,17 @@ The two arms run separately so a gain can be attributed to one kind of differenc
   thickness differently per source), random-width crop (cuts tissue like the square crop but hides less).
 - **3b appearance:** speckle noise, gamma and contrast changes, blur. Tests device rendering.
 
-**What:** 3a holds out Kermany first (5 models per arm), and PAIMA too if 1c shows its models use the cue. 3b holds
-out Kermany and PAIMA. Expand to OCTDL and Duke if an arm helps.
+**What:** 3a holds out Kermany and PAIMA (5 models per arm and target); 1c showed PAIMA's ranking depends on
+geometry. 3b holds out Kermany and PAIMA. Expand to OCTDL and Duke if an arm helps. Comparing 3a-pad (changes shape,
+shrinks tissue) with 3a-crop (fixed tissue scale) on PAIMA also separates shape from tissue scale, which 1c could not.
 
 **Reading 3a:** four checks per arm:
 
 1. Is the cue gone? Rerun the 1b pad test on the new models: padding 512×496 normal images to 768 should no longer
    send them to DME. About 15 minutes, no training.
 2. Did the size errors move? The exp. 1 rows: 768×496 normal → DME (37% now) and 1024×496 normal → AMD (23% now).
-3. Did the gap close? Held-out Kermany on the test split (83 now) against seen Kermany (95.6).
+3. Did the gap close? Held-out Kermany on the test split (83 now) against seen Kermany (95.6), and held-out PAIMA
+   AUROC (92.8 now) against seen PAIMA (95.6).
 4. What did it cost? Validation scores on the training sources, to catch lost in-domain accuracy, especially from
    lesions cut away in 3a-crop.
 
@@ -272,3 +277,10 @@ Optional. Useful only for the write-up, not for finding the cause.
   away lesions while the label still says disease, so 3a trains two arms: random mirror padding (keeps all tissue,
   main candidate) and square crop (hides shape best, comparison). 1c now also covers OCTDL, and runs before 3a to
   decide whether 3a holds out PAIMA too.
+- 2026-10-10 (exp. 1c): Every held-out source responds to geometry. Duke: padding its 512×496 images by 16 rows to
+  512×512 (Kermany's DME-only size; removes the 3-4 px letterbox bands) sends 99% of normal images to DME, the most
+  direct evidence that the model reads the bands. PAIMA: cropping to 512 wide raises AUROC 92.8 → 95.2 (seen 95.6);
+  padding to 1024 lowers it to 88.5. OCTDL: narrowing lowers DME → AMD 19.7% → 12.8%. Duke's 768×496 DME → normal is
+  not a size effect. Correction to 1b: doubling an image with mirrored tissue pushes toward AMD on its own (PAIMA
+  768 → 1536: normal → AMD 5% → 33%), so the 1b pad-to-1024 control is weaker than reported; 1b still stands on its
+  crop arms. Next: 3a holds out PAIMA as well as Kermany, and 3a-pad caps the mirrored width.
