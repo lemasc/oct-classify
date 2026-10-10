@@ -340,6 +340,7 @@ def _(mo):
     | **Square crop** | random height x height window | several windows, predictions averaged | none | same for all 496-high images | height / width |
     | **Random flat padding** | letterbox as if the image were a random width between its own and 3.2x its height | whole image, letterbox | yes, random height | varies with the random width | all |
     | **Random mirror padding** | mirror the tissue sideways to a random width between its own and 3.2x its height, then letterbox | whole image, letterbox | yes, random height | varies with the random width | all, plus mirrored copies |
+    | **Mirror padding, capped** | as above, but add at most a set share of the image's own width (slider below) | whole image, letterbox | yes, random height | varies, within the cap | all, plus smaller mirrored copies |
 
     The two padding fixes keep every pixel of tissue, so no lesion is ever cut away. Flat padding only shrinks
     the image inside a larger flat frame. Mirror padding fills the extra width with mirrored tissue, so the
@@ -347,13 +348,27 @@ def _(mo):
     can duplicate a lesion and leaves a seam where the copy starts. Padding can only make an image wider, so
     a wide image can never be shown narrow.
 
+    Experiment 1c found that doubling an image with mirrored tissue pushes current held-out models toward AMD
+    on its own (PAIMA padded from 768 to 1536: normal called AMD 5% → 33%). The capped variant adds at most a
+    set share of the image's own width (slider below), so mirrored copies stay smaller. The cost: with a 50% cap
+    a 512 image can reach 768 but not 1024, so 1024 cannot become a shape every label shares.
+
     Pick an image to see each fix. Rerun the random draw to see different random crops and paddings.
     """)
     return
 
 
 @app.cell
-def _(Image, np, padding_fill, preprocess_image, spec):
+def _(mo):
+    mirror_cap = mo.ui.slider(
+        0.25, 2.0, value=0.5, step=0.25, label="Mirror-padding cap (share of the image's own width)", full_width=True
+    )
+    mirror_cap
+    return (mirror_cap,)
+
+
+@app.cell
+def _(Image, mirror_cap, np, padding_fill, preprocess_image, spec):
     def fix_letterbox(image, rng):
         return preprocess_image(image, spec)
 
@@ -376,9 +391,14 @@ def _(Image, np, padding_fill, preprocess_image, spec):
     # Widest native aspect among Duke, Kermany and PAIMA is 1536x496 (3.1:1); padding goes up to about that.
     max_aspect = 3.2
 
-    def _random_target_width(image, rng):
+    # Exp. 1c: doubling an image with mirrored tissue pushes held-out models toward AMD on its own, so the capped
+    # variant adds at most `mirror_cap` times the image's own width.
+    def _random_target_width(image, rng, cap=None):
         _w, _h = image.size
-        return rng.uniform(_w, max(_w, max_aspect * _h))
+        _high = max(_w, max_aspect * _h)
+        if cap is not None:
+            _high = min(_high, (1 + cap) * _w)
+        return rng.uniform(_w, _high)
 
     def fix_random_flat_pad(image, rng):
         # Letterbox as if the image were wider: the tissue shrinks and flat padding surrounds it.
@@ -397,10 +417,10 @@ def _(Image, np, padding_fill, preprocess_image, spec):
         _canvas[_offset : _offset + _shrunk, _offset : _offset + _shrunk] = _small
         return _canvas
 
-    def fix_random_mirror_pad(image, rng):
+    def fix_random_mirror_pad(image, rng, cap=None):
         # Extend the tissue sideways by mirroring it, so the tissue itself takes a random width.
         _array = np.asarray(image)
-        _extra = int(round(_random_target_width(image, rng))) - _array.shape[1]
+        _extra = int(round(_random_target_width(image, rng, cap))) - _array.shape[1]
         _left = int(rng.integers(0, _extra + 1))
         _padded = np.pad(_array, [(0, 0), (_left, _extra - _left)] + [(0, 0)] * (_array.ndim - 2), mode="reflect")
         return preprocess_image(Image.fromarray(_padded), spec)
@@ -412,6 +432,7 @@ def _(Image, np, padding_fill, preprocess_image, spec):
         "square crop": fix_square,
         "random flat padding": fix_random_flat_pad,
         "random mirror padding": fix_random_mirror_pad,
+        f"mirror padding, cap {mirror_cap.value:.0%}": lambda image, rng: fix_random_mirror_pad(image, rng, mirror_cap.value),
     }
     return (fixes,)
 
@@ -596,6 +617,9 @@ def _(mo):
     | random flat padding | 97% | 97% | 96% | 97% | 99% |
     | random-width crop | 62% | 85% | 61% | 45% | 57% |
     | random mirror padding | 63% | 55% | 34% | 64% | 98% |
+    | mirror padding, cap 50% | 90% | 94% | 81% | 86% | 99% |
+    | mirror padding, cap 100% | 75% | 83% | 50% | 69% | 98% |
+    | mirror padding, cap 200% | 65% | 53% | 43% | 67% | 96% |
     | stretch | 58% | 66% | 29% | 54% | 82% |
     | square crop | 38% | 51% | 23% | 33% | 45% |
 
@@ -606,6 +630,12 @@ def _(mo):
       to one label, about as well as the crops do. It cannot hide 1536, which no source ties to a label.
       Its costs are mirrored lesion copies and seams; both appear in every class, so they should not become
       label cues, but a model may still spend capacity on them.
+    - **Capping the mirroring gives the hiding back.** A 50% cap leaves 768 and 1024 recognizable 81-86% of the
+      time, close to the letterbox. Hiding needs widths that overlap across sizes, and only large mirroring gets
+      there: a 100% cap (at most doubling) reaches 50% at 768 and 69% at 1024. The AMD shift from heavy mirroring
+      in experiment 1c was measured on models that never saw mirrored images in training; training with mirroring
+      in every class is what should remove it. So a cap protects little and costs most of the benefit. Check the
+      trained model with the 1c pad test instead.
     - **Stretch** removes the bands, but squeezes tissue horizontally by an amount that depends on the
       width, so the shape is still readable from the tissue texture. It also distorts retinal thickness,
       the main DME sign, differently per source.
