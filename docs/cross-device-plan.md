@@ -43,7 +43,7 @@ with the current data).
 | DME seen only on other devices | partial | Removing Kermany's DME from training (device otherwise seen) costs ~6 points (*), about half of the ~13-point test-split gap | exp. 3, 5 |
 | Image size predicts the class | partial, confirmed cause | In Duke, every 768×496 image is DME and every 1024×496 image is AMD. Held-out Kermany errors cluster at those sizes (exp. 1). Padding Kermany 512×496 images to 768 wide sends 60% of normal images to DME; cropping 768×496 images to 512 removes most of their DME pull (exp. 1b). Padding Duke's 512×496 images by 16 rows to 512×512 (Kermany's DME-only size, no letterbox bands) sends 99% of normal images to DME (exp. 1c). PAIMA and OCTDL also respond to geometry (exp. 1c). Share of the gap not yet measured | exp. 3a |
 | Device appearance (speckle, contrast, resolution, texture) | open | Whatever remains after missing DME and image size | exp. 3b, 5 |
-| PAIMA ranking drop | partial | AUROC 95.6 seen vs 92.7 held out; a cutoff shift doesn't fix it (*). Cropping PAIMA's images to 512 wide at test time raises AUROC to 95.2; padding to 1024 lowers it to 88.5 (exp. 1c). Not yet separated into shape vs tissue scale | exp. 3a |
+| PAIMA ranking drop | partial | AUROC 95.6 seen vs 92.7 held out; a cutoff shift doesn't fix it (*). Cropping PAIMA's images to 512 wide at test time raises AUROC to 95.2; padding to 1024 lowers it to 88.5 (exp. 1c). Averaging three square windows reaches 95.6, the seen value (exp. 1d). Not yet separated into shape vs tissue scale | exp. 3a |
 | Label units differ (Duke per eye, PAIMA per B-scan) | known limit | Caps how well Duke and PAIMA can agree. Cannot be fixed without relabeling | — |
 
 (*) From experiments on the `docs/cross-device-plan` branch: binary rescoring, AdaBN, logit bias, Kermany DME cut
@@ -84,6 +84,7 @@ Status values: `todo`, `running`, `done`, `dropped` (record the reason in the de
 | 1 | Image-size breakdown of existing predictions | Do errors depend on image size? | No training | done | [20261010-kermany-canvas-breakdown.md](reports/20261010-kermany-canvas-breakdown.md) |
 | 1b | Rescore held-out Kermany after cropping or padding images to other sizes | Does the model read image size? | No training | done | [20261010-kermany-size-test.md](reports/20261010-kermany-size-test.md) |
 | 1c | Same test on held-out PAIMA, Duke and OCTDL | Does the size cue affect the other held-out sources? | No training | done | [20261010-heldout-size-test.md](reports/20261010-heldout-size-test.md) |
+| 1d | Square windows at test time, pooled (preview of 3a-crop) | Does averaging windows recover what a single crop loses? | No training | done | [20261010-multiwindow-test.md](reports/20261010-multiwindow-test.md) |
 | 2 | Seed noise floor: 2 extra seeds of the reference, held-out Kermany and PAIMA | How big must a change be to count? | ~10 LOSO models | todo | |
 | 3a | Remove the size cue in training: random mirror padding vs square crop | Does removing the size cue close the gap, and at what cost? | LOSO, Kermany and PAIMA (2 arms × 2 targets × 5 models) | todo | |
 | 3b | Appearance augmentation: speckle, gamma/contrast, blur | Does varying how images look close the gap? | LOSO, Kermany + PAIMA first | todo | |
@@ -185,7 +186,7 @@ The two arms run separately so a gain can be attributed to one kind of differenc
     remove the effect. So keep the range uncapped, and after training rerun the 1c pad test (PAIMA 768 → 1536) to
     check that heavy mirroring no longer moves predictions.
   - **3a-crop, square crop** (comparison): train on a random height × height window; at test, average predictions
-    over several windows across the width. Hides shape best (23% at 768, 33% at 1024) but can cut lesions away while
+    over several windows across the width (mean pooling; exp. 1d found mean, center and max within ~1.5 points). Hides shape best (23% at 768, 33% at 1024) but can cut lesions away while
     the label still says disease. Needs a change to evaluation as well as training.
 
   Left out: flat padding (hides band height but not the tissue's ratio, 97% recognized), stretch (distorts retinal
@@ -202,7 +203,8 @@ shrinks tissue) with 3a-crop (fixed tissue scale) on PAIMA also separates shape 
    send them to DME. About 15 minutes, no training.
 2. Did the size errors move? The exp. 1 rows: 768×496 normal → DME (37% now) and 1024×496 normal → AMD (23% now).
 3. Did the gap close? Held-out Kermany on the test split (83 now) against seen Kermany (95.6), and held-out PAIMA
-   AUROC (92.8 now) against seen PAIMA (95.6).
+   AUROC (92.8 now) against seen PAIMA (95.6). The test split is mostly 1024×496, so also report Kermany on the full
+   source and by size; exp. 1d showed a change can help most sizes and still lower the test-split score.
 4. What did it cost? Validation scores on the training sources, to catch lost in-domain accuracy, especially from
    lesions cut away in 3a-crop.
 
@@ -289,3 +291,9 @@ Optional. Useful only for the write-up, not for finding the cause.
 - 2026-10-10 (mirror cap): Reversed the cap. The notebook probe shows a 50% cap leaves 768 and 1024 recognized
   81-86% of the time (uncapped: 47% and 61%), so it removes most of the benefit. The 1c AMD shift was on models
   never trained with mirroring. 3a-pad stays uncapped and is checked after training with the 1c pad test.
+- 2026-10-10 (exp. 1d): Previewed 3a-crop at test time with overlapping square windows on the reference models.
+  PAIMA AUROC 92.8 → 95.6 with mean pooling, the seen value; macro-F1 flat because the cutoff moves toward normal.
+  Kermany +4.4 macro-F1 overall, driven by 768×496 (+14.7), but 1024×496 −8.0 and 1536×496 −11.3, so the test split
+  falls 82.6 → 74.0. Mean, center and max pooling agree within ~1.5 points, so at test time the wide-scan losses come
+  from the unfamiliar tissue scale, not from missing lesions. 3a-crop stays in with mean pooling; the training-time
+  cost of crops that miss lesions is still untested.
