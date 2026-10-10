@@ -179,9 +179,11 @@ The two arms run separately so a gain can be attributed to one kind of differenc
   - **3a-pad, random mirror padding** (main candidate): during training, mirror each image's tissue sideways to a
     random wider width, then letterbox. Test images are unchanged. Keeps every pixel of tissue. In the probe (range
     up to 3.2× the height) it hides 768 px well (34% recognized) and 1024 px partly (64%). Exp. 1c showed that
-    doubling an image with mirrored tissue pushes current models toward AMD, so cap the added width (for example at
-    50% of the image's own width), rerun the notebook probe with the cap, and check after training whether heavy
-    mirroring still moves predictions. A cap of 50% lets a 512 image reach 768 but not 1024, so it hides 1024 less.
+    doubling an image with mirrored tissue pushes current models toward AMD, but capping the mirroring gives the
+    hiding back (probe: a 50% cap leaves 768 and 1024 recognized 81-86% of the time; a 100% cap, 50% and 69%).
+    Those models never saw mirrored images in training, and training with mirroring in every class is what should
+    remove the effect. So keep the range uncapped, and after training rerun the 1c pad test (PAIMA 768 → 1536) to
+    check that heavy mirroring no longer moves predictions.
   - **3a-crop, square crop** (comparison): train on a random height × height window; at test, average predictions
     over several windows across the width. Hides shape best (23% at 768, 33% at 1024) but can cut lesions away while
     the label still says disease. Needs a change to evaluation as well as training.
@@ -284,3 +286,6 @@ Optional. Useful only for the write-up, not for finding the cause.
   not a size effect. Correction to 1b: doubling an image with mirrored tissue pushes toward AMD on its own (PAIMA
   768 → 1536: normal → AMD 5% → 33%), so the 1b pad-to-1024 control is weaker than reported; 1b still stands on its
   crop arms. Next: 3a holds out PAIMA as well as Kermany, and 3a-pad caps the mirrored width.
+- 2026-10-10 (mirror cap): Reversed the cap. The notebook probe shows a 50% cap leaves 768 and 1024 recognized
+  81-86% of the time (uncapped: 47% and 61%), so it removes most of the benefit. The 1c AMD shift was on models
+  never trained with mirroring. 3a-pad stays uncapped and is checked after training with the 1c pad test.

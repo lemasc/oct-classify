@@ -113,6 +113,10 @@ Two consequences:
   heavily mirrored images as unusual. Cap the added width (for example at 50% of the image's own width) and compare
   with the square-crop arm.
 
+  > **Follow-up (same day):** the shape probe in `notebooks/size_shortcut.py` shows that a 50% cap leaves 768 and
+  > 1024 recognized 81-86% of the time, removing most of the benefit. The plan keeps 3a-pad uncapped and checks the
+  > trained models with the 768 → 1536 pad test instead (decision log, 2026-10-10 "mirror cap").
+
 ## 5. What This Changes
 
 - **Cause tracker:** image size is a confirmed cause on Kermany, Duke (512×512) and PAIMA, and a likely one on OCTDL.
