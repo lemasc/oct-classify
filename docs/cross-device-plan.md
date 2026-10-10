@@ -83,9 +83,9 @@ Status values: `todo`, `running`, `done`, `dropped` (record the reason in the de
 |---|---|---|---|---|---|
 | 1 | Image-size breakdown of existing predictions | Do errors depend on image size? | No training | done | [20261010-kermany-canvas-breakdown.md](reports/20261010-kermany-canvas-breakdown.md) |
 | 1b | Rescore held-out Kermany after cropping or padding images to other sizes | Does the model read image size? | No training | done | [20261010-kermany-size-test.md](reports/20261010-kermany-size-test.md) |
-| 1c | Same test on held-out PAIMA and Duke | Does the size cue affect the other held-out sources? | No training | todo | |
+| 1c | Same test on held-out PAIMA, Duke and OCTDL | Does the size cue affect the other held-out sources? | No training | todo | |
 | 2 | Seed noise floor: 2 extra seeds of the reference, held-out Kermany and PAIMA | How big must a change be to count? | ~10 LOSO models | todo | |
-| 3a | Geometry augmentation: random pad, crop, rescale; uniform image size | Does hiding image size and resolution close the gap? | LOSO, Kermany + PAIMA first | todo | |
+| 3a | Remove the size cue in training: random mirror padding vs square crop | Does removing the size cue close the gap, and at what cost? | LOSO, Kermany first (2 arms × 5 models) | todo | |
 | 3b | Appearance augmentation: speckle, gamma/contrast, blur | Does varying how images look close the gap? | LOSO, Kermany + PAIMA first | todo | |
 | 4 | Fused CV with fill-aware padding | Is the seen-device score inflated by fill? | Fused CV (config exists) | todo | |
 | 5a | OCT foundation model, fine-tuned under LOSO | Do OCT-specific features transfer across devices better than ImageNet ones? | LOSO | todo | |
@@ -125,17 +125,38 @@ images to 1024 sends them to AMD instead (7% → 32%). Cropping 768×496 images 
 PAIMA's 768×496 images cannot counter the cue in training because the masked loss never trains the DME output on
 PAIMA. See [the report](reports/20261010-kermany-size-test.md).
 
-### 1c. Size test on held-out PAIMA and Duke
+### 1c. Size test on held-out PAIMA, Duke and OCTDL
 
-**Why:** held-out PAIMA is all 768×496 and trains on Duke (768×496 = DME). Held-out Duke trains on Kermany
-(512×512 = DME). PAIMA is scored on normal and AMD only, so a DME pull would not show up as DME predictions there,
-but it could still distort the normal/AMD ranking, which is PAIMA's open problem.
+**Why:** each held-out source trains on a different mix of sizes, so each could have learned a different cue:
 
-**What:** rerun the exp. 1b script on the held-out PAIMA models (crop 768×496 to 512×496) and the held-out Duke
-model (pad 512×496 Duke images to 512×512 and to other sizes).
+| Held out | Size cues in its training sources | Expected effect |
+|---|---|---|
+| PAIMA (all 768×496, normal/AMD) | Duke: 768 = DME only, 1024 = AMD only. Kermany's 768×496 is mixed, which weakens the 768 cue | Little at its own size. Scored on normal/AMD only, so a DME pull is invisible |
+| Duke (512, 768, 1024 × 496) | Kermany: 512×512 = DME only. At 768×496, training has almost no DME (Kermany 3%; PAIMA's DME output is never trained) | Duke's 768×496 DME images are pulled away from DME, which may explain part of its DME → normal |
+| OCTDL (own sizes, about 2.8:1) | No shared sizes. Kermany's similarly wide 1536×496 is almost never DME (4%) | If the model reads the width-to-height ratio, wide images are pulled away from DME, which may explain part of OCTDL's DME → AMD |
 
-**Reading the result:** if PAIMA's AUROC or normal/AMD balance moves when the size changes, the size cue is part of
-PAIMA's drop and 3a should be judged on PAIMA too. If nothing moves, the cue is a Kermany problem only.
+**What:**
+
+1. Break down existing held-out predictions: Duke by size, OCTDL by width-to-height ratio (minutes).
+2. Rescore with the exp. 1b method (only the size changes, compared with stored predictions):
+
+   | Held out | Arm | Shift expected if the model reads size |
+   |---|---|---|
+   | PAIMA | pad 768 → 1024 | toward AMD |
+   | PAIMA | crop 768 → 512 | toward normal (Duke's 512×496 is 60% normal) |
+   | PAIMA | pad 768 → 1536 (control) | none (Kermany 1536 is balanced) |
+   | Duke | crop 768 → 512 | DME recall rises at 768 |
+   | Duke | pad 512×496 → 512×512 (16 rows) | toward DME |
+   | OCTDL | crop to about 1.4:1, and pad to about 3.1:1 | DME → AMD falls when narrower, rises when wider |
+
+   PAIMA is scored on normal/AMD with the same restricted softmax as its evaluation, including AUROC. Each source
+   first gets a 1,000-image check that the loop reproduces the stored predictions.
+
+**Reading the result:** if PAIMA shifts as predicted, 3a also holds out PAIMA and is judged on PAIMA's AUROC too. If
+nothing moves, 3a starts with Kermany only and PAIMA's ranking drop stays under device appearance. If Duke or OCTDL
+respond, the size cue explains part of their DME errors as well. An OCTDL response means the cue is the
+width-to-height ratio rather than exact sizes, which only mirror padding and crops break. Held-out Duke is one model
+and 45 eyes, so it is supporting evidence only.
 
 ### 2. Seed noise floor
 
@@ -154,16 +175,38 @@ AUROC and the per-class recall rows above.
 The two arms run separately so a gain can be attributed to one kind of difference. That answer shapes exp. 5.
 
 - **3a geometry:** remove the size cue during training, so Duke's 768×496 and 1024×496 images no longer carry
-  their label in their shape. For example, crop every image to a common aspect ratio, or randomly crop and pad so
-  any label can appear at any size; add random rescale for resolution. Tests image size and resolution. Shape the
-  details after 1b.
+  their label in their shape. Two arms, chosen with the shape probe in `notebooks/size_shortcut.py`:
+  - **3a-pad, random mirror padding** (main candidate): during training, mirror each image's tissue sideways to a
+    random width between its own and 3.2× its height, then letterbox. Test images are unchanged. Keeps every pixel
+    of tissue. In the probe it hides 768 px well (34% recognized) and 1024 px partly (64%).
+  - **3a-crop, square crop** (comparison): train on a random height × height window; at test, average predictions
+    over several windows across the width. Hides shape best (23% at 768, 33% at 1024) but can cut lesions away while
+    the label still says disease. Needs a change to evaluation as well as training.
+
+  Left out: flat padding (hides band height but not the tissue's ratio, 97% recognized), stretch (distorts retinal
+  thickness differently per source), random-width crop (cuts tissue like the square crop but hides less).
 - **3b appearance:** speckle noise, gamma and contrast changes, blur. Tests device rendering.
 
-**What:** LOSO holding out Kermany and PAIMA first, then OCTDL and Duke if either arm helps.
+**What:** 3a holds out Kermany first (5 models per arm), and PAIMA too if 1c shows its models use the cue. 3b holds
+out Kermany and PAIMA. Expand to OCTDL and Duke if an arm helps.
 
-**Reading the result:** judge on Kermany DME and normal recall and on PAIMA AUROC (PAIMA's problem is ranking,
-so a cutoff shift doesn't count). An arm that clears the noise floor moves its suspect to `partial`. If neither
-helps, exp. 5 becomes the main bet.
+**Reading 3a:** four checks per arm:
+
+1. Is the cue gone? Rerun the 1b pad test on the new models: padding 512×496 normal images to 768 should no longer
+   send them to DME. About 15 minutes, no training.
+2. Did the size errors move? The exp. 1 rows: 768×496 normal → DME (37% now) and 1024×496 normal → AMD (23% now).
+3. Did the gap close? Held-out Kermany on the test split (83 now) against seen Kermany (95.6).
+4. What did it cost? Validation scores on the training sources, to catch lost in-domain accuracy, especially from
+   lesions cut away in 3a-crop.
+
+If the two arms are equal, keep 3a-pad. If 3a-crop wins clearly, the cue left at 1024 matters more than lost lesions;
+try mirror padding plus a mild center-biased crop. If neither helps, the cue is real but small, and 3b and 5 take over.
+
+**Reading 3b:** judge on Kermany DME and normal recall and on PAIMA AUROC (PAIMA's problem is ranking, so a cutoff
+shift doesn't count).
+
+An arm that clears the noise floor moves its suspect to `partial`. If neither 3a nor 3b helps, exp. 5 becomes the main
+bet.
 
 ### 4. Fused CV with fill-aware padding
 
@@ -223,3 +266,9 @@ Optional. Useful only for the write-up, not for finding the cause.
   The control rules out the padding seam and tissue scale as explanations. Image size becomes a confirmed cause.
   Next: 3a is the next training run, run alongside 2. Add 1c (same test on held-out PAIMA and Duke, no training).
   Grad-CAM (6) is dropped: 1b answered its question directly.
+- 2026-10-10 (3a design): Compared candidate fixes in `notebooks/size_shortcut.py` with a shape probe (150 Kermany
+  1536×496 scans cut to four widths; how often a simple classifier recognizes the width, chance 25%). Letterbox 99%,
+  flat padding 97%, random-width crop 62%, mirror padding 63%, stretch 58%, square crop 38%. Random crops can cut
+  away lesions while the label still says disease, so 3a trains two arms: random mirror padding (keeps all tissue,
+  main candidate) and square crop (hides shape best, comparison). 1c now also covers OCTDL, and runs before 3a to
+  decide whether 3a holds out PAIMA too.
