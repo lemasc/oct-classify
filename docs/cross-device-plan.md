@@ -8,15 +8,18 @@ The overall project plan is [full-project-plan.md](full-project-plan.md).
 A model scores well on a device (source) it was trained on, and worse on a device it has never seen. Why, and
 what closes the gap?
 
-The gap, in macro-F1 (seen = fused training with that source included; held out = LOSO):
+The gap, in macro-F1 (seen = fused training with that source included; held out = LOSO). Both columns are scored on
+the source's test split, so they compare the same images:
 
 | Source | Seen | Held out | Gap |
 |---|---:|---:|---:|
-| Kermany | ~96 | 74 | ~22 |
+| Kermany | 95.6 | 83 | ~13 |
 | OCTDL | ~97 | 92 | ~5 |
 | PAIMA | ~90 | 86 | ~4 |
 
-Kermany is the main problem. Most of the lost accuracy is DME being confused with other classes.
+Kermany is the main problem. Earlier reports quote ~22 points for Kermany: that held-out number (74) is scored on
+all Kermany images, which have a different mix of image sizes than the test split (exp. 1). OCTDL and PAIMA
+held-out numbers are still full-source; their test-split values have not been computed yet.
 
 ## How to Use This Plan
 
@@ -37,9 +40,9 @@ with the current data).
 | Brightness/contrast statistics (BatchNorm) | ruled out | Re-estimating BatchNorm on the target gives Kermany +1.1 and costs OCTDL ~20 (*). Fill-aware normalization also leaves the gap unchanged | — |
 | Less training data for the held-out device | ruled out | Seen Kermany with DME cut to 122 patients still scores 97.1 (*) | — |
 | White rotation fill, padding, skewed normalization | ruled out | Fill-aware LOSO moves macro-F1 by at most 0.6 vs median on Kermany, OCTDL and PAIMA. Kermany gains just as much on images that have no fill | — |
-| DME seen only on other devices | partial | Removing Kermany's DME from training (device otherwise seen) costs ~6 of the ~22 points (*) | exp. 3, 5 |
-| Image size predicts the class | open | 74% of Kermany DME is 512×512; Duke width alone gives 0.66 balanced accuracy. Held-out Kermany images without fill are much harder (DME recall 58 vs 70) | exp. 1, 3a |
-| Device appearance (speckle, contrast, resolution, texture) | open, leading | What remains after everything above: ~3/4 of the Kermany gap | exp. 3b, 5 |
+| DME seen only on other devices | partial | Removing Kermany's DME from training (device otherwise seen) costs ~6 points (*), about half of the ~13-point test-split gap | exp. 3, 5 |
+| Image size predicts the class | partial, leading | In Duke, every 768×496 image is DME and every 1024×496 image is AMD. Held-out Kermany calls 37% of its 768×496 normal images DME and pushes 23% of its 1024×496 normal images to AMD, far more than at other sizes (exp. 1). Size also stands for scan protocol, so not yet causal | exp. 1b, 3a |
+| Device appearance (speckle, contrast, resolution, texture) | open | Whatever remains after missing DME and image size | exp. 3b, 5 |
 | PAIMA ranking drop | open | AUROC 95.6 seen vs 92.7 held out; a cutoff shift doesn't fix it (*) | exp. 3, 5 |
 | Label units differ (Duke per eye, PAIMA per B-scan) | known limit | Caps how well Duke and PAIMA can agree. Cannot be fixed without relabeling | — |
 
@@ -54,7 +57,10 @@ and Kermany zero-DME. Their reports live on that branch only.
   evidence only.
 - **Metrics:** macro-F1 and macro-AUROC with patient-level bootstrap CIs, and paired deltas against the reference.
   Score PAIMA on Normal/AMD only. Show the binary Normal-vs-AMD view next to the 3-class result.
-- **Per-class recall** for every held-out source. The DME rows are the main signal.
+- **Per-class recall** for every held-out source. The DME rows are the main signal. For Kermany, also split it by
+  image size (script from exp. 1), since errors differ sharply between sizes.
+- **Seen vs held out on the same images:** compare against the seen score on the test split. The full-source
+  held-out score is still reported, but it covers image sizes the seen models were never scored on.
 - **When a change counts:** the paired CI excludes 0 **and** the delta is larger than the seed spread from exp. 2.
   Before exp. 2 is done, treat any delta under ~5 points as unconfirmed.
 - Same splits, seed scheme, training budget and evaluation precision (fp32) as the reference.
@@ -75,7 +81,8 @@ Status values: `todo`, `running`, `done`, `dropped` (record the reason in the de
 
 | # | Experiment | Question | Cost | Status | Report |
 |---|---|---|---|---|---|
-| 1 | Width breakdown of existing predictions | Do errors depend on image size? | No training | todo | |
+| 1 | Image-size breakdown of existing predictions | Do errors depend on image size? | No training | done | [20261010-kermany-canvas-breakdown.md](reports/20261010-kermany-canvas-breakdown.md) |
+| 1b | Rescore held-out Kermany with sizes made uniform at test time (center-crop to 512×496) | Does the model read image size? | No training | todo | |
 | 2 | Seed noise floor: 2 extra seeds of the reference, held-out Kermany and PAIMA | How big must a change be to count? | ~10 LOSO models | todo | |
 | 3a | Geometry augmentation: random pad, crop, rescale; uniform image size | Does hiding image size and resolution close the gap? | LOSO, Kermany + PAIMA first | todo | |
 | 3b | Appearance augmentation: speckle, gamma/contrast, blur | Does varying how images look close the gap? | LOSO, Kermany + PAIMA first | todo | |
@@ -85,18 +92,34 @@ Status values: `todo`, `running`, `done`, `dropped` (record the reason in the de
 | 6 | Grad-CAM on fill-aware LOSO models | Do models look at image borders or size cues? | No training | todo | |
 | 7 | Binary runs comparable to the papers | How do our numbers compare to OCT-SelfNet? | Several runs | optional | |
 
-### 1. Width breakdown of existing predictions
+### 1. Image-size breakdown of existing predictions (done)
 
-**Why:** image size is the only acquisition artifact not yet tested. Held-out Kermany images without white fill
-are much harder than images with fill, and fill-aware did not change that. Fill tracks image width in Kermany, so
-the real factor may be width or resolution.
+**Why:** image size was the only acquisition artifact not yet tested. Held-out Kermany images without white fill
+were much harder than images with fill, and fill-aware did not change that.
 
-**What:** split held-out Kermany recall by width (512, 768, 1024, 1536) for the reference. Do the same for seen
-Kermany in the fused CV runs.
+**What:** split held-out Kermany predictions by image size (width × height), for both paddings, and compare with
+seen Kermany from the fused CV runs.
 
-**Reading the result:** if errors cluster by width in the held-out runs, size or resolution is part of the device
-difference. Run 3a first and give it the most weight. If they don't, mark image size as ruled out at test time
-(it can still leak during training, which 3a covers).
+**Result:** errors follow Duke's size-to-label link. Duke's 768×496 images are all DME and its 1024×496 images are
+all AMD. Held-out Kermany calls 37% of its 768×496 normal images DME and pushes 23% of its 1024×496 normal images to
+AMD. Kermany's 1536×496 size appears in no training source, and that is where DME is missed most (recall 56%). Fill
+within a size matters little. The seen score is measured almost only on 1024×496 test images; on those same images
+the held-out score is 83, not 74. See [the report](reports/20261010-kermany-canvas-breakdown.md).
+
+### 1b. Uniform image size at test time
+
+**Why:** exp. 1 shows where errors cluster, but size also stands for scan protocol. Changing only the size of the
+same images separates the two, without any training.
+
+**What:** rescore the reference LOSO-Kermany models twice:
+
+- **Crop:** center-crop 768, 1024 and 1536-wide images (and 512×512) to 512×496, which keeps the tissue scale.
+- **Pad:** pad 512×496 images out to 768×496 with the padding fill, which makes them look like Duke's DME-only size.
+
+**Reading the result:** size is a cause if cropped 768×496 normal images stop being called DME and cropped
+1024×496 normal images stop going to AMD, or if padded 512×496 normal images start being called DME. Then 3a should
+remove the size cue in training. If neither moves, the size effect comes from scan content, and image size goes back
+to `open` under device appearance.
 
 ### 2. Seed noise floor
 
@@ -114,8 +137,10 @@ AUROC and the per-class recall rows above.
 **Why:** the leading suspect is how each device renders the image. Augmentation is the cheapest way to test it.
 The two arms run separately so a gain can be attributed to one kind of difference. That answer shapes exp. 5.
 
-- **3a geometry:** random padding and cropping, random rescale, uniform image size. Tests image size and
-  resolution.
+- **3a geometry:** remove the size cue during training, so Duke's 768×496 and 1024×496 images no longer carry
+  their label in their shape. For example, crop every image to a common aspect ratio, or randomly crop and pad so
+  any label can appear at any size; add random rescale for resolution. Tests image size and resolution. Shape the
+  details after 1b.
 - **3b appearance:** speckle noise, gamma and contrast changes, blur. Tests device rendering.
 
 **What:** LOSO holding out Kermany and PAIMA first, then OCTDL and Duke if either arm helps.
@@ -128,12 +153,15 @@ helps, exp. 5 becomes the main bet.
 
 **Why:** the seen-device scores (~96 on Kermany) come from median-padding runs. When every source is in training,
 white fill tells the model which device an image came from, and that can inflate the seen score. If so, the gap
-is smaller than measured.
+is smaller than measured. It also gives a fill-aware seen reference for the gap table.
 
 **What:** run `configs/training/resnet50-fused-fill-aware.toml` and compare against the median fused CV.
 
 **Reading the result:** a lower seen score shrinks the gap and updates the table at the top. It does not close the
 gap, so it can run on the cluster in parallel with exps. 2 and 3.
+
+**Limit:** Kermany's test split has almost only 1024×496 images, so neither fused run says how a seen model does on
+Kermany's other sizes. Measuring that would need a patient-grouped Kermany test set drawn from the train split.
 
 ### 5. OCT-specific pretraining
 
@@ -150,8 +178,8 @@ seeing the target device matters more than OCT pretraining in general.
 
 ### 6. Grad-CAM on fill-aware LOSO models
 
-**Why:** padding is already ruled out, so this has low value now. Run it only if exp. 1 or 3a implicates image size,
-to check whether models attend to image borders.
+**Why:** padding is already ruled out. Exp. 1 implicates image size, but 1b tests that more directly. Run this only
+if 1b is unclear, to check whether models attend to the padding bands that reveal an image's size.
 
 ### 7. Binary runs comparable to the papers
 
@@ -168,3 +196,9 @@ Optional. Useful only for the write-up, not for finding the cause.
   removes a known artifact.
 - 2026-10-10: Run order set: 1 (no training) decides how to weight 3a and 3b; 2 and 4 run alongside 3; 5 is designed
   in parallel and run after 3. Grad-CAM (6) only runs if image size is implicated.
+- 2026-10-10 (exp. 1): Held-out Kermany errors follow Duke's size-to-label link: 37% of 768×496 normal images are
+  called DME (Duke's 768×496 images are all DME) and 23% of 1024×496 normal images go to AMD (Duke's 1024×496 images
+  are all AMD). Image size moves to `partial`. PAIMA is also 768×496, but the masked loss never trains the DME output
+  on PAIMA images, so it does not counter the link. The Kermany gap is ~13 points on the test split, not ~22; the gap
+  table now compares the same images. Next: add 1b (test-time crop and pad, no training) before 3a, and shape 3a to
+  remove the size cue.
