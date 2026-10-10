@@ -17,8 +17,10 @@
 # divide evenly across the number of --sources, and LOSO always trains on
 # exactly 3 of the 4 sources.
 
-# Usage: [TRAINING_CONFIG=configs/training/resnet50-loso-fill-aware.toml] scripts/train-loso-local.sh [--workers N]
+# Usage: [TRAINING_CONFIG=configs/training/resnet50-loso-fill-aware.toml] [HELD_OUT="kermany paima"] [RUN_ID=local-3a-mirror]
+#        scripts/train-loso-local.sh [--workers N]
 # TRAINING_CONFIG selects the training config (default: the median-padding LOSO config).
+# HELD_OUT lists the sources to hold out (default: all four). RUN_ID names the campaign (default: local-<timestamp>).
 # --workers N caps the processes used for the normalization-statistics pass at
 # the start of each `train fused` run (default: every CPU core).
 
@@ -42,12 +44,13 @@ done
 training_config="${TRAINING_CONFIG:-configs/training/resnet50-loso-median-pad.toml}"
 sources=(duke kermany octdl paima)
 repo_root="$(git rev-parse --show-toplevel)"
-run_id="local-$(date +%Y%m%d-%H%M%S)"
+run_id="${RUN_ID:-local-$(date +%Y%m%d-%H%M%S)}"
+read -ra held_out_sources <<<"${HELD_OUT:-${sources[*]}}"
 
 cd "$repo_root"
 mkdir -p artifacts/local
 
-for held_out in "${sources[@]}"; do
+for held_out in "${held_out_sources[@]}"; do
     train_sources=()
     for source_name in "${sources[@]}"; do
         [[ "$source_name" == "$held_out" ]] || train_sources+=("$source_name")

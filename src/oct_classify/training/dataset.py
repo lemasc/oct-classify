@@ -11,6 +11,7 @@ from torch.utils.data import Dataset
 from torchvision.transforms import InterpolationMode
 from torchvision.transforms import functional as transforms
 
+from oct_classify.data.geometry import apply_geometry
 from oct_classify.data.models import ImageRecord
 from oct_classify.data.preprocessing import PreprocessingSpec, padding_fill, preprocess_image
 from oct_classify.data.taxonomy import UnifiedLabel
@@ -76,6 +77,7 @@ class ManifestImageDataset(Dataset[tuple[torch.Tensor, int, torch.Tensor, str, s
     def __getitem__(self, index: int) -> tuple[torch.Tensor, int, torch.Tensor, str, str]:
         record = self.records[index]
         with Image.open(self.roots[record.source] / record.path) as image:
+            image = apply_geometry(image, self.augmentation.geometry, training=self.training)
             array = preprocess_image(image, self.preprocessing)
         tensor = torch.from_numpy(array).permute(2, 0, 1).contiguous()
         if self.training:

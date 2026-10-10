@@ -4,6 +4,8 @@ import tomllib
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
+from oct_classify.data.geometry import GEOMETRIES
+
 
 @dataclass(frozen=True, slots=True)
 class ModelConfig:
@@ -27,6 +29,8 @@ class AugmentationConfig:
     contrast_jitter: float
     gaussian_blur_probability: float
     gaussian_blur_sigma: float
+    # Exp. 3a: hide image shape. "none", "mirror_pad" (training only) or "square_crop" (centered when evaluating).
+    geometry: str = "none"
 
 
 @dataclass(frozen=True, slots=True)
@@ -93,6 +97,8 @@ def load_training_config(path: Path) -> TrainingConfig:
         raise ValueError("augmentation.contrast_jitter must be between 0 and 1.")
     if not 0 <= config.augmentation.gaussian_blur_probability <= 1:
         raise ValueError("augmentation.gaussian_blur_probability must be between 0 and 1.")
+    if config.augmentation.geometry not in GEOMETRIES:
+        raise ValueError(f"augmentation.geometry must be one of {GEOMETRIES}.")
     if config.augmentation.gaussian_blur_sigma <= 0:
         raise ValueError("augmentation.gaussian_blur_sigma must be positive.")
     if config.optimization.epochs <= 0 or config.optimization.learning_rate <= 0:
