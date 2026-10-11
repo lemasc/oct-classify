@@ -1,0 +1,741 @@
+{
+  "campaign": "3a-kermany-mirror-pad",
+  "run_dirs": [
+    "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold1",
+    "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold2",
+    "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold3",
+    "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold4",
+    "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold5"
+  ],
+  "sets": {
+    "eval-kermany-loso": {
+      "bootstrap": {
+        "fold_count": 5,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.8615510412645485,
+            "ci_low": 0.8471604033876979,
+            "mean": 0.8548103070148333,
+            "n_valid": 2000,
+            "point": 0.8547694557238408
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.8393567658825077,
+            "ci_low": 0.8200406739017939,
+            "mean": 0.8300496766095358,
+            "n_valid": 2000,
+            "point": 0.8301061753567522
+          },
+          "macro_auroc": {
+            "ci_high": 0.9570446558870102,
+            "ci_low": 0.9477746361010398,
+            "mean": 0.9526759205235853,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9527479674481644
+          },
+          "macro_f1": {
+            "ci_high": 0.8086871082148442,
+            "ci_low": 0.7850986541522996,
+            "mean": 0.7973131411498189,
+            "n_valid": 2000,
+            "point": 0.7975387680263759
+          },
+          "recall_amd": {
+            "ci_high": 0.9193674336847802,
+            "ci_low": 0.8942744225318109,
+            "mean": 0.9084882937728584,
+            "n_valid": 2000,
+            "point": 0.9085882028250996
+          },
+          "recall_dme": {
+            "ci_high": 0.7712865410676554,
+            "ci_low": 0.7183668952134157,
+            "mean": 0.7452905868897844,
+            "n_valid": 2000,
+            "point": 0.7455168063440569
+          },
+          "recall_normal": {
+            "ci_high": 0.8422863848746474,
+            "ci_low": 0.8304331534263837,
+            "mean": 0.8363701491659645,
+            "n_valid": 2000,
+            "point": 0.8362135169011002
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 101217,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 5419
+      },
+      "class_names": [
+        "normal",
+        "amd",
+        "dme"
+      ],
+      "label_unit": "image",
+      "mode": "shared",
+      "per_run": [
+        {
+          "accuracy": 0.8928836065087881,
+          "balanced_accuracy": 0.8454521125208605,
+          "ece": 0.06138626819979927,
+          "macro_auroc": 0.9615183638254984,
+          "macro_f1": 0.8420905981988159,
+          "rows": 101217,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold1"
+        },
+        {
+          "accuracy": 0.8658328146457611,
+          "balanced_accuracy": 0.8544651912391311,
+          "ece": 0.030418338505527363,
+          "macro_auroc": 0.9565833928404044,
+          "macro_f1": 0.8101638629644947,
+          "rows": 101217,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold2"
+        },
+        {
+          "accuracy": 0.7938192200914866,
+          "balanced_accuracy": 0.8255040921736377,
+          "ece": 0.05142972960443795,
+          "macro_auroc": 0.9471662157228148,
+          "macro_f1": 0.747360847878348,
+          "rows": 101217,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold3"
+        },
+        {
+          "accuracy": 0.8843573707973957,
+          "balanced_accuracy": 0.7958932971644378,
+          "ece": 0.05015976879484518,
+          "macro_auroc": 0.9496028033912247,
+          "macro_f1": 0.8051541329790691,
+          "rows": 101217,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold4"
+        },
+        {
+          "accuracy": 0.8369542665757729,
+          "balanced_accuracy": 0.8292161836856943,
+          "ece": 0.03971218358269406,
+          "macro_auroc": 0.94886906146088,
+          "macro_f1": 0.7829243981111517,
+          "rows": 101217,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.8547694557238408,
+          "sd": 0.04025805294321175
+        },
+        "balanced_accuracy": {
+          "mean": 0.8301061753567522,
+          "sd": 0.02247972270293691
+        },
+        "ece": {
+          "mean": 0.046621257737460765,
+          "sd": 0.011873477728369341
+        },
+        "macro_auroc": {
+          "mean": 0.9527479674481645,
+          "sd": 0.006077093496929507
+        },
+        "macro_f1": {
+          "mean": 0.7975387680263759,
+          "sd": 0.035119993791549974
+        }
+      },
+      "runs": [
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold1",
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold2",
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold3",
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold4",
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold5"
+      ],
+      "source": "kermany"
+    },
+    "test-duke": {
+      "bootstrap": {
+        "fold_count": 1,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.9737848800342358,
+            "ci_low": 0.8763603483431956,
+            "mean": 0.9313422991628438,
+            "n_valid": 2000,
+            "point": 0.9309811203961622
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.9740340297884165,
+            "ci_low": 0.8760913717401141,
+            "mean": 0.9300566489717582,
+            "n_valid": 2000,
+            "point": 0.9298174348805057
+          },
+          "macro_auroc": {
+            "ci_high": 0.9944144922499679,
+            "ci_low": 0.9303939110668991,
+            "mean": 0.9672121810757055,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9681039514587405
+          },
+          "macro_f1": {
+            "ci_high": 0.9725733837032828,
+            "ci_low": 0.8804260240741816,
+            "mean": 0.9316514194563947,
+            "n_valid": 2000,
+            "point": 0.9335192115986898
+          },
+          "recall_amd": {
+            "ci_high": 1.0,
+            "ci_low": 0.8658093290734825,
+            "mean": 0.9560696439672893,
+            "n_valid": 2000,
+            "point": 0.9571230982019364
+          },
+          "recall_dme": {
+            "ci_high": 0.9692333333333333,
+            "ci_low": 0.7275662945847249,
+            "mean": 0.8582520909869594,
+            "n_valid": 2000,
+            "point": 0.8564940962761126
+          },
+          "recall_normal": {
+            "ci_high": 0.9967023907666942,
+            "ci_low": 0.9482040637775564,
+            "mean": 0.9758482119610262,
+            "n_valid": 2000,
+            "point": 0.9758351101634684
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 3231,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 45
+      },
+      "class_names": [
+        "normal",
+        "amd",
+        "dme"
+      ],
+      "eye_level_bootstrap": {
+        "fold_count": 1,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 1.0,
+            "ci_low": 0.8666666666666667,
+            "mean": 0.9345666666666669,
+            "n_valid": 2000,
+            "point": 0.9333333333333333
+          },
+          "balanced_accuracy": {
+            "ci_high": 1.0,
+            "ci_low": 0.8532763532763532,
+            "mean": 0.9343895329582861,
+            "n_valid": 2000,
+            "point": 0.9333333333333332
+          },
+          "macro_auroc": {
+            "ci_high": 1.0,
+            "ci_low": 0.9932475744975745,
+            "mean": 0.9985769654165753,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9985185185185186
+          },
+          "macro_f1": {
+            "ci_high": 1.0,
+            "ci_low": 0.8465989537600791,
+            "mean": 0.9323671269248955,
+            "n_valid": 2000,
+            "point": 0.9331896551724138
+          },
+          "recall_amd": {
+            "ci_high": 1.0,
+            "ci_low": 0.7777777777777778,
+            "mean": 0.9347030255152448,
+            "n_valid": 2000,
+            "point": 0.9333333333333333
+          },
+          "recall_dme": {
+            "ci_high": 1.0,
+            "ci_low": 0.6666666666666666,
+            "mean": 0.8684655733596134,
+            "n_valid": 2000,
+            "point": 0.8666666666666667
+          },
+          "recall_normal": {
+            "ci_high": 1.0,
+            "ci_low": 1.0,
+            "mean": 1.0,
+            "n_valid": 2000,
+            "point": 1.0
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 45,
+        "seed": 20260927,
+        "unit": "eye (mean B-scan probability)",
+        "unit_count": 45
+      },
+      "eye_level_per_run": [
+        {
+          "accuracy": 0.8888888888888888,
+          "balanced_accuracy": 0.8888888888888888,
+          "ece": 0.12905436581722393,
+          "macro_auroc": 1.0,
+          "macro_f1": 0.8857142857142858,
+          "rows": 9,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold1"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.03655442238776263,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold2"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.05828811012443163,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold3"
+        },
+        {
+          "accuracy": 0.7777777777777778,
+          "balanced_accuracy": 0.7777777777777777,
+          "ece": 0.17256086791831066,
+          "macro_auroc": 0.9814814814814815,
+          "macro_f1": 0.7746031746031745,
+          "rows": 9,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold4"
+        },
+        {
+          "accuracy": 1.0,
+          "balanced_accuracy": 1.0,
+          "ece": 0.03953672332612051,
+          "macro_auroc": 1.0,
+          "macro_f1": 1.0,
+          "rows": 9,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold5"
+        }
+      ],
+      "eye_level_pooled_metrics": {
+        "accuracy": 0.9333333333333333,
+        "balanced_accuracy": 0.9333333333333332,
+        "confusion_matrix": [
+          [
+            15,
+            0,
+            0
+          ],
+          [
+            0,
+            14,
+            1
+          ],
+          [
+            2,
+            0,
+            13
+          ]
+        ],
+        "macro_auroc": 0.9985185185185186,
+        "macro_f1": 0.9331896551724138
+      },
+      "label_unit": "eye",
+      "mode": "pooled",
+      "per_run": [
+        {
+          "accuracy": 0.8728682170542635,
+          "balanced_accuracy": 0.8751902587519026,
+          "ece": 0.11074472554894385,
+          "macro_auroc": 0.9936368005186612,
+          "macro_f1": 0.8746936609502814,
+          "rows": 645,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold1"
+        },
+        {
+          "accuracy": 0.9923896499238964,
+          "balanced_accuracy": 0.9923896499238966,
+          "ece": 0.03549256272149052,
+          "macro_auroc": 0.9980595526641759,
+          "macro_f1": 0.9927456289380393,
+          "rows": 657,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold2"
+        },
+        {
+          "accuracy": 0.9726247987117552,
+          "balanced_accuracy": 0.9749543357790781,
+          "ece": 0.024678498698509473,
+          "macro_auroc": 0.9990628248858888,
+          "macro_f1": 0.9690808639416663,
+          "rows": 621,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold3"
+        },
+        {
+          "accuracy": 0.8411347517730496,
+          "balanced_accuracy": 0.8337598671706249,
+          "ece": 0.11833432684553429,
+          "macro_auroc": 0.9407346109673392,
+          "macro_f1": 0.8425870702592322,
+          "rows": 705,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold4"
+        },
+        {
+          "accuracy": 0.988391376451078,
+          "balanced_accuracy": 0.9913634793359879,
+          "ece": 0.025918920439471846,
+          "macro_auroc": 0.9997689419040935,
+          "macro_f1": 0.9875523200708883,
+          "rows": 603,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.9334817587828086,
+          "sd": 0.07109738826177694
+        },
+        "balanced_accuracy": {
+          "mean": 0.933531518192298,
+          "sd": 0.07396409621932991
+        },
+        "ece": {
+          "mean": 0.06303380685078999,
+          "sd": 0.04728013287756835
+        },
+        "macro_auroc": {
+          "mean": 0.9862525461880317,
+          "sd": 0.02555685443365553
+        },
+        "macro_f1": {
+          "mean": 0.9333319088320214,
+          "sd": 0.06967944597480208
+        }
+      },
+      "pooled_metrics": {
+        "accuracy": 0.9309811203961622,
+        "balanced_accuracy": 0.9298174348805057,
+        "confusion_matrix": [
+          [
+            1373,
+            13,
+            21
+          ],
+          [
+            1,
+            692,
+            30
+          ],
+          [
+            149,
+            9,
+            943
+          ]
+        ],
+        "macro_auroc": 0.9681039514587405,
+        "macro_f1": 0.9335192115986898
+      },
+      "runs": [
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold1",
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold2",
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold3",
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold4",
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold5"
+      ],
+      "source": "duke"
+    },
+    "test-octdl": {
+      "bootstrap": {
+        "fold_count": 5,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.9905888723720535,
+            "ci_low": 0.9537104590478219,
+            "mean": 0.974344101538646,
+            "n_valid": 2000,
+            "point": 0.97421875
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.9878500315656564,
+            "ci_low": 0.9333827561327562,
+            "mean": 0.9653316958895332,
+            "n_valid": 2000,
+            "point": 0.9657193675889328
+          },
+          "macro_auroc": {
+            "ci_high": 0.9998032406017345,
+            "ci_low": 0.990789230224326,
+            "mean": 0.9962199248656495,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9962962161445171
+          },
+          "macro_f1": {
+            "ci_high": 0.986922009244769,
+            "ci_low": 0.9333481688723005,
+            "mean": 0.9650853850575017,
+            "n_valid": 2000,
+            "point": 0.9663831490498458
+          },
+          "recall_amd": {
+            "ci_high": 0.9988372093023254,
+            "ci_low": 0.9566037381421998,
+            "mean": 0.981463083581544,
+            "n_valid": 2000,
+            "point": 0.9815217391304347
+          },
+          "recall_dme": {
+            "ci_high": 1.0,
+            "ci_low": 0.8940723981900452,
+            "mean": 0.9638177169087119,
+            "n_valid": 2000,
+            "point": 0.9636363636363636
+          },
+          "recall_normal": {
+            "ci_high": 0.9894736842105264,
+            "ci_low": 0.8897850629613547,
+            "mean": 0.9507142871783435,
+            "n_valid": 2000,
+            "point": 0.952
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 256,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 99
+      },
+      "class_names": [
+        "normal",
+        "amd",
+        "dme"
+      ],
+      "label_unit": "image",
+      "mode": "shared",
+      "per_run": [
+        {
+          "accuracy": 0.96875,
+          "balanced_accuracy": 0.944262187088274,
+          "ece": 0.021714717615395777,
+          "macro_auroc": 0.9952759603208104,
+          "macro_f1": 0.954701277328662,
+          "rows": 256,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold1"
+        },
+        {
+          "accuracy": 0.96875,
+          "balanced_accuracy": 0.9576021080368906,
+          "ece": 0.020541950827464465,
+          "macro_auroc": 0.9975120116289914,
+          "macro_f1": 0.9553883181233656,
+          "rows": 256,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold2"
+        },
+        {
+          "accuracy": 0.98046875,
+          "balanced_accuracy": 0.9776021080368906,
+          "ece": 0.021094808122143108,
+          "macro_auroc": 0.9956857255981358,
+          "macro_f1": 0.9727120424794844,
+          "rows": 256,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold3"
+        },
+        {
+          "accuracy": 0.9765625,
+          "balanced_accuracy": 0.9697101449275363,
+          "ece": 0.02290637977421282,
+          "macro_auroc": 0.9969800607382394,
+          "macro_f1": 0.9741864313292886,
+          "rows": 256,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold4"
+        },
+        {
+          "accuracy": 0.9765625,
+          "balanced_accuracy": 0.9794202898550725,
+          "ece": 0.021672524278983543,
+          "macro_auroc": 0.9960273224364086,
+          "macro_f1": 0.9749276759884281,
+          "rows": 256,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.97421875,
+          "sd": 0.005240784322265132
+        },
+        "balanced_accuracy": {
+          "mean": 0.9657193675889328,
+          "sd": 0.014757553938032181
+        },
+        "ece": {
+          "mean": 0.021586076123639945,
+          "sd": 0.0008801655426804334
+        },
+        "macro_auroc": {
+          "mean": 0.9962962161445171,
+          "sd": 0.0009262459942855214
+        },
+        "macro_f1": {
+          "mean": 0.9663831490498458,
+          "sd": 0.010383971795423814
+        }
+      },
+      "runs": [
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold1",
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold2",
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold3",
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold4",
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold5"
+      ],
+      "source": "octdl"
+    },
+    "test-paima": {
+      "bootstrap": {
+        "fold_count": 5,
+        "metrics": {
+          "accuracy": {
+            "ci_high": 0.9212560502057069,
+            "ci_low": 0.8432778616623526,
+            "mean": 0.8859060430367938,
+            "n_valid": 2000,
+            "point": 0.8859324758842444
+          },
+          "balanced_accuracy": {
+            "ci_high": 0.9164282859074355,
+            "ci_low": 0.844702500265024,
+            "mean": 0.8832138661514893,
+            "n_valid": 2000,
+            "point": 0.8834923427152317
+          },
+          "macro_auroc": {
+            "ci_high": 0.9674325150807314,
+            "ci_low": 0.9087751489963978,
+            "mean": 0.9432715140767145,
+            "n_boot": 500,
+            "n_valid": 500,
+            "point": 0.9431737311154802
+          },
+          "macro_f1": {
+            "ci_high": 0.9179593878630575,
+            "ci_low": 0.8411089261779545,
+            "mean": 0.8833825444602389,
+            "n_valid": 2000,
+            "point": 0.8844190947297633
+          },
+          "recall_amd": {
+            "ci_high": 0.8679363532180245,
+            "ci_low": 0.7190833145265528,
+            "mean": 0.7990608196507151,
+            "n_valid": 2000,
+            "point": 0.7991721854304636
+          },
+          "recall_normal": {
+            "ci_high": 0.9816856911819476,
+            "ci_low": 0.9476879730866274,
+            "mean": 0.9673669126522637,
+            "n_valid": 2000,
+            "point": 0.9678125
+          }
+        },
+        "n_boot": 2000,
+        "row_count": 2488,
+        "seed": 20260927,
+        "unit": "source:group_id (patient or volume)",
+        "unit_count": 65
+      },
+      "class_names": [
+        "normal",
+        "amd"
+      ],
+      "label_unit": "image",
+      "mode": "shared",
+      "per_run": [
+        {
+          "accuracy": 0.8971061093247589,
+          "balanced_accuracy": 0.8956694950331126,
+          "ece": 0.04436549587456745,
+          "macro_auroc": 0.948711713576159,
+          "macro_f1": 0.8965152401377786,
+          "rows": 2488,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold1"
+        },
+        {
+          "accuracy": 0.8910771704180064,
+          "balanced_accuracy": 0.8883433360927152,
+          "ece": 0.041638152272563275,
+          "macro_auroc": 0.9447813728787251,
+          "macro_f1": 0.8894810025598521,
+          "rows": 2488,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold2"
+        },
+        {
+          "accuracy": 0.8669614147909968,
+          "balanced_accuracy": 0.8634157698675498,
+          "ece": 0.03294515985863769,
+          "macro_auroc": 0.9347041856374172,
+          "macro_f1": 0.864002292148154,
+          "rows": 2488,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold3"
+        },
+        {
+          "accuracy": 0.8906752411575563,
+          "balanced_accuracy": 0.8883950745033112,
+          "ece": 0.0566272797883515,
+          "macro_auroc": 0.9469894712334437,
+          "macro_f1": 0.8894681687873538,
+          "rows": 2488,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold4"
+        },
+        {
+          "accuracy": 0.8838424437299035,
+          "balanced_accuracy": 0.8816380380794702,
+          "ece": 0.021303682225693503,
+          "macro_auroc": 0.9406819122516556,
+          "macro_f1": 0.8826287700156787,
+          "rows": 2488,
+          "run": "loso-kermany-local-3a-r2-mirror-pad-fold5"
+        }
+      ],
+      "per_run_spread": {
+        "accuracy": {
+          "mean": 0.8859324758842444,
+          "sd": 0.011598288472403483
+        },
+        "balanced_accuracy": {
+          "mean": 0.8834923427152317,
+          "sd": 0.012271503344105726
+        },
+        "ece": {
+          "mean": 0.03937595400396269,
+          "sd": 0.013186957865361393
+        },
+        "macro_auroc": {
+          "mean": 0.9431737311154802,
+          "sd": 0.00560704905178831
+        },
+        "macro_f1": {
+          "mean": 0.8844190947297633,
+          "sd": 0.012424611499856499
+        }
+      },
+      "runs": [
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold1",
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold2",
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold3",
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold4",
+        "artifacts/runs/fused/resnet50/loso-kermany-local-3a-r2-mirror-pad-fold5"
+      ],
+      "source": "paima"
+    }
+  }
+}

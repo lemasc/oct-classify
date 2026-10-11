@@ -41,9 +41,9 @@ with the current data).
 | Less training data for the held-out device | ruled out | Seen Kermany with DME cut to 122 patients still scores 97.1 (*) | — |
 | White rotation fill, padding, skewed normalization | ruled out | Fill-aware LOSO moves macro-F1 by at most 0.6 vs median on Kermany, OCTDL and PAIMA. Kermany gains just as much on images that have no fill | — |
 | DME seen only on other devices | partial | Removing Kermany's DME from training (device otherwise seen) costs ~6 points (*), about half of the ~13-point test-split gap | exp. 3, 5 |
-| Image size predicts the class | partial, confirmed cause | In Duke, every 768×496 image is DME and every 1024×496 image is AMD. Held-out Kermany errors cluster at those sizes (exp. 1). Padding Kermany 512×496 images to 768 wide sends 60% of normal images to DME; cropping 768×496 images to 512 removes most of their DME pull (exp. 1b). Padding Duke's 512×496 images by 16 rows to 512×512 (Kermany's DME-only size, no letterbox bands) sends 99% of normal images to DME (exp. 1c). PAIMA and OCTDL also respond to geometry (exp. 1c). Share of the gap not yet measured | exp. 3a |
+| Image size predicts the class | partial, confirmed cause | In Duke, every 768×496 image is DME and every 1024×496 image is AMD. Held-out Kermany errors cluster at those sizes (exp. 1). Padding Kermany 512×496 images to 768 wide sends 60% of normal images to DME; cropping 768×496 images to 512 removes most of their DME pull (exp. 1b). Padding Duke's 512×496 images by 16 rows to 512×512 (Kermany's DME-only size, no letterbox bands) sends 99% of normal images to DME (exp. 1c). PAIMA and OCTDL also respond to geometry (exp. 1c). Training without the size cue lifts held-out Kermany macro-F1 (full source) 73.8 to 79.8 (mirror pad) and 86.6 (square crop), above the 5-point threshold (exp. 3a). Share of the test-split gap and the by-size attribution not yet measured | exp. 3a follow-ups |
 | Device appearance (speckle, contrast, resolution, texture) | open | Whatever remains after missing DME and image size | exp. 3b, 5 |
-| PAIMA ranking drop | partial | AUROC 95.6 seen vs 92.7 held out; a cutoff shift doesn't fix it (*). Cropping PAIMA's images to 512 wide at test time raises AUROC to 95.2; padding to 1024 lowers it to 88.5 (exp. 1c). Averaging three square windows reaches 95.6, the seen value (exp. 1d). Not yet separated into shape vs tissue scale | exp. 3a |
+| PAIMA ranking drop | partial | AUROC 95.6 seen vs 92.7 held out; a cutoff shift doesn't fix it (*). Cropping PAIMA's images to 512 wide at test time raises AUROC to 95.2; padding to 1024 lowers it to 88.5 (exp. 1c). Averaging three square windows reaches 95.6, the seen value (exp. 1d). Training without the size cue does not help: AUROC 92.4 (mirror pad) and 91.0 (square crop) vs 92.8, and the two arms are equal, so neither shape nor tissue scale in training explains it (exp. 3a). The 1d gain may come from window averaging, untested | exp. 3a multi-window rescore, 3b |
 | Label units differ (Duke per eye, PAIMA per B-scan) | known limit | Caps how well Duke and PAIMA can agree. Cannot be fixed without relabeling | — |
 
 (*) From experiments on the `docs/cross-device-plan` branch: binary rescoring, AdaBN, logit bias, Kermany DME cut
@@ -86,7 +86,7 @@ Status values: `todo`, `running`, `done`, `dropped` (record the reason in the de
 | 1c | Same test on held-out PAIMA, Duke and OCTDL | Does the size cue affect the other held-out sources? | No training | done | [20261010-heldout-size-test.md](reports/20261010-heldout-size-test.md) |
 | 1d | Square windows at test time, pooled (preview of 3a-crop) | Does averaging windows recover what a single crop loses? | No training | done | [20261010-multiwindow-test.md](reports/20261010-multiwindow-test.md) |
 | 2 | Seed noise floor: 2 extra seeds of the reference, held-out Kermany and PAIMA | How big must a change be to count? | ~10 LOSO models | todo | |
-| 3a | Remove the size cue in training: random mirror padding vs square crop | Does removing the size cue close the gap, and at what cost? | LOSO, Kermany and PAIMA (2 arms × 2 targets × 5 models) | todo | |
+| 3a | Remove the size cue in training: random mirror padding vs square crop | Does removing the size cue close the gap, and at what cost? | LOSO, Kermany and PAIMA (2 arms × 2 targets × 5 models) | done (follow-ups open) | [20261011-exp3a-geometry-arms.md](reports/20261011-exp3a-geometry-arms.md) |
 | 3b | Appearance augmentation: speckle, gamma/contrast, blur | Does varying how images look close the gap? | LOSO, Kermany + PAIMA first | todo | |
 | 4 | Fused CV with fill-aware padding | Is the seen-device score inflated by fill? | Fused CV (config exists) | todo | |
 | 5a | OCT foundation model, fine-tuned under LOSO | Do OCT-specific features transfer across devices better than ImageNet ones? | LOSO | todo | |
@@ -297,3 +297,17 @@ Optional. Useful only for the write-up, not for finding the cause.
   falls 82.6 → 74.0. Mean, center and max pooling agree within ~1.5 points, so at test time the wide-scan losses come
   from the unfamiliar tissue scale, not from missing lesions. 3a-crop stays in with mean pooling; the training-time
   cost of crops that miss lesions is still untested.
+- 2026-10-11 (exp. 3a): Removing the size cue in training helps held-out Kermany and not PAIMA
+  ([report](reports/20261011-exp3a-geometry-arms.md)). Kermany macro-F1 (full source): reference 73.8, mirror pad
+  79.8, square crop 86.6; square crop beats mirror pad by +6.9 [+6.3, +7.5]. Both exceed the 5-point threshold and
+  the fold SD (~3). PAIMA: macro-F1 about 1 point below the reference in both arms, AUROC 92.4 and 91.0 vs 92.8, arms
+  equal; the 1-point deficit is smaller than square crop's fold SD (5.0), so "no gain" is established and "a loss"
+  is not. Inferences: geometry is a large cause of the Kermany errors; the arm difference suggests tissue scale
+  matters too, but the arms also differ at test time, so scale is not isolated; PAIMA's ranking drop is not shape or
+  scale in training and stays with device appearance (3b). The 1d PAIMA gain (95.6) did not transfer to training, so
+  it may come from window averaging. Not yet shown: the gap closing on the test split (the 73.8 → 86.6 numbers are
+  full-source, not comparable to the 83 vs 95.6 gap table), attribution to the size cue (no by-size breakdown, 1b pad
+  test not rerun), in-domain cost (check 4), multi-window evaluation of square crop (scored on one center window).
+  Intervals cover test-patient sampling only; the 5 models per arm share a seed, so exp. 2 still sets the noise
+  floor. Next: by-size and test-split breakdown, multi-window rescore, 1b pad test on mirror pad, extra PAIMA
+  square-crop seeds; carry square crop (not mirror pad) into 3b and 5, and add OCTDL and Duke as held-out targets.
