@@ -12,6 +12,10 @@ source. Two arms, Kermany and PAIMA held out, 5 models per arm and target.
   yet shown. Square-crop beats mirror-pad by
   +6.9 [+6.3, +7.5] and the reference by +12.9 [+12.3, +13.5] (paired patient bootstrap, P(>0) = 1.000 for every
   Kermany comparison).
+- **Multi-window pooling adds nothing (section 4).** Mean pooling over overlapping square windows moves the trained
+  square-crop models by +0.1 on full-source Kermany and on PAIMA AUROC. The single center window was not hiding a
+  loss. On the Kermany test split, square-crop scores 88.8 against 82.6 for the reference (seen 95.6), so roughly
+  half of the ~13-point gap closes, not all of it.
 - **PAIMA: neither arm helps.** Both arms are about 1 point below the reference (85.0 and 85.2 vs 86.4; the
   intervals exclude zero) and indistinguishable from each other (+0.2 [−0.4, +0.9]). Square-crop's fold-to-fold SD
   on PAIMA is 5.0 points, four times larger than the drop, so the small deficit may be seed noise rather than a cost.
@@ -20,7 +24,7 @@ source. Two arms, Kermany and PAIMA held out, 5 models per arm and target.
   well as shape.
 - **PAIMA's ranking drop is not explained by shape alone.** Training without the shape cue leaves PAIMA's held-out
   AUROC at 92.4 (mirror-pad) and 91.0 (square-crop), against 92.8 for the reference. Exp. 1d's test-time windows
-  reached 95.6, so that effect did not transfer to training.
+  reached 95.6, and neither training for it nor pooling windows on the trained models reproduces that (section 4).
 
 ## Setup
 
@@ -95,21 +99,55 @@ Fold macro-F1: mirror-pad 0.849, 0.851, 0.854, 0.862, 0.833 (SD 1.1); square-cro
   the training-seed variation (SD up to 5.0 for square-crop) is larger, and the bootstrap holds the 5 trained models
   fixed. Treat "no gain" as established and "a loss" as unproven.
 
-## 4. Caveats
+## 4. Multi-window pooling on the trained square-crop models
+
+Same method as exp. 1d (`.scratchpad/463d89d_exp3a-multiwindow/rescore.py`, `compare.py`): each image is cut into
+overlapping square windows (side = height, half-window steps), and the window probabilities are pooled per image.
+The baseline is the stored single centered-window evaluation. Same 5 models per target, same patient bootstrap
+(2,000 draws, paired). The center window of the loop reproduces the stored PAIMA predictions exactly.
+
+| Set | Stored | Mean pool | Max pool |
+|---|---:|---:|---:|
+| Kermany, full source (macro-F1) | 86.6 | 86.7 (+0.1 [0.0, +0.1]) | 86.5 (−0.2) |
+| Kermany, test split, 1,000 images | 88.8 | 89.0 (+0.1 [−0.7, +0.9]) | 87.6 (−1.3) |
+| Kermany 512×512 / 512×496 | 89.8 / 77.8 | same (one window) | same |
+| Kermany 768×496 | 81.3 | 81.9 (+0.6 [+0.5, +0.8]) | 81.6 (+0.4) |
+| Kermany 1024×496 | 89.3 | 89.9 (+0.6 [−0.1, +1.2]) | 89.0 (−0.4) |
+| Kermany 1536×496 | 82.9 | 82.5 (−0.4 [−1.5, +0.7]) | 80.4 (−2.5) |
+| PAIMA AUROC | 91.0 | 91.1 (+0.1 [0.0, +0.2]) | 91.1 (+0.1) |
+| PAIMA macro-F1 | 85.2 | 85.1 (−0.1 [−0.2, +0.1]) | 85.0 (−0.2) |
+
+- **Pooling gives nothing worth carrying forward.** The only interval that excludes zero in the right direction is
+  768×496 (+0.6), well under the noise floor. Max pooling is slightly worse, most at 1536×496.
+- **The center window was not hiding a loss.** Even 1536-wide scans, where it sees about a third of the tissue, lose
+  nothing measurable. This agrees with exp. 1d: wide-scan losses came from unfamiliar tissue scale, not from missing
+  lesions.
+- **The 1d PAIMA gain (92.8 → 95.6) is not reproduced.** It was a property of the reference models, where windows
+  corrected a shape and scale mismatch at test time. Models trained on crops with pooled windows reach 91.1. What
+  gave the reference models that gain is unexplained.
+- **Test-split gap.** Square-crop scores 88.8 on Kermany's test split. The reference scores 82.6 there (exp. 1d; the
+  plan's gap table rounds it to 83) and seen Kermany scores 95.6. About half of the ~13-point gap closes, leaving
+  ~7. The reference figure comes from the earlier analysis, so this difference has no paired interval, and the test
+  split has 1,000 images from 635 patients.
+- **By size,** square-crop is weakest on 512×496 (77.8, 53% of the images) and 1536×496 (82.9), and strongest on
+  512×512 (89.8) and 1024×496 (89.3). The reference's per-size scores were not recomputed here, so this still does
+  not show which sizes gained.
+
+## 5. Caveats
 
 - **Intervals cover test-patient sampling only,** not training variance. The 5 models per arm share a
   configuration and seed, differ only by Duke CV fold, and do not amount to independent seeds.
-- **Square-crop is evaluated on one centered window,** not the multi-window mean the plan specified for the trained
-  arm. Wide images (1024, 1536) are therefore scored on their center square only, and lesions off-center are missed.
-  Multi-window pooling for the trained arm is untested and could raise either target.
+- **Square-crop is evaluated on one centered window** in sections 1-2. Section 4 tests multi-window pooling and
+  finds no meaningful change.
 - **Not checked:** the planned rerun of the 1c pad test (PAIMA 768 → 1536) on the mirror-pad models; whether either
   arm changes Duke's own cross-validated performance; Grad-CAM on padding (a known shortcut for Duke-only models);
   label noise from crops that miss the lesion.
 
-## 5. Next steps
+## 6. Next steps
 
-1. Rescore the square-crop models with multi-window mean pooling (reuse `.scratchpad/e4e2145_multiwindow/rescore.py`).
-2. Break Kermany's gain down by image size, as in the exp. 1b/1c reports.
-3. Run the 1c pad test on the mirror-pad models.
-4. Add training seeds for PAIMA square-crop before concluding it costs anything.
-5. Carry square-crop (not mirror-pad) into exp. 3b and exp. 5, and add OCTDL and Duke as held-out targets.
+1. Break Kermany's gain down by image size for the reference and both arms (the square-crop side is in section 4),
+   with paired intervals and the test-split difference.
+2. Run the 1c pad test on the mirror-pad models.
+3. Add training seeds for PAIMA square-crop before concluding it costs anything (exp. 2).
+4. Carry square-crop (not mirror-pad) into exp. 3b and exp. 5, and add OCTDL and Duke as held-out targets.
+5. Multi-window pooling is dropped for the trained arm.
