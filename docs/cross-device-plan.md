@@ -85,7 +85,7 @@ Status values: `todo`, `running`, `done`, `dropped` (record the reason in the de
 | 1b | Rescore held-out Kermany after cropping or padding images to other sizes | Does the model read image size? | No training | done | [20261010-kermany-size-test.md](reports/20261010-kermany-size-test.md) |
 | 1c | Same test on held-out PAIMA, Duke and OCTDL | Does the size cue affect the other held-out sources? | No training | done | [20261010-heldout-size-test.md](reports/20261010-heldout-size-test.md) |
 | 1d | Square windows at test time, pooled (preview of 3a-crop) | Does averaging windows recover what a single crop loses? | No training | done | [20261010-multiwindow-test.md](reports/20261010-multiwindow-test.md) |
-| 2 | Seed noise floor: 2 extra seeds of the reference, held-out Kermany and PAIMA | How big must a change be to count? | ~10 LOSO models | todo | |
+| 2 | Seed noise floor: 2 extra seeds of the reference and of square crop, held-out Kermany and PAIMA | How big must a change be to count? | 40 LOSO models (2 arms × 2 seeds × 2 targets × 5 folds) | running (local) | |
 | 3a | Remove the size cue in training: random mirror padding vs square crop | Does removing the size cue close the gap, and at what cost? | LOSO, Kermany and PAIMA (2 arms × 2 targets × 5 models) | done | [20261011-exp3a-geometry-arms.md](reports/20261011-exp3a-geometry-arms.md) |
 | 3b | Appearance augmentation: speckle, gamma/contrast, blur | Does varying how images look close the gap? | LOSO, Kermany + PAIMA first | todo | |
 | 4 | Fused CV with fill-aware padding | Is the seen-device score inflated by fill? | Fused CV (config exists) | todo | |
@@ -167,6 +167,14 @@ exp. 3 cannot be judged.
 
 **What:** rerun the reference config with 2 new seeds, holding out Kermany and PAIMA. Report the spread of macro-F1,
 AUROC and the per-class recall rows above.
+
+Square crop gets the same two seeds (3a follow-up), since it is the arm carried into 3b and 5. Seeds 20260914 and
+20260915; the reference and 3a used 20260913. The 5 models per campaign differ by Duke CV fold, not by seed, so only
+the new seeds measure training variance.
+
+**Run:** `scripts/exp2-seeds-local.sh --workers 6` (8 campaigns in sequence, ~11 h on the RTX 3060; skips campaigns
+that already have a cv-summary). Configs: `configs/training/resnet50-loso-fill-aware[-square-crop]-seed<seed>.toml`. Runs are
+named `loso-<target>-exp2-<arm>-s<seed>-fold<N>`.
 
 **Reading the result:** sets the minimum delta in the measurement rules. Run it alongside exp. 3.
 
