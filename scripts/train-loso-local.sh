@@ -21,6 +21,7 @@
 #        scripts/train-loso-local.sh [--workers N]
 # TRAINING_CONFIG selects the training config (default: the median-padding LOSO config).
 # HELD_OUT lists the sources to hold out (default: all four). RUN_ID names the campaign (default: local-<timestamp>).
+# OUTPUT_ROOT sets where runs and logs go (default: artifacts); runs land in $OUTPUT_ROOT/runs, logs in $OUTPUT_ROOT/local.
 # --workers N caps the processes used for the normalization-statistics pass at
 # the start of each `train fused` run (default: every CPU core).
 
@@ -48,7 +49,8 @@ run_id="${RUN_ID:-local-$(date +%Y%m%d-%H%M%S)}"
 read -ra held_out_sources <<<"${HELD_OUT:-${sources[*]}}"
 
 cd "$repo_root"
-mkdir -p artifacts/local
+output_root="${OUTPUT_ROOT:-artifacts}"
+mkdir -p "$output_root/local"
 
 for held_out in "${held_out_sources[@]}"; do
     train_sources=()
@@ -57,7 +59,7 @@ for held_out in "${held_out_sources[@]}"; do
     done
 
     run_name="loso-${held_out}-${run_id}"
-    log_file="artifacts/local/loso-${held_out}-${run_id}.out"
+    log_file="$output_root/local/loso-${held_out}-${run_id}.out"
 
     if [[ " ${train_sources[*]} " == *" duke "* ]]; then
         split_dir="artifacts/splits/duke-cv"
@@ -74,17 +76,18 @@ for held_out in "${held_out_sources[@]}"; do
         --folds "$folds" \
         --training-config "$training_config" \
         --run-name "$run_name" \
+        --output "$output_root/runs" \
         --device cuda \
         "${worker_args[@]}" \
         >"$log_file" \
         2>&1
 
     if [[ "$folds" -eq 1 ]]; then
-        checkpoints=("artifacts/runs/fused/resnet50/${run_name}/checkpoint-best.pt")
+        checkpoints=("$output_root/runs/fused/resnet50/${run_name}/checkpoint-best.pt")
     else
         checkpoints=()
         for fold in 1 2 3 4 5; do
-            checkpoints+=("artifacts/runs/fused/resnet50/${run_name}-fold${fold}/checkpoint-best.pt")
+            checkpoints+=("$output_root/runs/fused/resnet50/${run_name}-fold${fold}/checkpoint-best.pt")
         done
     fi
 
@@ -96,7 +99,7 @@ for held_out in "${held_out_sources[@]}"; do
             --source "$held_out" \
             --split-dir artifacts/splits \
             --full-source \
-            --output "artifacts/runs/fused/resnet50/${eval_tag}/evaluations/${held_out}-loso" \
+            --output "$output_root/runs/fused/resnet50/${eval_tag}/evaluations/${held_out}-loso" \
             --device cuda \
             >>"$log_file" \
             2>&1
