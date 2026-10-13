@@ -2,6 +2,8 @@
 
 **Started:** 2026-10-10 at `02da1c8`. Follows [20261010-resnet50-loso-fill-aware.md](reports/20261010-resnet50-loso-fill-aware.md).
 The overall project plan is [full-project-plan.md](full-project-plan.md).
+**Superseded for the final results by [final-model-plan.md](final-model-plan.md) (2026-10-13).** This plan keeps the
+history; new results are logged there.
 
 ## Question
 
