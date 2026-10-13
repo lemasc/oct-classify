@@ -43,7 +43,7 @@ with the current data).
 | DME seen only on other devices | partial | Removing Kermany's DME from training (device otherwise seen) costs ~6 points (*), about half of the ~13-point test-split gap | exp. 3, 5 |
 | Image size predicts the class | partial, confirmed cause | In Duke, every 768×496 image is DME and every 1024×496 image is AMD. Held-out Kermany errors cluster at those sizes (exp. 1). Padding Kermany 512×496 images to 768 wide sends 60% of normal images to DME; cropping 768×496 images to 512 removes most of their DME pull (exp. 1b). Padding Duke's 512×496 images by 16 rows to 512×512 (Kermany's DME-only size, no letterbox bands) sends 99% of normal images to DME (exp. 1c). PAIMA and OCTDL also respond to geometry (exp. 1c). Training without the size cue lifts held-out Kermany macro-F1 (full source) 73.8 to 79.8 (mirror pad) and 86.6 (square crop), above the 5-point threshold (exp. 3a). Square crop scores 88.8 on the Kermany test split vs 82.6 for the reference (+6.3 [+4.7, +7.8]; seen 95.6), so about half of the ~13-point gap closes, and it gains at every size (768×496 normal → DME 36.6% → 4.5%). Mirror pad shrinks the cue but not fully (Kermany pad to 768: normal → DME 12% → 60% falls to +6.7 points) and is worse than the reference on the test split | exp. 2, 3b |
 | Device appearance (speckle, contrast, resolution, texture) | open | Whatever remains after missing DME and image size | exp. 3b, 5 |
-| PAIMA ranking drop | partial | AUROC 95.6 seen vs 92.7 held out; a cutoff shift doesn't fix it (*). Cropping PAIMA's images to 512 wide at test time raises AUROC to 95.2; padding to 1024 lowers it to 88.5 (exp. 1c). Averaging three square windows reaches 95.6, the seen value (exp. 1d). Training without the size cue does not help: AUROC 92.4 (mirror pad) and 91.0 (square crop) vs 92.8, and the two arms are equal, so neither shape nor tissue scale in training explains it (exp. 3a). Pooling windows on the trained square-crop models adds nothing (AUROC 91.0 → 91.1), so the 1d gain is not from window averaging and is unexplained | 3b |
+| PAIMA ranking drop | partial | AUROC 95.6 seen vs 92.7 held out; a cutoff shift doesn't fix it (*). Cropping PAIMA's images to 512 wide at test time raises AUROC to 95.2; padding to 1024 lowers it to 88.5 (exp. 1c). Averaging three square windows reaches 95.6, the seen value (exp. 1d). Training without the size cue does not help: AUROC 92.4 (mirror pad) and 91.0 (square crop) vs 92.8, and the two arms are equal, so neither shape nor tissue scale in training explains it (exp. 3a). Exp. 2 seeds show the square-crop 91.0 was its best seed (83.6 and 82.7 on the others), so square crop actually lowers PAIMA, by about 6 macro-F1 points on average against fill-aware (exp. 2) Pooling windows on the trained square-crop models adds nothing (AUROC 91.0 → 91.1), so the 1d gain is not from window averaging and is unexplained | 3b |
 | Label units differ (Duke per eye, PAIMA per B-scan) | known limit | Caps how well Duke and PAIMA can agree. Cannot be fixed without relabeling | — |
 
 (*) From experiments on the `docs/cross-device-plan` branch: binary rescoring, AdaBN, logit bias, Kermany DME cut
@@ -62,7 +62,10 @@ and Kermany zero-DME. Their reports live on that branch only.
 - **Seen vs held out on the same images:** compare against the seen score on the test split. The full-source
   held-out score is still reported, but it covers image sizes the seen models were never scored on.
 - **When a change counts:** the paired CI excludes 0 **and** the delta is larger than the seed spread from exp. 2.
-  Before exp. 2 is done, treat any delta under ~5 points as unconfirmed.
+  Working deltas from exp. 2 (3 seeds, ranges not intervals), by arm and target: fill-aware Kermany ~3 macro-F1,
+  PAIMA ~1.5; square-crop Kermany ~3 (AUROC ~1), PAIMA ~10 macro-F1 and ~8 AUROC; a single class's recall ~10
+  (fill-aware) or ~13 (square-crop PAIMA). Compare a change against the seeds of the arm it modifies. For square crop
+  on PAIMA, treat a change under ~10 points as unconfirmed.
 - Same splits, seed scheme, training budget and evaluation precision (fp32) as the reference.
 
 Reference per-class recall (pooled over models; from `.scratchpad/02da1c8_fill-vs-plan/recall.py`):
@@ -85,7 +88,7 @@ Status values: `todo`, `running`, `done`, `dropped` (record the reason in the de
 | 1b | Rescore held-out Kermany after cropping or padding images to other sizes | Does the model read image size? | No training | done | [20261010-kermany-size-test.md](reports/20261010-kermany-size-test.md) |
 | 1c | Same test on held-out PAIMA, Duke and OCTDL | Does the size cue affect the other held-out sources? | No training | done | [20261010-heldout-size-test.md](reports/20261010-heldout-size-test.md) |
 | 1d | Square windows at test time, pooled (preview of 3a-crop) | Does averaging windows recover what a single crop loses? | No training | done | [20261010-multiwindow-test.md](reports/20261010-multiwindow-test.md) |
-| 2 | Seed noise floor: 2 extra seeds of the reference and of square crop, held-out Kermany and PAIMA | How big must a change be to count? | 40 LOSO models (2 arms × 2 seeds × 2 targets × 5 folds) | running (local) | |
+| 2 | Seed noise floor: 2 extra seeds of the reference and of square crop, held-out Kermany and PAIMA | How big must a change be to count? | 40 LOSO models (2 arms × 2 seeds × 2 targets × 5 folds) | done | [20261012-exp2-seed-noise.md](reports/20261012-exp2-seed-noise.md) |
 | 3a | Remove the size cue in training: random mirror padding vs square crop | Does removing the size cue close the gap, and at what cost? | LOSO, Kermany and PAIMA (2 arms × 2 targets × 5 models) | done | [20261011-exp3a-geometry-arms.md](reports/20261011-exp3a-geometry-arms.md) |
 | 3b | Appearance augmentation: speckle, gamma/contrast, blur | Does varying how images look close the gap? | LOSO, Kermany + PAIMA first | todo | |
 | 4 | Fused CV with fill-aware padding | Is the seen-device score inflated by fill? | Fused CV (config exists) | todo | |
@@ -176,7 +179,10 @@ the new seeds measure training variance.
 that already have a cv-summary). Configs: `configs/training/resnet50-loso-fill-aware[-square-crop]-seed<seed>.toml`. Runs are
 named `loso-<target>-exp2-<arm>-s<seed>-fold<N>`.
 
-**Reading the result:** sets the minimum delta in the measurement rules. Run it alongside exp. 3.
+**Result:** fill-aware seed means range 2.6 macro-F1 on Kermany and 1.3 on PAIMA. Square crop is as steady on
+Kermany (1.8) but not on PAIMA (9.7 macro-F1, 8.3 AUROC; seed means 85.2, 80.8, 75.6). The Kermany square-crop gain
+(+8 to +13 over fill-aware) is confirmed. **Reading the result:** sets the minimum delta in the measurement rules
+(updated above).
 
 ### 3. Device-mimicking augmentation, in two arms
 
@@ -336,3 +342,12 @@ Optional. Useful only for the write-up, not for finding the cause.
   Kermany pad effects shrink by ~85-95% but PAIMA's AUROC still falls 92.4 → 85.2 when padded to 1536. Decision:
   mirror pad is dropped; square crop is the base config for 3b and 5. Next: exp. 2 (seeds, with extra PAIMA and
   Kermany square-crop seeds), 3b, and square crop with OCTDL and Duke held out.
+- 2026-10-13 (exp. 2, seeds, done): [report](reports/20261012-exp2-seed-noise.md). Fill-aware seeds are steady
+  (macro-F1 seed-mean range 2.6 Kermany, 1.3 PAIMA). Square crop is steady on Kermany (1.8) and its gain over
+  fill-aware holds at every seed (+8.4 to +12.9), but PAIMA is not: macro-F1 85.2, 80.8, 75.6 and AUROC 91.0, 83.6,
+  82.7 across seeds, so the paired difference to fill-aware is −1.2, −6.9 and −11.5. The 3a "no loss on PAIMA" reading
+  was the best of three seeds and does not stand; square crop costs PAIMA performance, cause unknown (candidates
+  untested: random window on wide scans, tissue scale). Measurement rules updated with per-arm working deltas. No
+  patient bootstrap on the new seeds. Next: 3b on square crop, judged against square-crop seeds; decide whether
+  the PAIMA loss needs a fix (for example multi-window training or crop choice) before 3b, and square crop with
+  OCTDL and Duke held out.
