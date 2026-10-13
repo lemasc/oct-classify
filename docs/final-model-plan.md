@@ -30,7 +30,7 @@ Run paths are under `artifacts/runs/<source or fused>/resnet50/`. Status: `done`
 |---|---|---|---|---|
 | Per-dataset | fill-aware | `local-final-fill-aware-duke-fold{1..5}`, `local-final-fill-aware-{octdl,paima,kermany}` | `resnet50-fill-aware.toml` | done |
 | Fused | fill-aware | `exp4-fill-aware-58577-fold{1..5}` | `resnet50-fused-fill-aware.toml` | done (cluster) |
-| Fused | square crop | `fused-square-crop-local-fold{1..5}` (local) or `fused-square-crop-58824-fold{1..5}` (cluster) | `resnet50-fused-fill-aware-square-crop.toml` | todo: local after C, start not yet set; `58824` still pending (dgx01 draining at 19:30) |
+| Fused | square crop | `fused-square-crop-local-fold{1..5}` (local) or `fused-square-crop-58824-fold{1..5}` (cluster) | `resnet50-fused-fill-aware-square-crop.toml` | running locally (started 2026-10-13 20:44, folds 1-5 in sequence); `58824` cancelled |
 | LOSO | fill-aware | `loso-<held out>-local-20261008-174938[-fold<N>]` | `resnet50-loso-fill-aware.toml` | done, all 4 held out |
 | LOSO | square crop | `loso-<held out>-local-3a-r2-square-crop[-fold<N>]` | `resnet50-loso-fill-aware-square-crop.toml` | done, all 4 held out |
 
@@ -93,7 +93,7 @@ CIs are patient-level bootstrap. Duke is one model on 45 eyes, so supporting evi
 - **Partial: DME seen only on other devices.** Removing Kermany's DME from training costs ~6 points.
 - **Ruled out:** white rotation fill and padding, BatchNorm statistics, decision cutoff, training-set size,
   checkpoint selection.
-- **Open:** device appearance (speckle, contrast, texture), and the PAIMA loss under square crop below.
+- **Open:** device appearance (speckle, contrast, texture), and the PAIMA loss under square crop below (not tissue scale, see check C).
 
 ### Square crop vs fill-aware, LOSO
 
@@ -112,8 +112,8 @@ image's width.
   768×496 normal → DME falls 36.6% → 4.5%. About half of the test-split gap closes (82.6 → 88.8 against 97.4 seen).
 - **PAIMA: unexplained loss**, unstable across seeds, and in ranking (AUROC), not just the cutoff. Not explained by
   removing the size cue (mirror pad, which also weakens it, keeps PAIMA AUROC at 92.4; one seed only) or by
-  test-time windowing (pooling several windows changes AUROC 91.0 → 91.1). Leading untested candidate: tissue scale. PAIMA images are all 768×496; the center
-  496-wide window shows the tissue about 1.5× larger than a full-width resize does.
+  test-time windowing (pooling several windows changes AUROC 91.0 → 91.1). Tissue scale was tested (check C) and does not explain it: shrinking the tissue toward training scale lowers AUROC
+  instead of recovering it (below).
 
 OCTDL and Duke held out (seed 20260913 only; paired patient-level bootstrap, script and output in
 `.scratchpad/14e161e_loso-sq-octdl-duke/`):
@@ -136,8 +136,8 @@ OCTDL and Duke held out (seed 20260913 only; paired patient-level bootstrap, scr
 |---|---|---|---|---|
 | A | Per-dataset fill-aware | local | — | done |
 | B | LOSO square crop, OCTDL and Duke held out | local | — | done |
-| C | PAIMA tissue-scale check | local | ~1 h | running (started 19:36) |
-| D | Fused square-crop CV | local after C (start not yet set); cancel `58824` if still pending | ~4-5 h per fold | todo |
+| C | PAIMA tissue-scale check | local | ~1 h | done, negative |
+| D | Fused square-crop CV | local, started 2026-10-13 20:44 (`58824` cancelled) | ~4-5 h per fold | running |
 | E | Score all three variants | CPU | ~1 day | todo, as runs finish |
 
 Dropped for this deadline: appearance augmentation (cross-device exp. 3b) and OCT-specific pretraining (exp. 5).
@@ -155,6 +155,22 @@ Check first that factor 1.0 reproduces the stored predictions.
 **Reading:** AUROC recovering toward fill-aware (~93) at some factor means the loss is a scale mismatch, a one-line
 explanation for the report. No recovery leaves it as a stated open limitation.
 
+**Result (done 2026-10-13):** negative. Factor 1.0 reproduces the stored metrics (max |Δ| F1 7e-5, AUROC 2.7e-3).
+AUROC by factor, mean over 5 folds (scripts and output in `.scratchpad/14e161e_paima-tissue-scale/`):
+
+| Factor | Seed 913 | Seed 914 | Seed 915 | Pooled Δ AUROC vs 1.0 [95% CI] |
+|---|---:|---:|---:|---|
+| 1.00 | 91.0 | 83.5 | 82.7 | |
+| 0.90 | 89.5 | 81.8 | 80.9 | −1.7 [−1.9, −1.5] |
+| 0.80 | 86.8 | 80.0 | 76.8 | −4.6 [−5.1, −4.1] |
+| 0.70 | 84.4 | 76.1 | 72.8 | −8.0 [−8.7, −7.3] |
+| 0.65 | 82.7 | 75.4 | 70.0 | −9.7 [−10.5, −9.0] |
+
+Fill-aware reference: 92.8, 93.3, 92.9. Patient-level bootstrap, 437 groups, 15 models. The drop is monotone at every
+seed and fold; macro-F1 falls further (−28 at 0.65) as the cutoff shifts. Shrinking the tissue does not recover PAIMA,
+so tissue scale (in this direction) does not explain the loss. Enlarging the tissue was not tested. The loss is
+fold-dependent (seed 915 fold 5 AUROC 63.7; seed 913 folds 84-94). Stated in the report as an open limitation.
+
 ### D. Fused square-crop CV
 
 **Question:** what does square crop cost on devices the model trained on?
@@ -162,8 +178,8 @@ explanation for the report. No recovery leaves it as a stated open limitation.
 **What:** the fused fill-aware config plus `geometry = "square_crop"`. Notes and pull command:
 `.scratchpad/83347e9_fused-square-crop/NOTES.md`.
 
-**Scheduling:** when B finishes, check `58824`. Still pending → cancel it and run locally overnight. Running → leave
-it. A local run is compared against exp. 4 across hardware; there is no fused seed noise floor, so treat differences
+**Scheduling:** `58824` was still pending after B and C, so it was cancelled and the five folds run locally in
+sequence (launcher `.scratchpad/83347e9_fused-square-crop/run-local.sh`, log `run-local.log`). A local run is compared against exp. 4 across hardware; there is no fused seed noise floor, so treat differences
 of a few points as unconfirmed.
 
 **Reading:** if it scores within ~2 points of fused fill-aware on every source, square crop costs nothing in-domain
@@ -213,3 +229,7 @@ Fixed before the OCTDL and Duke square-crop results come in, so the choice does 
   fill-aware is the main LOSO result and square crop an ablation. C started 19:36 (local). Cluster still draining;
   D runs locally after C, start not yet set, and `58824` is cancelled then if still pending. Launcher:
   `.scratchpad/83347e9_fused-square-crop/run-local.sh`.
+- 2026-10-13 20:44 (C done, D started): PAIMA tissue-scale check negative: shrinking the test tissue lowers AUROC
+  monotonically (pooled −1.7 at 0.90 to −9.7 at 0.65), so scale does not explain square crop's PAIMA loss; it stays an
+  open limitation. The first D launcher had died with the earlier session; relaunched detached at 20:44, `58824`
+  cancelled, folds 1-5 train locally in sequence. `checkpoint-last.pt` of each fold is deleted by hand when it finishes.
