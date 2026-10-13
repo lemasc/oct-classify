@@ -28,11 +28,11 @@ Run paths are under `artifacts/runs/<source or fused>/resnet50/`. Status: `done`
 
 | Variant | Arm | Runs | Config | Status |
 |---|---|---|---|---|
-| Per-dataset | fill-aware | `local-final-fill-aware-duke-fold{1..5}`, `local-final-fill-aware-{octdl,paima,kermany}` | `resnet50-fill-aware.toml` | Duke, OCTDL, PAIMA done; Kermany running (local) |
+| Per-dataset | fill-aware | `local-final-fill-aware-duke-fold{1..5}`, `local-final-fill-aware-{octdl,paima,kermany}` | `resnet50-fill-aware.toml` | done |
 | Fused | fill-aware | `exp4-fill-aware-58577-fold{1..5}` | `resnet50-fused-fill-aware.toml` | done (cluster) |
-| Fused | square crop | `fused-square-crop-58824-fold{1..5}` | `resnet50-fused-fill-aware-square-crop.toml` | queued (cluster job `58824`; dgx01 still draining at 16:20) |
+| Fused | square crop | `fused-square-crop-local-fold{1..5}` (local) or `fused-square-crop-58824-fold{1..5}` (cluster) | `resnet50-fused-fill-aware-square-crop.toml` | todo: local after C, start not yet set; `58824` still pending (dgx01 draining at 19:30) |
 | LOSO | fill-aware | `loso-<held out>-local-20261008-174938[-fold<N>]` | `resnet50-loso-fill-aware.toml` | done, all 4 held out |
-| LOSO | square crop | `loso-<held out>-local-3a-r2-square-crop[-fold<N>]` | `resnet50-loso-fill-aware-square-crop.toml` | Kermany, PAIMA done; OCTDL training (fold 4 of 5 at 16:20), Duke next (local) |
+| LOSO | square crop | `loso-<held out>-local-3a-r2-square-crop[-fold<N>]` | `resnet50-loso-fill-aware-square-crop.toml` | done, all 4 held out |
 
 Extra seeds 20260914 and 20260915 (exp. 2) exist for LOSO Kermany and PAIMA, both arms, under
 `.scratchpad/049579f_exp2-seeds/runs/`. They set the noise floor; the final tables report seed 20260913 and give the
@@ -56,10 +56,10 @@ Macro-F1 in percent. "Test split" means the source's own test split, which all t
 | Duke | 94.1 ± 5.7 (eye level 97.7 ± 5.1) | 91.3 ± 7.6 (median pad) |
 | OCTDL | 97.6 | 97.1 (black pad) |
 | PAIMA | 90.0 | 90.0 (black pad) |
-| Kermany | running | — |
+| Kermany | 98.8 | — |
 
 Test split. Duke is mean ± SD over 5 folds; its fold 4 is low (84.2) in every variant, so the spread reflects that
-fold's test patients. AUROC: Duke 98.9, OCTDL 99.5, PAIMA 95.2, each within 0.2 of the old run. Fill-aware changes
+fold's test patients. AUROC: Duke 98.9, OCTDL 99.5, PAIMA 95.2, each within 0.2 of the old run; Kermany 99.97. Fill-aware changes
 little on a model's own device, as expected.
 
 ### Fused (seen devices)
@@ -115,14 +115,29 @@ image's width.
   test-time windowing (pooling several windows changes AUROC 91.0 → 91.1). Leading untested candidate: tissue scale. PAIMA images are all 768×496; the center
   496-wide window shows the tissue about 1.5× larger than a full-width resize does.
 
+OCTDL and Duke held out (seed 20260913 only; paired patient-level bootstrap, script and output in
+`.scratchpad/14e161e_loso-sq-octdl-duke/`):
+
+| Held out | Fill-aware | Square crop | Paired difference | AUROC (fill → square) | Δ AUROC |
+|---|---:|---:|---:|---|---:|
+| OCTDL, full source (5 models, 637 patients) | 92.0 [90.0, 93.7] | 87.2 [84.9, 89.2] | −4.8 [−7.2, −2.5] | 98.7 → 97.9 | −0.8 [−2.2, +0.2] |
+| Duke, full source (1 model, 45 eyes) | 89.7 [84.4, 93.6] | 87.2 [81.2, 91.7] | −2.5 [−4.8, −0.5] | 97.8 → 98.6 | +0.8 [+0.0, +2.1] |
+
+- **OCTDL: loss beyond noise, in the cutoff.** Normal recall 95.1 → 84.2 (−11.0 [−14.4, −7.7]); normal → DME 2 →
+  181 images. AUROC holds, unlike PAIMA. Square-crop folds spread 82.9-91.7 vs 91.5-92.8. No OCTDL seed floor exists;
+  the ~3-point square-crop Kermany working delta is used.
+- **Duke: same direction, supporting only.** DME recall 75.8 → 67.6 (−8.3 [−13.5, −3.5]); the delta is under ~3.
+- **Reading rule outcome:** OCTDL drops beyond noise, so fill-aware stays the main LOSO result and square crop is
+  presented as an ablation that removes the size shortcut at a cost on some devices.
+
 ## Remaining Work
 
 | # | Item | Where | Est. | Status |
 |---|---|---|---|---|
-| A | Per-dataset fill-aware | local | Kermany ~20:00 | 7 of 8 done |
-| B | LOSO square crop, OCTDL and Duke held out | local | ~19:00-19:30 | OCTDL folds 1-3 done |
-| C | PAIMA tissue-scale check | local, after B | ~1 h | todo |
-| D | Fused square-crop CV | cluster `58824`; local overnight as fallback | ~4-5 h | queued |
+| A | Per-dataset fill-aware | local | — | done |
+| B | LOSO square crop, OCTDL and Duke held out | local | — | done |
+| C | PAIMA tissue-scale check | local | ~1 h | running (started 19:36) |
+| D | Fused square-crop CV | local after C (start not yet set); cancel `58824` if still pending | ~4-5 h per fold | todo |
 | E | Score all three variants | CPU | ~1 day | todo, as runs finish |
 
 Dropped for this deadline: appearance augmentation (cross-device exp. 3b) and OCT-specific pretraining (exp. 5).
@@ -193,3 +208,8 @@ Fixed before the OCTDL and Duke square-crop results come in, so the choice does 
   device. Square-crop LOSO folds run longer than fill-aware (35-36 epochs vs 23-31 for OCTDL held out), so B ends
   ~19:00-19:30 instead of ~17:30 and per-dataset Kermany ~20:00 (it shares the GPU and is slowed ~5×; LOSO is not
   slowed). C and the local fallback for D start after B. Cluster still draining.
+- 2026-10-13 19:30 (A and B done): per-dataset Kermany 98.8 macro-F1. LOSO square crop vs fill-aware: OCTDL −4.8
+  [−7.2, −2.5] (normal → DME; AUROC holds), Duke −2.5 [−4.8, −0.5] (DME recall). By the pre-set reading rule,
+  fill-aware is the main LOSO result and square crop an ablation. C started 19:36 (local). Cluster still draining;
+  D runs locally after C, start not yet set, and `58824` is cancelled then if still pending. Launcher:
+  `.scratchpad/83347e9_fused-square-crop/run-local.sh`.
