@@ -28,11 +28,11 @@ Run paths are under `artifacts/runs/<source or fused>/resnet50/`. Status: `done`
 
 | Variant | Arm | Runs | Config | Status |
 |---|---|---|---|---|
-| Per-dataset | fill-aware | `local-final-fill-aware-duke-fold{1..5}`, `local-final-fill-aware-{octdl,paima,kermany}` | `resnet50-fill-aware.toml` | running (local, started 11:23) |
+| Per-dataset | fill-aware | `local-final-fill-aware-duke-fold{1..5}`, `local-final-fill-aware-{octdl,paima,kermany}` | `resnet50-fill-aware.toml` | Duke, OCTDL, PAIMA done; Kermany running (local) |
 | Fused | fill-aware | `exp4-fill-aware-58577-fold{1..5}` | `resnet50-fused-fill-aware.toml` | done (cluster) |
-| Fused | square crop | `fused-square-crop-58824-fold{1..5}` | `resnet50-fused-fill-aware-square-crop.toml` | queued (cluster job `58824`, node draining) |
+| Fused | square crop | `fused-square-crop-58824-fold{1..5}` | `resnet50-fused-fill-aware-square-crop.toml` | queued (cluster job `58824`; dgx01 still draining at 16:20) |
 | LOSO | fill-aware | `loso-<held out>-local-20261008-174938[-fold<N>]` | `resnet50-loso-fill-aware.toml` | done, all 4 held out |
-| LOSO | square crop | `loso-<held out>-local-3a-r2-square-crop[-fold<N>]` | `resnet50-loso-fill-aware-square-crop.toml` | Kermany, PAIMA done; OCTDL, Duke running (local) |
+| LOSO | square crop | `loso-<held out>-local-3a-r2-square-crop[-fold<N>]` | `resnet50-loso-fill-aware-square-crop.toml` | Kermany, PAIMA done; OCTDL training (fold 4 of 5 at 16:20), Duke next (local) |
 
 Extra seeds 20260914 and 20260915 (exp. 2) exist for LOSO Kermany and PAIMA, both arms, under
 `.scratchpad/049579f_exp2-seeds/runs/`. They set the noise floor; the final tables report seed 20260913 and give the
@@ -48,6 +48,19 @@ disk; exp. 4's stays on the cluster). Delete `checkpoint-last.pt` of each run ab
 
 Macro-F1 in percent. "Test split" means the source's own test split, which all three variants can be scored on;
 "full source" means every image of a held-out source (LOSO only).
+
+### Per-dataset (own device), fill-aware
+
+| Source | Fill-aware | Old run (superseded) |
+|---|---:|---:|
+| Duke | 94.1 ± 5.7 (eye level 97.7 ± 5.1) | 91.3 ± 7.6 (median pad) |
+| OCTDL | 97.6 | 97.1 (black pad) |
+| PAIMA | 90.0 | 90.0 (black pad) |
+| Kermany | running | — |
+
+Test split. Duke is mean ± SD over 5 folds; its fold 4 is low (84.2) in every variant, so the spread reflects that
+fold's test patients. AUROC: Duke 98.9, OCTDL 99.5, PAIMA 95.2, each within 0.2 of the old run. Fill-aware changes
+little on a model's own device, as expected.
 
 ### Fused (seen devices)
 
@@ -99,16 +112,15 @@ image's width.
   768×496 normal → DME falls 36.6% → 4.5%. About half of the test-split gap closes (82.6 → 88.8 against 97.4 seen).
 - **PAIMA: unexplained loss**, unstable across seeds, and in ranking (AUROC), not just the cutoff. Not explained by
   removing the size cue (mirror pad, which also weakens it, keeps PAIMA AUROC at 92.4; one seed only) or by
-  test-time windowing (pooling several windows
-  changes AUROC 91.0 → 91.1). Leading untested candidate: tissue scale. PAIMA images are all 768×496; the center
+  test-time windowing (pooling several windows changes AUROC 91.0 → 91.1). Leading untested candidate: tissue scale. PAIMA images are all 768×496; the center
   496-wide window shows the tissue about 1.5× larger than a full-width resize does.
 
 ## Remaining Work
 
 | # | Item | Where | Est. | Status |
 |---|---|---|---|---|
-| A | Per-dataset fill-aware | local | ~4-5 h shared GPU | running |
-| B | LOSO square crop, OCTDL and Duke held out | local | ~4-5 h shared GPU | running |
+| A | Per-dataset fill-aware | local | Kermany ~20:00 | 7 of 8 done |
+| B | LOSO square crop, OCTDL and Duke held out | local | ~19:00-19:30 | OCTDL folds 1-3 done |
 | C | PAIMA tissue-scale check | local, after B | ~1 h | todo |
 | D | Fused square-crop CV | cluster `58824`; local overnight as fallback | ~4-5 h | queued |
 | E | Score all three variants | CPU | ~1 day | todo, as runs finish |
@@ -177,3 +189,7 @@ Fixed before the OCTDL and Duke square-crop results come in, so the choice does 
   unknown reason. Per-dataset rerun with fill-aware because the existing single-source runs are black-pad. 3b and 5
   dropped for the deadline. Cluster job `58824` (fused square crop) queued behind a draining node; local fallback
   overnight.
+- 2026-10-13 16:20 (progress): Per-dataset Duke, OCTDL and PAIMA done; within noise of the old runs on their own
+  device. Square-crop LOSO folds run longer than fill-aware (35-36 epochs vs 23-31 for OCTDL held out), so B ends
+  ~19:00-19:30 instead of ~17:30 and per-dataset Kermany ~20:00 (it shares the GPU and is slowed ~5×; LOSO is not
+  slowed). C and the local fallback for D start after B. Cluster still draining.
