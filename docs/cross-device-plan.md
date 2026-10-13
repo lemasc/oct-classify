@@ -13,9 +13,12 @@ the source's test split, so they compare the same images:
 
 | Source | Seen | Held out | Gap |
 |---|---:|---:|---:|
-| Kermany | 95.6 | 83 | ~13 |
-| OCTDL | ~97 | 92 | ~5 |
-| PAIMA | ~90 | 86 | ~4 |
+| Kermany | 97.4 | 83 | ~14 |
+| OCTDL | 95.9 | 92 | ~4 |
+| PAIMA | 90.8 | 86 | ~5 |
+
+Seen values are the fill-aware fused CV (exp. 4; mean of 5 Duke folds). The median-pad fused CV gave 95.6, 96.8 and
+90.3; deltas quoted elsewhere in this plan against "seen 95.6" are from that run.
 
 Kermany is the main problem. Earlier reports quote ~22 points for Kermany: that held-out number (74) is scored on
 all Kermany images, which have a different mix of image sizes than the test split (exp. 1). OCTDL and PAIMA
@@ -91,7 +94,7 @@ Status values: `todo`, `running`, `done`, `dropped` (record the reason in the de
 | 2 | Seed noise floor: 2 extra seeds of the reference and of square crop, held-out Kermany and PAIMA | How big must a change be to count? | 40 LOSO models (2 arms × 2 seeds × 2 targets × 5 folds) | done | [20261012-exp2-seed-noise.md](reports/20261012-exp2-seed-noise.md) |
 | 3a | Remove the size cue in training: random mirror padding vs square crop | Does removing the size cue close the gap, and at what cost? | LOSO, Kermany and PAIMA (2 arms × 2 targets × 5 models) | done | [20261011-exp3a-geometry-arms.md](reports/20261011-exp3a-geometry-arms.md) |
 | 3b | Appearance augmentation: speckle, gamma/contrast, blur | Does varying how images look close the gap? | LOSO, Kermany + PAIMA first | todo | |
-| 4 | Fused CV with fill-aware padding | Is the seen-device score inflated by fill? | Fused CV (config exists) | todo | |
+| 4 | Fused CV with fill-aware padding | Is the seen-device score inflated by fill? | Fused CV (config exists) | done | decision log 2026-10-13 |
 | 5a | OCT foundation model, fine-tuned under LOSO | Do OCT-specific features transfer across devices better than ImageNet ones? | LOSO | todo | |
 | 5b | MAE pretraining that includes the held-out device's unlabeled images | Does adapting to the target device without labels help? | Pretraining + LOSO | todo | |
 | 6 | Grad-CAM on fill-aware LOSO models | Do models look at image borders or size cues? | No training | dropped | |
@@ -351,3 +354,10 @@ Optional. Useful only for the write-up, not for finding the cause.
   patient bootstrap on the new seeds. Next: 3b on square crop, judged against square-crop seeds; decide whether
   the PAIMA loss needs a fix (for example multi-window training or crop choice) before 3b, and square crop with
   OCTDL and Duke held out.
+- 2026-10-13 (exp. 4, fused fill-aware, done): SLURM job `58577` (cluster, 1g.10gb MIG; the median fused CV ran on
+  the RTX 3060). Test macro-F1, mean ± SD over 5 Duke folds, fill-aware vs median: Kermany 97.4 ± 0.6 vs 95.6 ± 3.4
+  (the median run's fold 4 at 89.7 drove the old mean), OCTDL 95.9 ± 2.2 vs 96.8 ± 1.2, PAIMA 90.8 ± 0.3 vs 90.3 ± 0.5,
+  Duke 95.2 ± 3.1 vs 95.6 ± 4.3; AUROC within 0.2 everywhere. White fill does not inflate the seen score, so the gap
+  is not smaller than measured; Kermany's is ~14 points rather than ~13. No paired interval yet. The gap table now
+  uses the fill-aware seen values. Runs: `artifacts/runs/fused/resnet50/exp4-fill-aware-58577-fold{1..5}`
+  (checkpoints left on the cluster).
