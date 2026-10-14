@@ -139,6 +139,14 @@ OCTDL and Duke held out (seed 20260913 only; paired patient-level bootstrap, scr
 | C | PAIMA tissue-scale check | local | ~1 h | done, negative |
 | D | Fused square-crop CV | local, 2026-10-13 20:44 to 2026-10-14 02:48 (`58824` cancelled) | ~6 h total | done |
 | E | Score all three variants | CPU | ~1 min | done 2026-10-14, seed 20260913 only |
+| F | Fused zero-Kermany-DME CV, fill-aware | local | ~2-6 h | todo (handoff below) |
+| G | Logit-bias rescoring of fill-aware LOSO | CPU, `docs/paper` worktree | minutes | todo |
+| H | AdaBN on fill-aware LOSO (port from `legacy/docs/cross-device-plan`) | port: temporary worktree; eval: local GPU after F | ~1-1.5 h GPU | todo |
+| I | Grad-CAM on final models | local GPU after F | minutes | todo |
+
+F-I rerun, on the final fill-aware models, the cross-device diagnostics the paper cites (originally run on median-pad
+models, reports on the `legacy/docs/cross-device-plan` branch). The Kermany DME cut to 122 patients is not rerun; the
+paper cites the legacy result in one sentence. G-I are analysis and are logged here when done.
 
 Dropped for this deadline: appearance augmentation (cross-device exp. 3b) and OCT-specific pretraining (exp. 5).
 3b needs about half a day of code plus ~10 LOSO models, a full day of the only GPU; listed as future work.
@@ -262,6 +270,43 @@ per class, so no size claim is made there.
 
 **PAIMA:** only Normal/AMD exists, so there is no 3-class view. Per-dataset 90.0, fused 90.8, fused square crop 93.0.
 
+### F. Fused zero-Kermany-DME CV (handoff)
+
+**Question:** with the Kermany device seen in training but none of its DME, how much of Kermany's score is lost? This
+is the paper's evidence for the "DME seen only on other devices" cause. Legacy median-pad result: Kermany macro-F1
+95.6 → 90.0 (−5.6 [−6.7, −4.5]), report `docs/reports/20261008-kermany-zero-dme.md` on branch
+`legacy/docs/cross-device-plan` (worktree `../repo-legacy-cross-device`).
+
+**What:** the fused fill-aware config (`configs/training/resnet50-fused-fill-aware.toml`, unchanged) on splits with
+every Kermany **train** DME row removed. Kermany normal/AMD, all val/test rows and the other three sources are
+unchanged; Kermany val keeps its DME so checkpoint selection matches the reference. Seed 20260913, 5 Duke folds,
+trained locally in sequence.
+
+**Steps** (from the `repo-retry` root; session folder `.scratchpad/4ea87fb_fused-zero-dme/`):
+
+1. Splits: copy `../repo-legacy-cross-device/.scratchpad/1e23970_kermany-dme0/make_splits.py` into the session folder
+   and run it (`uv run python <path>`). It reads `artifacts/splits/duke-cv/fold-N/kermany.jsonl` and writes
+   `artifacts/splits/duke-cv-kermany-dme0/fold-N/` (filtered `kermany.jsonl`, symlinks for the other sources). Check
+   that each fold has 0 rows with `split == "train"` and `label == "dme"` for Kermany, and that val/test counts equal
+   `duke-cv`'s.
+2. Launcher `run-local.sh` in the session folder, detached (`nohup ... &`, so it survives the session), folds 1-5 in
+   sequence:
+   `uv run oct-classify train fused --split-dir artifacts/splits/duke-cv-kermany-dme0/fold-${fold}
+   --training-config configs/training/resnet50-fused-fill-aware.toml --run-name fused-zero-dme-local-fold${fold}
+   --device cuda`, each fold's output to `<session>/fold${fold}.out`, with start/exit lines in `<session>/run-local.log`.
+   Model on `.scratchpad/83347e9_fused-square-crop/run-local.sh` (without the cluster logic).
+3. When each fold finishes, delete its `checkpoint-last.pt` (keep `checkpoint-best.pt`).
+4. When all five are done: point estimates per source from each fold's `metrics-test.json` (mean ± SD over folds),
+   next to exp. 4 (`exp4-fill-aware-58577-fold{1..5}`). Paired bootstrap scoring is done in the `docs/paper` worktree,
+   not here.
+
+Runs: `artifacts/runs/fused/resnet50/fused-zero-dme-local-fold{1..5}`. The GPU is shared with nothing else until F
+finishes; H and I wait for it.
+
+**Reading:** a clear Kermany drop (legacy: ~6 points), mostly in DME recall, supports the cause in the paper. No drop
+means the legacy result does not carry over to fill-aware and the paper drops the claim. Caveat as for D: local vs
+cluster hardware, no fused seed floor.
+
 ## Reading Rule for the Side-by-Side LOSO Table
 
 Fixed before the OCTDL and Duke square-crop results come in, so the choice does not depend on them.
@@ -307,3 +352,7 @@ Fixed before the OCTDL and Duke square-crop results come in, so the choice does 
   square crop narrows Kermany's gap and widens OCTDL's, so the reading-rule outcome stands (fill-aware main, square
   crop ablation). Seed 20260913 only. Remaining: delete `checkpoint-last.pt` of the five fused square-crop folds
   (held back at user's request).
+- 2026-10-14 (paper diagnostics): the paper cites the cross-device diagnostics, so they are rerun on the final
+  fill-aware models for consistency: F (zero-Kermany-DME fused CV, local GPU), G (logit bias, CPU), H (AdaBN, port in
+  a temporary worktree, GPU eval after F), I (Grad-CAM, after F). The DME cut to 122 patients is not rerun. Paper and
+  analysis work moves to a `docs/paper` worktree (`../repo-paper`) branched from here; training stays here.
