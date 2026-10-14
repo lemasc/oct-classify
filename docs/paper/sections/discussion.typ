@@ -15,9 +15,12 @@ caught it before training: tabulate image size (and other acquisition properties
 source, as in @fig-size-class.
 
 *Removing a shortcut is not free.* Square crop removes the size cue and recovers much of Kermany's gap, but it
-costs OCTDL and Duke some DME recall and lowers PAIMA's ranking quality. Square crop discards the sides of
-wide scans, where some DME findings may lie, so part of its cost may be lost tissue rather than lost shortcut.
-#todo[check whether this is supported; otherwise drop the sentence] We found no single preprocessing that is best
+costs the other unseen devices in different ways: OCTDL loses normal recall (normal images called DME), Duke loses
+DME recall, and PAIMA loses ranking quality. One possible cause for OCTDL and Duke is lost tissue: the square window keeps nearly the whole width of a
+512×496 scan, but only about two thirds of a 768×496 scan and about a third of a typical 880×320 OCTDL scan, and
+almost every OCTDL scan is that elongated. About half of Kermany is 512×496, where little tissue is lost. We have not
+tested this for OCTDL or Duke. It does not explain PAIMA: averaging predictions over several square windows that
+together cover the whole PAIMA scan leaves its AUROC unchanged. We found no single preprocessing that is best
 on every unseen device.
 
 *DME is the weak point.* Once the size cue is accounted for, most of the remaining gap is DME recall. DME is the

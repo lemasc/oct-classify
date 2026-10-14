@@ -32,8 +32,7 @@ PAIMA (#dl(k("seen", "paima"), "fused-fill - per-dataset")) and Duke (#dl(k("see
 beyond noise against the fused model, and PAIMA gains #dl(k("seen", "paima"), "fused-sq - fused-fill").
 
 PAIMA is the hardest source even when seen (#pt(k("seen", "paima"), "fused-fill") fused), mostly through AMD recall
-(#pt(k("seen", "paima"), "fused-fill", name: "recall_amd")%). #todo[one line on why: PAIMA labels single B-scans
-within AMD volumes, so some AMD-labelled scans may look normal? check before claiming]
+(#pt(k("seen", "paima"), "fused-fill", name: "recall_amd")%).
 
 == Unseen devices <sec-unseen>
 
