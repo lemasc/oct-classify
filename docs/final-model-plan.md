@@ -139,7 +139,7 @@ OCTDL and Duke held out (seed 20260913 only; paired patient-level bootstrap, scr
 | C | PAIMA tissue-scale check | local | ~1 h | done, negative |
 | D | Fused square-crop CV | local, 2026-10-13 20:44 to 2026-10-14 02:48 (`58824` cancelled) | ~6 h total | done |
 | E | Score all three variants | CPU | ~1 min | done 2026-10-14, seed 20260913 only |
-| F | Fused zero-Kermany-DME CV, fill-aware | local | ~8 h | **stopped 2026-10-14 14:5x, invalid** (selection flaw, see F); fair rerun deferred |
+| F | Fused zero-Kermany-DME CV, fill-aware | local | ~8 h | **ready to launch** (fair rerun, handoff in F); first attempt invalid |
 | G | Logit-bias rescoring of fill-aware LOSO | CPU, `docs/paper` worktree | minutes | done 2026-10-14 (`docs/paper` `285ce16`) |
 | H | AdaBN on fill-aware LOSO (port from `legacy/docs/cross-device-plan`) | port: temporary worktree; eval: local GPU, `docs/paper` worktree | ~1-1.5 h GPU | port done (`feat/adabn-port` `8a65095`, merged into `docs/paper`); done 2026-10-14 (`docs/paper` `ec4f501`) |
 | I | Grad-CAM on final models | CPU, `docs/paper` notebook | minutes | done 2026-10-14 (`notebooks/gradcam_shortcut.py`, `e7e4982`; paper `4a075b0`) |
@@ -291,12 +291,47 @@ PAIMA −4.7) may be partly or wholly undertraining and are **not cited**. The D
 **Runs left behind:** `fused-zero-dme-local-fold1` (complete, invalid) and `fused-zero-dme-local-fold2` (partial,
 stopped at 14:5x). Do not score them. Splits `artifacts/splits/duke-cv-kermany-dme0` (Kermany val still has DME).
 
-**Fair rerun (deferred, not yet decided):** remove Kermany DME from val as well (keep it in test), so selection never
-uses Kermany DME, as a LOSO model never validates on its held-out device. Split change only (filter `split in
-{"train","val"}` instead of `"train"` in `make_splits.py`, new dir e.g. `duke-cv-kermany-dme0-noval`). Check fold 1's
-best epoch is in the reference range before letting all 5 run (~8 h). Alternative: fixed epoch count (~28, the
-reference median), which needs a config change. Until a fair run exists, the paper rests the DME claim on the LOSO
-DME-recall breakdown only.
+**Second attempt (2026-10-14 16:05, stopped at epoch ~9 of fold 1):** Kermany DME removed from train **and** val
+(`artifacts/splits/duke-cv-kermany-dme0-noval`, test unchanged). Training was healthy (identical trajectory to the
+first attempt: same seed and data), but Kermany val macro-F1 was capped near 0.65: with no DME targets, sklearn's
+macro average still included DME (predicted on a few images) as an F1 term of 0, i.e. (F1 normal + F1 AMD + 0)/3.
+Kermany dominates the size-weighted selection mean, so the mean barely moved (0.684-0.697) and the best epoch was
+close to arbitrary. Partial run deleted.
+
+**Fix (`fix/cross-device`, see commit after `73d64eb`):** `calculate_metrics` now averages macro-F1 over the classes
+present in the targets. A DME call on a Kermany normal still counts as a miss (lowers normal recall), so selection
+penalises exactly the over-calling under test; there is just no artificial zero term. Every other source and split
+has all its classes present, so its macro-F1 is unchanged (tested).
+
+**Selection rule, decided (option 2):** select on everything the model has seen (Kermany normal/AMD and the other
+three sources) and nothing it has not (Kermany DME). It differs from the reference's rule only by Kermany DME. Not
+chosen: leaving Kermany out of selection (that is LOSO's rule, but here Kermany normal/AMD are seen, so it would
+change two things at once), a fixed epoch count (config change, further from the reference protocol), scoring
+Kermany val on Normal/AMD with the restricted softmax (blind to normal → DME, the failure being measured).
+
+### F handoff: launch and monitor (fresh session)
+
+From the `repo-retry` root, on `fix/cross-device` with the metric fix:
+
+1. GPU idle check: `nvidia-smi` (another user's ~1.8 GB OCR process is normal) and no `oct-classify train` running.
+2. Launch detached: `nohup bash .scratchpad/73d64eb_zero-dme-noval/run-local.sh > .scratchpad/73d64eb_zero-dme-noval/run-local.log 2>&1 &`.
+   Splits already exist (`make_splits.py` in the same folder; it asserts no Kermany DME in train/val and an
+   unchanged test). Runs: `artifacts/runs/fused/resnet50/fused-zero-dme-noval-local-fold{1..5}`; per-fold output
+   `fold{N}.out`; the launcher deletes `checkpoint-last.pt` after a fold exits 0.
+3. Monitor fold 1 (epochs take ~3 min; setup ~4 min). After ~6 epochs, read `history.jsonl`:
+   - Kermany val macro-F1 should now be ~0.95+, not ~0.65. If it is still ~0.65, the fix is not in effect: stop.
+   - Epoch-0 values to compare with the stopped attempts: Duke 0.905, PAIMA 0.836, OCTDL 0.923 (Kermany differs
+     only through the metric).
+   - At fold end: selected epoch and total epochs. Reference exp. 4 selected epochs 26, 18, 17, 17, 12 (of 37, 29,
+     28, 28, 23). A selected epoch of 0-2 again means the selection is still biased: stop and report.
+4. When all five are done: point estimates per source from `metrics-test.json` (mean ± SD over folds) next to
+   exp. 4; paired patient-level bootstrap in the `docs/paper` worktree (as `data/paper/logit-bias`), outputs in
+   `data/paper/zero-dme/`. Log here: status, selected epochs, result, decision-log entry.
+
+**Reading:** Kermany test macro-F1 near the fused reference (97.4) means unseen in-device DME costs little and the
+LOSO gap is device-wide; a drop toward held-out (82.6 on the test split) supports "DME seen only on other devices".
+Check DME recall and normal → DME separately. Caveats: local vs cluster hardware (exp. 4 ran on the cluster), one
+seed, Kermany's share of fused batches changes when its DME is removed.
 
 ### H. AdaBN on fill-aware LOSO (handoff)
 
@@ -383,3 +418,7 @@ Fixed before the OCTDL and Duke square-crop results come in, so the choice does 
   fill-aware LOSO-Kermany normal/AMD rows have both exactly 0 (fp32 underflow with p(DME)=1), giving NaN rows that
   argmax counts as normal. Effect on the Kermany Normal/AMD score is below 0.03 points; `score.py` and the
   diagnostics inherit it.
+- 2026-10-14 (F second attempt stopped, metric fixed): with Kermany DME out of val, Kermany val macro-F1 was capped
+  near 0.65 by a zero F1 term for the absent DME class, flattening selection. Macro-F1 now averages over classes
+  present in the targets (unchanged when all are present). Selection rule: seen data only (option 2). Fair rerun
+  handed off for a fresh session (F handoff).
