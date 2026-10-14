@@ -23,9 +23,10 @@ tested this for OCTDL or Duke. It does not explain PAIMA: averaging predictions 
 together cover the whole PAIMA scan leaves its AUROC unchanged. We found no single preprocessing that is best
 on every unseen device.
 
-*DME is the weak point.* Once the size cue is accounted for, most of the remaining gap is DME recall. DME is the
-class with the fewest training examples from the fewest devices: PAIMA has none, so a model with Kermany held out
-learns DME from 122 patients on two devices. #pending[state the zero-DME result once item F is done.]
+*DME is the weak point.* Once the size cue is accounted for, most of the remaining gap is DME recall. DME is also
+the class with the fewest training examples from the fewest devices: PAIMA has none, so a model with Kermany held
+out learns DME from 122 patients on two devices. Whether more devices' DME would close the gap is untested; a fused
+model trained without one device's DME would separate "unseen device" from "unseen DME".
 
 == Limitations <sec-limits>
 

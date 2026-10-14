@@ -23,8 +23,9 @@ def main() -> None:
             color = style.ARM_COLOR[arm]
             ax.plot([unseen["point"] * 100, seen["point"] * 100], [y, y], color=style.GRID, lw=3, zorder=1,
                     solid_capstyle="round")
+            # Interval only on the unseen marker; seen intervals are in Table 2 and the paired gaps in Table 3.
+            ax.plot([unseen["lo"] * 100, unseen["hi"] * 100], [y, y], color=color, lw=1, zorder=2)
             for m, filled in [(seen, False), (unseen, True)]:
-                ax.plot([m["lo"] * 100, m["hi"] * 100], [y, y], color=color, lw=1, zorder=2, alpha=0.8)
                 ax.plot(m["point"] * 100, y, "o", ms=6.5, zorder=3, mec=color, mew=1.4,
                         mfc=color if filled else "white")
             ax.text(unseen["lo"] * 100 - 0.6, y, f"{unseen['point'] * 100:.1f}", ha="right", va="center",

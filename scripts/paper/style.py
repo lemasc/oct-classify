@@ -26,7 +26,8 @@ TEXT_WIDTH_IN = 6.3  # A4 with 2.5 cm margins
 
 def apply() -> None:
     mpl.rcParams.update({
-        "font.family": "DejaVu Sans",
+        "font.family": "serif",
+        "font.serif": ["DejaVu Serif"],  # placeholder; final font set in the typography pass
         "font.size": 8,
         "axes.labelsize": 8,
         "axes.titlesize": 8.5,

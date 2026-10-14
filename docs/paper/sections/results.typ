@@ -65,7 +65,9 @@ PAIMA is the hardest source even when seen (#pt(k("seen", "paima"), "fused-fill"
   kind: image,
   fig("gap"),
   caption: [Macro-F1 on each source's test split when the device is seen (fused, hollow) and unseen (LOSO, filled),
-    for fill-aware and square-crop models. Lines are 95% intervals; paired gaps are in @tab-unseen.],
+    for fill-aware and square-crop models. Lines are 95% intervals of the unseen score; paired gaps are in
+    @tab-unseen. Both scores use the same test images, which for Kermany are mostly 1024×496 and score higher than
+    Kermany as a whole (@tab-unseen, full source).],
 ) <fig-gap>
 
 Every source loses accuracy when its device is unseen, beyond noise (@tab-unseen, @fig-gap). For OCTDL, PAIMA and
@@ -172,11 +174,9 @@ Kermany, OCTDL and Duke. With DME images removed, the OCTDL and Duke gaps are wi
 above: most of its test split is 1024×496, Duke's AMD-only size. PAIMA, which has no DME, keeps a #dl("gap_test|paima|normal_amd", "loso-fill - fused-fill") gap,
 through AMD recall.
 
-DME is hard to transfer because each LOSO model sees DME from fewer devices: PAIMA has none, so with Kermany held
-out the model learns DME from OCTDL and Duke alone (122 patients). To separate "the device is unseen" from "the
-device's DME is unseen", we train the fused model with every Kermany DME image removed from training, keeping
-Kermany's normal and AMD images. #pending[zero-DME rerun on fill-aware models (item F); legacy median-pad result:
-Kermany macro-F1 −5.6 [−6.7, −4.5]].
+A likely reason is that each LOSO model sees DME from fewer devices: PAIMA has none, so with Kermany held out the
+model learns DME from OCTDL and Duke alone (122 patients). We have not tested this directly.
+#pending[optional: fused model with no Kermany DME in training or validation (deferred item F)]
 
 *Causes we ruled out.* Two simpler explanations do not account for the gap. First, the decision cutoff: we fit a
 per-class shift of the output log-probabilities on the held-out source's own labels, fitting on one half of its

@@ -25,10 +25,11 @@ def main() -> None:
             square = entry["arms"]["sq"]["metrics"][f"recall_{cls}"]
             ax.plot([fill["point"] * 100, square["point"] * 100], [y, y], color=style.GRID, lw=3, zorder=1,
                     solid_capstyle="round")
-            for arm, m in [("fill", fill), ("sq", square)]:
+            # Small vertical dodge so equal values (e.g. 1024×496 AMD) stay visible.
+            for arm, m, dy in [("fill", fill, -0.12), ("sq", square, 0.12)]:
                 color = style.ARM_COLOR[arm]
-                ax.plot([m["lo"] * 100, m["hi"] * 100], [y, y], color=color, lw=1, zorder=2)
-                ax.plot(m["point"] * 100, y, "o", ms=6, color=color, zorder=3)
+                ax.plot([m["lo"] * 100, m["hi"] * 100], [y + dy, y + dy], color=color, lw=1, zorder=2)
+                ax.plot(m["point"] * 100, y + dy, "o", ms=6, color=color, zorder=3)
             ticks.append(y)
             labels.append(f"{size.replace('x', '×')}  {style.CLASS_NAME[cls]}")
             y += 1
