@@ -214,7 +214,7 @@ A likely reason is that each LOSO model sees DME from fewer devices: PAIMA has n
 model learns DME from OCTDL and Duke alone (122 patients). We have not tested this directly.
 #pending[optional: fused model with no Kermany DME in training or validation (deferred item F)]
 
-*Causes we ruled out.* Two simpler explanations do not account for the gap. First, the decision cutoff: we fit a
+*Causes we ruled out.* Three simpler explanations do not account for the gap. First, the decision cutoff: we fit a
 per-class shift of the output log-probabilities on the held-out source's own labels, fitting on one half of its
 patients and scoring the other. This raises held-out Kermany from #lb-pt("kermany|all", "none") to
 #lb-pt("kermany|all", "bias-crossfit") (#lb-dl("kermany|all", "bias-crossfit")), far short of the
@@ -222,8 +222,13 @@ patients and scoring the other. This raises held-out Kermany from #lb-pt("kerman
 and Duke (#lb-dl("duke|all", "bias-crossfit")) within noise. Even the best shift found by searching on all of
 Kermany's labels reaches only #fmt(LB.at("kermany|all").grid.best). Since this uses labels a deployed model would
 not have, it is an upper bound; the cutoff explains a few points of Kermany's gap, not most of it.
-#pending[AdaBN (item H) on fill-aware models; legacy numbers below.] Re-estimating the BatchNorm
-statistics on the unseen device (AdaBN), the standard first remedy for a change in image statistics, helps
-Kermany by about one point and costs OCTDL about twenty. Finally, the gap is not a matter of training-set size: a
+Second, image statistics. AdaBN @li2016adabn, the standard first remedy for such a shift, re-estimates the
+BatchNorm statistics on the unseen device's own unlabelled images; we again estimate on one half of the patients
+and predict the other. It raises held-out Kermany only from #ab-pt("kermany|all", "none") to #ab-pt("kermany|all", "adabn-all")
+(#ab-dl("kermany|all")), leaves Duke within noise (#ab-dl("duke|all")), and costs OCTDL
+#ab-dl("octdl|all"), because it shifts OCTDL's normal and AMD images toward DME: DME recall rises from
+#ab-pt("octdl|all", "none", name: "recall_dme") to #ab-pt("octdl|all", "adabn-all", name: "recall_dme") while AMD
+recall falls from #ab-pt("octdl|all", "none", name: "recall_amd") to #ab-pt("octdl|all", "adabn-all", name: "recall_amd").
+Finally, the gap is not a matter of training-set size: a
 fused model whose Kermany DME was cut to the 122 patients a LOSO model sees still scores 97.1 on Kermany (earlier
 preprocessing variant, not rerun).

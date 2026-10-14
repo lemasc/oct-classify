@@ -81,3 +81,11 @@
 #let pct0(x) = str(calc.round(x * 100)) // whole percent
 #let range0(xs) = pct0(calc.min(..xs)) + "–" + pct0(calc.max(..xs))
 #let gc-group-n(group) = GC.intervention_by_fold.find(r => r.group == group).n
+
+// AdaBN diagnostic (data/paper/adabn). Arms: "none", "adabn-all".
+#let AB = json("/data/paper/adabn/results.json")
+#let ab-pt(key, arm, name: "macro_f1") = fmt(AB.at(key).arms.at(arm).metrics.at(name).point)
+#let ab-dl(key, name: "macro_f1") = {
+  let m = AB.at(key).arms.at("adabn-all").delta.at(name)
+  [#fmt(m.point, signed: true) [#fmt(m.lo, signed: true), #fmt(m.hi, signed: true)]]
+}
