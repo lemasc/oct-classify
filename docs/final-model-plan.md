@@ -141,8 +141,8 @@ OCTDL and Duke held out (seed 20260913 only; paired patient-level bootstrap, scr
 | E | Score all three variants | CPU | ~1 min | done 2026-10-14, seed 20260913 only |
 | F | Fused zero-Kermany-DME CV, fill-aware | local | ~8 h | **stopped 2026-10-14 14:5x, invalid** (selection flaw, see F); fair rerun deferred |
 | G | Logit-bias rescoring of fill-aware LOSO | CPU, `docs/paper` worktree | minutes | done 2026-10-14 (`docs/paper` `285ce16`) |
-| H | AdaBN on fill-aware LOSO (port from `legacy/docs/cross-device-plan`) | port: temporary worktree; eval: local GPU, `docs/paper` worktree | ~1-1.5 h GPU | port done (`feat/adabn-port` `8a65095`, merged into `docs/paper`); eval running (handoff in H) |
-| I | Grad-CAM on final models | local GPU after H | minutes | todo; example selection to agree first |
+| H | AdaBN on fill-aware LOSO (port from `legacy/docs/cross-device-plan`) | port: temporary worktree; eval: local GPU, `docs/paper` worktree | ~1-1.5 h GPU | port done (`feat/adabn-port` `8a65095`, merged into `docs/paper`); done 2026-10-14 (`docs/paper` `ec4f501`) |
+| I | Grad-CAM on final models | CPU, `docs/paper` notebook | minutes | done 2026-10-14 (`notebooks/gradcam_shortcut.py`, `e7e4982`; paper `4a075b0`) |
 
 F-I rerun, on the final fill-aware models, the cross-device diagnostics the paper cites (originally run on median-pad
 models, reports on the `legacy/docs/cross-device-plan` branch). The Kermany DME cut to 122 patients is not rerun; the
@@ -370,3 +370,16 @@ Fixed before the OCTDL and Duke square-crop results come in, so the choice does 
   training removes it; the legacy zero-DME run had the same flaw (epochs 0-2). Run stopped during fold 2; legacy
   zero-DME numbers withdrawn from the paper. Fair rerun (no Kermany DME in val either) deferred. AdaBN (H) runs
   first on the free GPU, then Grad-CAM (I).
+- 2026-10-14 (H and I done): AdaBN-all on the 16 fill-aware LOSO checkpoints (`data/paper/adabn/`): Kermany +2.7
+  [+2.2, +3.2], Duke +0.3 (noise), OCTDL −7.5 [−9.9, −5.4] (DME over-called: DME recall 77.3 → 95.4, AMD 97.8 →
+  89.0), PAIMA Normal/AMD −1.0. Same conclusion as legacy (Kermany +1.1, OCTDL −20), smaller OCTDL loss. Grad-CAM
+  moved to a CPU notebook (`notebooks/gradcam_shortcut.py`, all 5 LOSO-Kermany folds, randomization check and a
+  band-pixel intervention; summary `data/paper/gradcam/summary.json`). Changing only the letterbox band pixels
+  removes most wrong DME calls on 768×496 normal and AMD images in every fold (normal: 0-28% remain with speckle
+  bands), and correct calls barely move (0 of 800 become DME). Grad-CAM puts ~75% of the map on the bands in folds
+  1-2 but 8-14% in folds 4-5, so the paper uses the intervention as evidence and Grad-CAM as illustration. The
+  existing `analysis gradcam` CLI ignores `square_crop` geometry; the notebook uses `ManifestImageDataset` instead.
+- 2026-10-14 (known minor issue, not fixed): the Normal/AMD view renormalises p(normal)+p(AMD); 143 of ~450k
+  fill-aware LOSO-Kermany normal/AMD rows have both exactly 0 (fp32 underflow with p(DME)=1), giving NaN rows that
+  argmax counts as normal. Effect on the Kermany Normal/AMD score is below 0.03 points; `score.py` and the
+  diagnostics inherit it.
