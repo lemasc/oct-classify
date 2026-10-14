@@ -139,7 +139,7 @@ OCTDL and Duke held out (seed 20260913 only; paired patient-level bootstrap, scr
 | C | PAIMA tissue-scale check | local | ~1 h | done, negative |
 | D | Fused square-crop CV | local, 2026-10-13 20:44 to 2026-10-14 02:48 (`58824` cancelled) | ~6 h total | done |
 | E | Score all three variants | CPU | ~1 min | done 2026-10-14, seed 20260913 only |
-| F | Fused zero-Kermany-DME CV, fill-aware | local | ~8 h | **ready to launch** (fair rerun, handoff in F); first attempt invalid |
+| F | Fused zero-Kermany-DME CV, fill-aware | local, 2026-10-14 ~14:30 to 22:05 | ~8 h | done 2026-10-14 (fair rerun; first two attempts invalid; scored in `docs/paper` `data/paper/zero-dme/`) |
 | G | Logit-bias rescoring of fill-aware LOSO | CPU, `docs/paper` worktree | minutes | done 2026-10-14 (`docs/paper` `285ce16`) |
 | H | AdaBN on fill-aware LOSO (port from `legacy/docs/cross-device-plan`) | port: temporary worktree; eval: local GPU, `docs/paper` worktree | ~1-1.5 h GPU | port done (`feat/adabn-port` `8a65095`, merged into `docs/paper`); done 2026-10-14 (`docs/paper` `ec4f501`) |
 | I | Grad-CAM on final models | CPU, `docs/paper` notebook | minutes | done 2026-10-14 (`notebooks/gradcam_shortcut.py`, `e7e4982`; paper `4a075b0`) |
@@ -270,7 +270,7 @@ per class, so no size claim is made there.
 
 **PAIMA:** only Normal/AMD exists, so there is no 3-class view. Per-dataset 90.0, fused 90.8, fused square crop 93.0.
 
-### F. Fused zero-Kermany-DME CV (stopped: checkpoint selection flaw)
+### F. Fused zero-Kermany-DME CV (done; the first two attempts were invalid)
 
 **Question:** with the Kermany device seen in training but none of its DME, how much of Kermany's score is lost?
 LOSO-Kermany differs from fused in two ways at once: the device is unseen, and DME is seen only from OCTDL and Duke
@@ -309,7 +309,36 @@ chosen: leaving Kermany out of selection (that is LOSO's rule, but here Kermany 
 change two things at once), a fixed epoch count (config change, further from the reference protocol), scoring
 Kermany val on Normal/AMD with the restricted softmax (blind to normal → DME, the failure being measured).
 
-### F handoff: launch and monitor (fresh session)
+**Result (done 2026-10-14):** fair rerun `fused-zero-dme-noval-local-fold{1..5}`, all five folds finished (22:05).
+Selection was healthy: best epochs 16, 9, 11, 12, 27 (of 27, 20, 22, 23, 38 epochs), against exp. 4's 26, 18, 17, 17, 12;
+fold 1 Kermany val macro-F1 0.985, so the metric fix was in effect. Scored with `data/paper/zero-dme/zero_dme.py`
+(`docs/paper` worktree; helpers copied from `score.py`, patient-level shared-draw bootstrap, 2000 draws, AUROC 500;
+Duke pooled out-of-fold; test split; outputs `results.json`). Macro-F1 in percent, mean over 5 models:
+
+| Source | Zero Kermany DME | Fused (exp. 4) | Paired difference [95% CI] |
+|---|---:|---:|---|
+| Kermany | 91.1 | 97.4 | −6.3 [−7.6, −5.0] |
+| OCTDL | 96.8 | 95.9 | +1.0 [−0.9, +3.2] |
+| PAIMA (Normal/AMD) | 90.0 | 90.8 | −0.9 [−1.7, 0.0] |
+| Duke (pooled, 45 eyes) | 85.2 | 95.2 | −10.0 [−18.2, −3.2] |
+
+- **Kermany: the loss is DME recall.** DME recall 96.6 → 77.8 (−18.7 [−22.1, −15.4]); normal −1.4 [−3.2, +0.7] and AMD
+  −0.4 [−1.1, +0.2] are within noise; AUROC 99.8 → 98.8 (−1.0 [−1.3, −0.7]). Kermany DME goes to AMD (40 of 251 per model) and normal (16).
+  Normal/AMD-only view: +0.2 [−0.4, +0.9], so nothing else moves.
+- **Share of the LOSO gap, same 1000 images:** LOSO-fill 82.6, zero-DME 91.1, fused 97.4. Missing in-device DME costs
+  6.3 of the 14.8-point gap (~43%); the device being unseen costs the other 8.5 (LOSO − zero-DME −8.5 [−10.3, −6.8]).
+  The two parts are different errors. LOSO's remainder is **normal recall** (63.0 vs 93.8, −30.9 [−34.3, −27.5]; normal → AMD/DME), which matches the
+  image-size cue; zero-DME's loss is DME recall (LOSO's own DME recall, 83.4, is not lower than zero-DME's 77.8).
+- **Duke: DME recall drops although Duke's own DME is in training.** DME recall 88.9 → 62.4 (−26.5 [−43.6, −10.3]), DME → normal (291 of 1101) and
+  → AMD (123); normal and AMD recall unchanged; Normal/AMD view −0.1 [−1.0, +0.8]. Kermany DME therefore helps the model
+  recognise Duke DME. Driven by folds 3 and 4 (F1 0.76, 0.77; folds 1, 2, 5: 0.82, 0.92, 0.99), 45 eyes, so supporting evidence;
+  zero-DME vs LOSO-fill on Duke is within noise (+4.4 [−4.6, +13.7] in LOSO's favour).
+- **OCTDL and PAIMA:** within noise, the effect is specific to the sources whose DME overlaps with the removed data.
+- **Reading:** between the two outcomes of the rule below. About 40% of Kermany's LOSO gap is DME seen only on other
+  devices (supported, partial cause), the remaining ~60% is device-wide (normal recall). Caveats: local vs cluster hardware (exp. 4 on the cluster),
+  one seed, Kermany's share of fused batches changes when its DME is removed. The legacy zero-DME numbers stay withdrawn; this run replaces them.
+
+### F handoff: launch and monitor (executed; kept for reference)
 
 From the `repo-retry` root, on `fix/cross-device` with the metric fix:
 
@@ -422,3 +451,9 @@ Fixed before the OCTDL and Duke square-crop results come in, so the choice does 
   near 0.65 by a zero F1 term for the absent DME class, flattening selection. Macro-F1 now averages over classes
   present in the targets (unchanged when all are present). Selection rule: seen data only (option 2). Fair rerun
   handed off for a fresh session (F handoff).
+- 2026-10-14 (F done): fair zero-DME rerun finished locally (22:05), five folds, selected epochs 16, 9, 11, 12, 27, not
+  the epoch-0 failure. Paired bootstrap (`docs/paper` `data/paper/zero-dme/`, uncommitted): Kermany −6.3 [−7.6, −5.0]
+  (DME recall −18.7; normal and AMD within noise), Duke −10.0 [−18.2, −3.2] (DME recall −26.5, folds 3-4),
+  OCTDL and PAIMA within noise. Of Kermany's 14.8-point LOSO test-split gap, ~43% is missing in-device DME and the rest
+  is normal recall on an unseen device. Supports "DME seen only on other devices" as a partial cause, not the main one.
+
