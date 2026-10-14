@@ -12,7 +12,9 @@ _another_ dataset: in Duke, image size gives the label away, and models trained 
 Kermany. The shortcut is invisible on Duke itself, where it is always right, and the fused model scores well
 on every source. It only shows when the model meets a device where the rule is wrong. A simple check would have
 caught it before training: tabulate image size (and other acquisition properties) against the label in each
-source, as in @fig-size-class.
+source, as in @fig-size-class. The route matters too: here the cue reaches the model through the letterbox bands that
+fitting a wide scan into a square canvas creates, so any preprocessing that leaves shape-dependent padding can
+carry it.
 
 *Removing a shortcut is not free.* Square crop removes the size cue and recovers much of Kermany's gap, but it
 costs the other unseen devices in different ways: OCTDL loses normal recall (normal images called DME), Duke loses

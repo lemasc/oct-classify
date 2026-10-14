@@ -67,3 +67,9 @@ Confidence intervals are 95% patient-level cluster bootstrap intervals (2,000 re
 patients, or eyes for Duke, are resampled with all their images. When two arms are compared on the same images,
 one resample is shared by both, so the difference has a _paired_ interval. We call a difference beyond noise when
 its paired interval excludes zero.
+
+*Attribution and intervention.* To see where held-out models find evidence for a class, we compute Grad-CAM
+@selvaraju2017gradcam maps at the last convolutional stage for the predicted class, and check them against a
+model whose top stage is re-initialised @adebayo2018sanity. Because attribution maps show where gradients point
+rather than what causes a prediction, we also change selected pixels of the input (@sec-shortcut) and record how
+predictions move.

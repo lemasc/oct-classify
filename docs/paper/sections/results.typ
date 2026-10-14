@@ -105,6 +105,42 @@ and `data/analysis/heldout-size-test`]
     width. Held-out Kermany models, no retraining.],
 ) <fig-size-test>
 
+*Where the cue enters: the letterbox bands.* Width reaches the model through the letterbox. A 768×496 scan
+fitted to the square canvas leaves flat bands above and below the tissue, covering about a third of the canvas, and
+Duke's DME-only 768×496 images have the same bands. Changing only the band pixels, to black or to speckle drawn
+from the darker half of the scan itself, removes most of the shortcut errors. Across the five held-out Kermany
+models, of the 768×496 normal images a model called DME, #range0(gc-dme("768 normal → DME", "speckle"))% are
+still called DME with speckle bands (#range0(gc-dme("768 normal → DME", "black"))% with black bands); for AMD images
+called DME, #range0(gc-dme("768 AMD → DME", "speckle"))% remain. #{
+  let rows = GC.intervention_by_fold.filter(r => r.group in ("768 normal → normal", "768 AMD → AMD") and r.at("band fill") != "trained")
+  let total = rows.map(r => r.n).sum()
+  let changed = rows.map(r => calc.round(r.n * (1 - r.at("called true class")))).sum()
+  let to-dme = rows.map(r => calc.round(r.n * r.at("called DME"))).sum()
+  [Correct normal and AMD calls barely move: of #total such cases (two band changes, five models), #to-dme become
+  DME, and the predicted class changes for #changed.]
+} In
+two of the five models about half of the AMD errors survive, so the bands are the main but not the only route.
+(#gc-group-n("768 normal → DME") images per group and model, one per patient.)
+
+Grad-CAM illustrates the same mechanism (@fig-gradcam), with a caveat. For these errors two of the models put
+#range0(gc-band("768 normal → DME").slice(0, 2))% of the map on the bands, against
+#range0(gc-band("768 normal → normal"))% for correct calls, but two others put only
+#range0(gc-band("768 normal → DME").slice(3, 5))% there although the band change removes most of their errors. The
+maps reflect what the model learned, not image structure: after the top of the network is re-initialised they no
+longer correlate with the trained maps (median Spearman
+#calc.round(GC.randomization_fold1_768_normal_to_dme.spearman_median, digits: 2)). We therefore use the band
+intervention as the evidence and Grad-CAM as an illustration.
+
+#figure(
+  image("../figures/gradcam.png", width: 100%),
+  caption: [Grad-CAM (last convolutional stage, predicted class) on held-out Kermany 768×496 normal images, from one
+    fill-aware and one square-crop LOSO-Kermany model. Each column is one image as the model sees it: fill-aware
+    with letterbox bands (top), square crop without (bottom). In the first four columns the fill-aware model calls
+    the image DME (bold) and its map sits on the top band; the square-crop model calls it normal and looks at the
+    retina. The last two columns are images both models call normal. How much of the map falls on the bands varies
+    between models (text).],
+) <fig-gradcam>
+
 *Training without the cue.* Square-crop models never see the image width. With Kermany held out, they score
 #pt("loso_full|kermany|all", "loso-sq") on the full source against #pt("loso_full|kermany|all", "loso-fill")
 (#dl("loso_full|kermany|all", "loso-sq - loso-fill")), and close about 40% of the test-split gap

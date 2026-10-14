@@ -23,4 +23,4 @@
 #include "sections/results.typ"
 #include "sections/discussion.typ"
 
-// #bibliography("refs.bib")  // enable once refs.bib has entries
+#bibliography("refs.bib")

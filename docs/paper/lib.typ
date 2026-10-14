@@ -72,3 +72,12 @@
   fmt(row.at(order.position(c => c == p)) / row.sum())
 }
 #let fig(name, width: 100%) = image("figures/" + name + ".svg", width: width)
+
+// Grad-CAM shortcut analysis (notebooks/gradcam_shortcut.py -> data/paper/gradcam/summary.json).
+#let GC = json("/data/paper/gradcam/summary.json")
+// Share (0-1) of a group's images called DME after changing the band pixels, for each fold.
+#let gc-dme(group, fill) = GC.intervention_by_fold.filter(r => r.group == group and r.at("band fill") == fill).map(r => r.at("called DME"))
+#let gc-band(group) = GC.mean_band_share_by_fold.at(group).values()
+#let pct0(x) = str(calc.round(x * 100)) // whole percent
+#let range0(xs) = pct0(calc.min(..xs)) + "–" + pct0(calc.max(..xs))
+#let gc-group-n(group) = GC.intervention_by_fold.find(r => r.group == group).n
