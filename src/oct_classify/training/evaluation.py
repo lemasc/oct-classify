@@ -29,7 +29,14 @@ def calculate_metrics(
     metrics: dict[str, float | list[list[int]] | None] = {
         "accuracy": float(accuracy_score(targets, predictions)),
         "balanced_accuracy": float(balanced_accuracy_score(targets, predictions)),
-        "macro_f1": float(f1_score(targets, predictions, average="macro", zero_division=0)),
+        # Average over the classes present in the targets. A class that is only predicted (e.g. DME on a
+        # validation set with no DME) still lowers the present classes' recall, but adds no F1 term of 0
+        # that would cap the score regardless of how well the present classes are separated.
+        "macro_f1": float(
+            f1_score(
+                targets, predictions, labels=np.unique(targets), average="macro", zero_division=0
+            )
+        ),
         "confusion_matrix": confusion_matrix(
             targets, predictions, labels=np.arange(len(class_names))
         ).tolist(),
