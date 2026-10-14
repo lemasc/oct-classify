@@ -1,5 +1,18 @@
 # Multi-Dataset OCT Classification — Project Plan
 
+> **Status (2026-10-14): superseded.** This was the opening plan. What was actually run and reported is in
+> [final-model-plan.md](final-model-plan.md) (and the investigation history in
+> [cross-device-plan.md](cross-device-plan.md)). Differences from this plan:
+> - **Done:** ResNet-50 per-dataset, fused and LOSO, all with fill-aware padding, plus a square-crop ablation
+>   (fused and LOSO) and cross-device diagnostics.
+> - **Not run:** ViT-B, MAE/SwinV2 self-supervised pretraining and the stretch architectures (§2, §6). Time went
+>   to explaining the LOSO gap instead; OCT-specific pretraining is listed as future work.
+> - **Evaluation unit:** metrics are per B-scan for every source, with patient-level (Duke: eye-level) bootstrap
+>   intervals. Duke eye-level aggregation, stated below as the Duke evaluation unit, is reported only as a
+>   supplement.
+> - **PAIMA:** scored on Normal/AMD with the softmax restricted to those outputs, as planned in §1; a separate
+>   4×4 cross-source grid was not produced.
+
 **Scope:** First pass: Normal / AMD (merged: AMD-unspecified + CNV + Drusen) / DME, across Duke, Kermany, OCTDL, and PAIMA. OCTID is deferred until a defensible split design is available.
 **Timeline:** ~6 weeks total: one completed exploratory week and approximately five remaining weeks.
 **Compute:** RTX 3060 (local) · A100 cluster (1g.10gb MIG slices, on-demand) · 7g.80gb slices (queued)

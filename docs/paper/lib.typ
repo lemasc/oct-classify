@@ -59,3 +59,8 @@
   let m = LB.at(key).arms.at(arm).delta.macro_f1
   [#fmt(m.point, signed: true) [#fmt(m.lo, signed: true), #fmt(m.hi, signed: true)]]
 }
+
+// Duke eye-level scores (scripts/paper/duke_eye_level.py), for the footnote only.
+#let EYE = json("/data/paper/duke-eye-level.json")
+#let eye-wrong(arm) = str(EYE.arms.at(arm).misclassified_eyes)
+#let eye-f1(arm) = fmt(EYE.arms.at(arm).macro_f1.point)

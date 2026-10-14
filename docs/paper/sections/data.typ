@@ -28,8 +28,11 @@ training (masked loss, @sec-method), and PAIMA is scored on normal vs AMD only.
 
 *Label unit.* Duke labels a whole eye (volume) and propagates the diagnosis to every B-scan; the other sources label
 individual B-scans. For comparability we score every source per B-scan, but Duke's 45 eyes are the unit of
-splitting and of bootstrap resampling, so its intervals reflect 45 independent eyes, not 3,231 images.
-#todo[decide whether to also give Duke eye-level scores (per-dataset: 97.7 vs 94.1 per B-scan); not in final scoring yet]
+splitting and of bootstrap resampling, so its intervals reflect 45 independent eyes, not 3,231 images.#footnote[Duke can also be scored per eye, by averaging each eye's B-scan probabilities. At that level the
+  per-dataset, fused, fused square-crop, LOSO and LOSO square-crop models misclassify #eye-wrong("per-dataset"),
+  #eye-wrong("fused-fill"), #eye-wrong("fused-sq"), #eye-wrong("loso-fill") and #eye-wrong("loso-sq") of the
+  #EYE.n_eyes eyes (macro-F1 #eye-f1("per-dataset"), #eye-f1("fused-fill"), #eye-f1("fused-sq"), #eye-f1("loso-fill")
+  and #eye-f1("loso-sq")). We keep B-scans as the main unit so that all four sources are scored alike.]
 
 *Deduplication and splits.* Exact duplicates and perceptual-hash (distance zero) near-duplicates across patients are
 removed or linked into one split unit, which removes 7,771 same-label copies from Kermany alone. Splits are made at

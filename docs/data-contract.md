@@ -26,8 +26,12 @@ Every source adapter emits `ImageRecord` entries and no downstream component may
 ### Labeling And Evaluation Units
 
 - Duke labels an eye/volume diagnosis propagated to its B-scans. It emits `label_unit="eye"`
-  and uses its volume group as `eye_id`. Duke headline metrics aggregate mean class probabilities
-  by `eye_id` before scoring.
+  and uses its volume group as `eye_id`.
+- **Evaluation unit (all sources):** headline metrics are per B-scan (image), with the bootstrap resampling
+  `group_id` (patients; eyes for Duke). Duke 5-fold results are pooled out-of-fold. Duke eye-level metrics,
+  which average class probabilities by `eye_id` before scoring, are supplementary (training CLI `eye_level`,
+  `scripts/paper/duke_eye_level.py`). Eye-level was the original headline for Duke; it was changed so that all
+  sources are scored alike.
 - PAIMA labels individual B-scans. It emits `label_unit="image"`, retains CSV `Label` as the
   training target, records CSV `Class` as `cohort`, and derives `eye_id` from CSV
   `Class`/`Patient ID`/`Eye`. Its `group_id` remains `Class`/`Patient ID` because patient numbering
@@ -96,5 +100,9 @@ below defines an exclusion.
   candidates rather than automatic exclusions.
 - Deterministic preprocessing converts to RGB, composites alpha over black, preserves aspect ratio while
   resizing into a centered square canvas, applies per-image 1st/99th percentile intensity scaling, and
-  uses normalization statistics calculated from training records only. Stochastic augmentation is a
+  uses normalization statistics calculated from training records only. `data.padding` selects the canvas
+  fill: `black` (original), `median` (percentiles over content only, padding filled with the content median)
+  or `fill_aware` (as `median`, and white rotation/crop fill is excluded from the percentiles and redrawn from
+  nearby background). All final models use `fill_aware`. The optional `geometry = "square_crop"` (random
+  height × height window in training, centred window in evaluation) is an ablation that hides image width. Stochastic augmentation is a
   training concern and is not part of this deterministic contract.
