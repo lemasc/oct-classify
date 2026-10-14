@@ -139,7 +139,7 @@ OCTDL and Duke held out (seed 20260913 only; paired patient-level bootstrap, scr
 | C | PAIMA tissue-scale check | local | ~1 h | done, negative |
 | D | Fused square-crop CV | local, 2026-10-13 20:44 to 2026-10-14 02:48 (`58824` cancelled) | ~6 h total | done |
 | E | Score all three variants | CPU | ~1 min | done 2026-10-14, seed 20260913 only |
-| F | Fused zero-Kermany-DME CV, fill-aware | local | ~2-6 h | todo (handoff below) |
+| F | Fused zero-Kermany-DME CV, fill-aware | local | ~2-6 h | running (local, started 2026-10-14 13:26) |
 | G | Logit-bias rescoring of fill-aware LOSO | CPU, `docs/paper` worktree | minutes | todo |
 | H | AdaBN on fill-aware LOSO (port from `legacy/docs/cross-device-plan`) | port: temporary worktree; eval: local GPU after F | ~1-1.5 h GPU | todo |
 | I | Grad-CAM on final models | local GPU after F | minutes | todo |
