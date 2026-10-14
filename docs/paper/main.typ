@@ -1,4 +1,4 @@
-// Presubmission draft. Build: typst compile main.typ
+// Presubmission draft. Build: typst compile --root ../.. main.typ
 #set document(title: [Cross-Device Generalization of CNN Retinal OCT Classifiers])
 #set page(paper: "a4", margin: 2.5cm, numbering: "1")
 #set text(size: 11pt)

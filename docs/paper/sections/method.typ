@@ -1,4 +1,69 @@
 #import "../lib.typ": *
 
-= Method
-#todo[ResNet-50 setup, fill-aware padding, square crop, per-dataset / fused / LOSO variants (Fig: design diagram), patient-level bootstrap and paired deltas]
+= Method <sec-method>
+
+== Model and training
+
+All models are ResNet-50 networks initialised from ImageNet weights, with a three-way output (normal, AMD, DME).
+Each B-scan is scaled to fit a 224×224 canvas with its aspect ratio kept (letterboxing), and the empty bands are
+filled with the median intensity of the scan. Intensities are rescaled to the 1st–99th percentile of the tissue.
+Some sources rotate or crop their scans and fill the exposed corners with white; we exclude this fill from the
+percentiles and redraw it from nearby background (_fill-aware padding_), so that it neither compresses the
+tissue contrast nor marks a source. Training augmentations are horizontal flip, rotation up to 10°, small
+brightness and contrast jitter, and light Gaussian blur.
+
+We train with AdamW (learning rate $10^(-4)$, weight decay $10^(-4)$, batch size 16) for up to 100 epochs of 1,000
+batches, with early stopping after 10 epochs without improvement. Batches are sampled so that every source and
+every class within it is equally likely. The loss is a class-weighted cross-entropy _masked_ to the classes a
+source labels: for PAIMA the DME output is excluded from the softmax, so PAIMA images never act as negative DME
+examples. The checkpoint with the best validation macro-F1, averaged over sources weighted by their validation
+size, is kept. All runs use one seed (20260913); @sec-limits discusses seed variation.
+#todo[LOSO uses batch size 12; per-dataset runs use the same recipe on one source. Say so or table it.]
+
+== Three training variants
+
+#figure(
+  kind: image,
+  placeholder(4.5cm)[F3: design diagram.
+    Rows: per-dataset, fused, LOSO. Columns: the four sources, marked train / test / held out.],
+  caption: [The three training variants. Per-dataset and fused models are tested on devices they trained on;
+    leave-one-source-out (LOSO) models are tested on a device they never saw.],
+) <fig-design>
+
+We train three variants (@fig-design), all scored on the same images:
+
+- *Per-dataset*: one model per source, trained and tested on that source. This is the usual single-dataset
+  setting and our reference for "own device" accuracy.
+- *Fused*: one model trained on all four sources together and tested on each source's test split. It measures
+  whether a single model can serve every device it has seen.
+- *Leave-one-source-out (LOSO)*: for each source, a model trained on the other three and tested on the held-out
+  source. It measures accuracy on an unseen device.
+
+Duke's five folds are used throughout: the per-dataset Duke model and every model that trains on Duke (fused,
+and LOSO with Kermany, OCTDL or PAIMA held out) are trained five times, once per Duke fold, so Duke is always
+scored on eyes the model did not train on. Kermany, OCTDL and PAIMA have fixed test splits; their fused and LOSO
+scores are the mean over the five models. The LOSO model with Duke held out is a single model.
+
+*The gap.* The fused model and the LOSO model are scored on the same test images of a source; the difference is
+its _unseen-device gap_. A LOSO model can also be scored on _all_ images of its held-out source, since none were
+used in training; we call this the _full-source_ score.
+
+== Square crop: removing the image-size cue
+
+To test whether models use image size as a label cue (@sec-shortcut), we add one arm that hides it. _Square crop_
+trains on a random square window (height × height) of each scan and tests on the centred window. Every input is
+then a square of tissue with no letterbox bands, so the scan's original width cannot be read. We train square-crop
+versions of the fused and LOSO models with otherwise identical settings.
+
+== Evaluation
+
+We report macro-F1 (the mean of the per-class F1 scores) as the main metric, because the classes are imbalanced
+and differ in balance between sources, together with macro-AUROC (one-vs-rest, averaged over classes), which
+measures ranking and does not depend on the decision cutoff. PAIMA is always scored on normal vs AMD, with the
+softmax restricted to those two outputs. We also report a _Normal/AMD view_ for every source, which drops DME
+images and renormalises, to separate DME errors from the rest.
+
+Confidence intervals are 95% patient-level cluster bootstrap intervals (2,000 resamples; 500 for AUROC):
+patients, or eyes for Duke, are resampled with all their images. When two arms are compared on the same images,
+one resample is shared by both, so the difference has a _paired_ interval. We call a difference beyond noise when
+its paired interval excludes zero.
