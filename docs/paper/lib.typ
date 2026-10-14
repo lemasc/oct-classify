@@ -51,3 +51,11 @@
 #let placeholder(height, body) = rect(width: 100%, height: height, stroke: 0.5pt + gray)[
   #align(center + horizon)[#pending(body)]
 ]
+
+// Logit-bias diagnostic (data/paper/logit-bias). Arms: "none", "bias-crossfit", "bias-oracle".
+#let LB = json("/data/paper/logit-bias/results.json")
+#let lb-pt(key, arm) = fmt(LB.at(key).arms.at(arm).metrics.macro_f1.point)
+#let lb-dl(key, arm) = {
+  let m = LB.at(key).arms.at(arm).delta.macro_f1
+  [#fmt(m.point, signed: true) [#fmt(m.lo, signed: true), #fmt(m.hi, signed: true)]]
+}

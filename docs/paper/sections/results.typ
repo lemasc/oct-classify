@@ -177,9 +177,15 @@ device's DME is unseen", we train the fused model with every Kermany DME image r
 Kermany's normal and AMD images. #pending[zero-DME rerun on fill-aware models (item F); legacy median-pad result:
 Kermany macro-F1 −5.6 [−6.7, −4.5]].
 
-*Causes we ruled out.* #pending[logit bias (item G) and AdaBN (item H) on fill-aware models.] Two simpler
-explanations do not account for the gap. A per-class shift of the decision cutoff, fitted on the held-out source's
-own labels, barely changes macro-F1, so the gap is not a matter of calibration. Re-estimating the BatchNorm
+*Causes we ruled out.* Two simpler explanations do not account for the gap. First, the decision cutoff: we fit a
+per-class shift of the output log-probabilities on the held-out source's own labels, fitting on one half of its
+patients and scoring the other. This raises held-out Kermany from #lb-pt("kermany|all", "none") to
+#lb-pt("kermany|all", "bias-crossfit") (#lb-dl("kermany|all", "bias-crossfit")), far short of the
+#pt("seen|kermany|all", "fused-fill") it scores when seen, and changes OCTDL (#lb-dl("octdl|all", "bias-crossfit"))
+and Duke (#lb-dl("duke|all", "bias-crossfit")) within noise. Even the best shift found by searching on all of
+Kermany's labels reaches only #fmt(LB.at("kermany|all").grid.best). Since this uses labels a deployed model would
+not have, it is an upper bound; the cutoff explains a few points of Kermany's gap, not most of it.
+#pending[AdaBN (item H) on fill-aware models; legacy numbers below.] Re-estimating the BatchNorm
 statistics on the unseen device (AdaBN), the standard first remedy for a change in image statistics, helps
 Kermany by about one point and costs OCTDL about twenty. Finally, the gap is not a matter of training-set size: a
 fused model whose Kermany DME was cut to the 122 patients a LOSO model sees still scores 97.1 on Kermany (earlier
