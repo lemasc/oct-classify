@@ -89,3 +89,16 @@
   let m = AB.at(key).arms.at("adabn-all").delta.at(name)
   [#fmt(m.point, signed: true) [#fmt(m.lo, signed: true), #fmt(m.hi, signed: true)]]
 }
+
+// Fused model without Kermany DME (data/paper/zero-dme). Arms: "zero-dme", "fused-fill", "loso-fill" (Kermany, Duke).
+#let ZD = json("/data/paper/zero-dme/results.json")
+#let zd-pt(key, arm, name: "macro_f1") = fmt(ZD.at(key).arms.at(arm).metrics.at(name).point)
+#let zd-dl(key, pair, name: "macro_f1") = {
+  let m = ZD.at(key).deltas.at(pair).at(name)
+  [#fmt(m.point, signed: true) [#fmt(m.lo, signed: true), #fmt(m.hi, signed: true)]]
+}
+// Share of Kermany's LOSO gap (fused minus LOSO, same images) that the zero-DME model already shows.
+#let zd-share() = {
+  let f(a) = ZD.at("kermany|all").arms.at(a).metrics.macro_f1.point
+  str(calc.round((f("fused-fill") - f("zero-dme")) / (f("fused-fill") - f("loso-fill")) * 100))
+}

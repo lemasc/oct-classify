@@ -25,10 +25,11 @@ tested this for OCTDL or Duke. It does not explain PAIMA: averaging predictions 
 together cover the whole PAIMA scan leaves its AUROC unchanged. We found no single preprocessing that is best
 on every unseen device.
 
-*DME is the weak point.* Once the size cue is accounted for, most of the remaining gap is DME recall. DME is also
-the class with the fewest training examples from the fewest devices: PAIMA has none, so a model with Kermany held
-out learns DME from 122 patients on two devices. Whether more devices' DME would close the gap is untested; a fused
-model trained without one device's DME would separate "unseen device" from "unseen DME".
+*DME is the weak point, but not the whole story.* Once the size cue is accounted for, most of the remaining gap is DME
+recall. DME is also the class with the fewest training examples from the fewest devices: PAIMA has none, so a model
+with Kermany held out learns DME from 122 patients on two devices. A fused model trained without Kermany's DME
+separates "unseen device" from "unseen DME": it loses #zd-share()% of Kermany's held-out gap, all through DME recall, and the rest
+falls on normal recall, as the size cue predicts. Whether more devices' DME would close the DME part is still untested.
 
 == Limitations <sec-limits>
 
@@ -43,6 +44,9 @@ model trained without one device's DME would separate "unseen device" from "unse
 - *Hardware.* The fused fill-aware models were trained on a different GPU from the fused square-crop models, and no
   seed noise floor exists for the fused models. Differences of a few points between the fused arms are therefore
   not confirmed.
+- *Zero-DME control.* The fused model without Kermany DME is one seed trained on a different GPU from the fused
+  reference, and removing Kermany's DME also changes Kermany's share of each training batch. Its Duke result rests on
+  45 eyes and mostly two folds.
 - *Dataset is not device.* Each source differs from the others in device, but also in population, labelling
   protocol and label unit (Duke labels whole eyes, the others single B-scans). The gaps we measure combine all of
   these.

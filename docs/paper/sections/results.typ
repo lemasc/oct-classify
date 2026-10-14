@@ -211,8 +211,40 @@ above: most of its test split is 1024×496, Duke's AMD-only size. PAIMA, which h
 through AMD recall.
 
 A likely reason is that each LOSO model sees DME from fewer devices: PAIMA has none, so with Kermany held out the
-model learns DME from OCTDL and Duke alone (122 patients). We have not tested this directly.
-#pending[optional: fused model with no Kermany DME in training or validation (deferred item F)]
+model learns DME from OCTDL and Duke alone (122 patients). We tested this for Kermany with a fused model, trained
+on all four devices, from which we removed every Kermany DME image (in training and validation; the other classes
+and sources are unchanged; five Duke folds, same recipe as the fused model). Kermany is then a seen device
+without its DME, so the comparison with the fused model isolates the missing DME, and the comparison with the LOSO model isolates the device.
+
+#figure(
+  table(
+    columns: 5,
+    align: (left, right, right, right, right),
+    table.header[Source][Without Kermany DME][Fused][Difference][DME recall change],
+    ..(("kermany", "Kermany"), ("octdl", "OCTDL"), ("duke", "Duke")).map(((k, n)) => (
+      [#n],
+      zd-pt(k + "|all", "zero-dme"),
+      zd-pt(k + "|all", "fused-fill"),
+      zd-dl(k + "|all", "zero-dme - fused-fill"),
+      zd-dl(k + "|all", "zero-dme - fused-fill", name: "recall_dme"),
+    )).flatten(),
+    [PAIMA], zd-pt("paima|normal_amd", "zero-dme"), zd-pt("paima|normal_amd", "fused-fill"),
+    zd-dl("paima|normal_amd", "zero-dme - fused-fill"), [--],
+  ),
+  caption: [Fused model with and without Kermany's DME images (macro-F1 %, test split, percentage-point differences
+    with patient-level 95% intervals; PAIMA on Normal/AMD).],
+) <tab-zero-dme>
+
+Removing Kermany's DME costs Kermany #zd-dl("kermany|all", "zero-dme - fused-fill"), all of it through DME recall;
+its normal and AMD recall stay within noise (#zd-dl("kermany|all", "zero-dme - fused-fill", name: "recall_normal"),
+#zd-dl("kermany|all", "zero-dme - fused-fill", name: "recall_amd")). That is about #zd-share()% of the held-out gap on the
+same images (LOSO #zd-pt("kermany|all", "loso-fill"), without Kermany DME #zd-pt("kermany|all", "zero-dme"), fused
+#zd-pt("kermany|all", "fused-fill")). The rest comes from the device being unseen and falls on normal recall
+(LOSO minus no-DME #zd-dl("kermany|all", "loso-fill - zero-dme", name: "recall_normal")), which matches the size cue. Missing DME is therefore a
+real but partial cause. The effect is not confined to the device that lost its DME: Duke's DME recall also falls
+(#zd-dl("duke|all", "zero-dme - fused-fill", name: "recall_dme")), so Kermany's DME helps the model recognise Duke's. Duke's drop
+comes mostly from two of its five folds and rests on 45 eyes, so we take it as supporting evidence. OCTDL and PAIMA are
+within noise.
 
 *Causes we ruled out.* Three simpler explanations do not account for the gap. First, the decision cutoff: we fit a
 per-class shift of the output log-probabilities on the held-out source's own labels, fitting on one half of its
@@ -231,4 +263,4 @@ and predict the other. It raises held-out Kermany only from #ab-pt("kermany|all"
 recall falls from #ab-pt("octdl|all", "none", name: "recall_amd") to #ab-pt("octdl|all", "adabn-all", name: "recall_amd").
 Finally, the gap is not a matter of training-set size: a
 fused model whose Kermany DME was cut to the 122 patients a LOSO model sees still scores 97.1 on Kermany (earlier
-preprocessing variant, not rerun).
+preprocessing variant, not rerun). Removing the Kermany DME altogether does cost points, as shown above.
