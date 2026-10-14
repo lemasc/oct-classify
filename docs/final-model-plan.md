@@ -139,10 +139,10 @@ OCTDL and Duke held out (seed 20260913 only; paired patient-level bootstrap, scr
 | C | PAIMA tissue-scale check | local | ~1 h | done, negative |
 | D | Fused square-crop CV | local, 2026-10-13 20:44 to 2026-10-14 02:48 (`58824` cancelled) | ~6 h total | done |
 | E | Score all three variants | CPU | ~1 min | done 2026-10-14, seed 20260913 only |
-| F | Fused zero-Kermany-DME CV, fill-aware | local | ~2-6 h | running (local, started 2026-10-14 13:26) |
+| F | Fused zero-Kermany-DME CV, fill-aware | local | ~8 h | **stopped 2026-10-14 14:5x, invalid** (selection flaw, see F); fair rerun deferred |
 | G | Logit-bias rescoring of fill-aware LOSO | CPU, `docs/paper` worktree | minutes | done 2026-10-14 (`docs/paper` `285ce16`) |
-| H | AdaBN on fill-aware LOSO (port from `legacy/docs/cross-device-plan`) | port: temporary worktree; eval: local GPU after F | ~1-1.5 h GPU | port done (`feat/adabn-port` `8a65095`, merged into `docs/paper`); eval todo after F |
-| I | Grad-CAM on final models | local GPU after F | minutes | todo |
+| H | AdaBN on fill-aware LOSO (port from `legacy/docs/cross-device-plan`) | port: temporary worktree; eval: local GPU, `docs/paper` worktree | ~1-1.5 h GPU | port done (`feat/adabn-port` `8a65095`, merged into `docs/paper`); eval running (handoff in H) |
+| I | Grad-CAM on final models | local GPU after H | minutes | todo; example selection to agree first |
 
 F-I rerun, on the final fill-aware models, the cross-device diagnostics the paper cites (originally run on median-pad
 models, reports on the `legacy/docs/cross-device-plan` branch). The Kermany DME cut to 122 patients is not rerun; the
@@ -270,42 +270,46 @@ per class, so no size claim is made there.
 
 **PAIMA:** only Normal/AMD exists, so there is no 3-class view. Per-dataset 90.0, fused 90.8, fused square crop 93.0.
 
-### F. Fused zero-Kermany-DME CV (handoff)
+### F. Fused zero-Kermany-DME CV (stopped: checkpoint selection flaw)
 
-**Question:** with the Kermany device seen in training but none of its DME, how much of Kermany's score is lost? This
-is the paper's evidence for the "DME seen only on other devices" cause. Legacy median-pad result: Kermany macro-F1
-95.6 → 90.0 (−5.6 [−6.7, −4.5]), report `docs/reports/20261008-kermany-zero-dme.md` on branch
-`legacy/docs/cross-device-plan` (worktree `../repo-legacy-cross-device`).
+**Question:** with the Kermany device seen in training but none of its DME, how much of Kermany's score is lost?
+LOSO-Kermany differs from fused in two ways at once: the device is unseen, and DME is seen only from OCTDL and Duke
+(122 patients). This run removes only the second, so it tests the "DME seen only on other devices" cause behind the
+paper's "most of the remaining gap is DME".
 
-**What:** the fused fill-aware config (`configs/training/resnet50-fused-fill-aware.toml`, unchanged) on splits with
-every Kermany **train** DME row removed. Kermany normal/AMD, all val/test rows and the other three sources are
-unchanged; Kermany val keeps its DME so checkpoint selection matches the reference. Seed 20260913, 5 Duke folds,
-trained locally in sequence.
+**Flaw (found 2026-10-14):** the splits remove Kermany DME from train but keep it in **val**, and checkpoint
+selection and early stopping use mean val macro-F1. Training teaches the model that Kermany-looking images are never
+DME, so Kermany val falls as training goes on and the best checkpoint is the earliest one. Fill-aware fold 1 kept
+**epoch 0** and stopped after 11 epochs (Kermany val 0.87 → ~0.70); the reference exp. 4 keeps epochs ~10-30. The
+comparison with fused therefore mixes "no Kermany DME" with "barely trained".
 
-**Steps** (from the `repo-retry` root; session folder `.scratchpad/4ea87fb_fused-zero-dme/`):
+**The legacy run has the same flaw:** `kdme0-local-20261008-011217` kept epochs 0-2 of 11-13, against the median-pad
+reference's 10-23. Its conclusions (Kermany −5.6, "Kermany DME matters for Duke" −16.6 DME recall, the "unexplained"
+PAIMA −4.7) may be partly or wholly undertraining and are **not cited**. The DME cut to 122 patients
+(`kdme122-local-20261004-210330`) is not affected: it kept epochs 7-30, like the reference.
 
-1. Splits: copy `../repo-legacy-cross-device/.scratchpad/1e23970_kermany-dme0/make_splits.py` into the session folder
-   and run it (`uv run python <path>`). It reads `artifacts/splits/duke-cv/fold-N/kermany.jsonl` and writes
-   `artifacts/splits/duke-cv-kermany-dme0/fold-N/` (filtered `kermany.jsonl`, symlinks for the other sources). Check
-   that each fold has 0 rows with `split == "train"` and `label == "dme"` for Kermany, and that val/test counts equal
-   `duke-cv`'s.
-2. Launcher `run-local.sh` in the session folder, detached (`nohup ... &`, so it survives the session), folds 1-5 in
-   sequence:
-   `uv run oct-classify train fused --split-dir artifacts/splits/duke-cv-kermany-dme0/fold-${fold}
-   --training-config configs/training/resnet50-fused-fill-aware.toml --run-name fused-zero-dme-local-fold${fold}
-   --device cuda`, each fold's output to `<session>/fold${fold}.out`, with start/exit lines in `<session>/run-local.log`.
-   Model on `.scratchpad/83347e9_fused-square-crop/run-local.sh` (without the cluster logic).
-3. When each fold finishes, delete its `checkpoint-last.pt` (keep `checkpoint-best.pt`).
-4. When all five are done: point estimates per source from each fold's `metrics-test.json` (mean ± SD over folds),
-   next to exp. 4 (`exp4-fill-aware-58577-fold{1..5}`). Paired bootstrap scoring is done in the `docs/paper` worktree,
-   not here.
+**Runs left behind:** `fused-zero-dme-local-fold1` (complete, invalid) and `fused-zero-dme-local-fold2` (partial,
+stopped at 14:5x). Do not score them. Splits `artifacts/splits/duke-cv-kermany-dme0` (Kermany val still has DME).
 
-Runs: `artifacts/runs/fused/resnet50/fused-zero-dme-local-fold{1..5}`. The GPU is shared with nothing else until F
-finishes; H and I wait for it.
+**Fair rerun (deferred, not yet decided):** remove Kermany DME from val as well (keep it in test), so selection never
+uses Kermany DME, as a LOSO model never validates on its held-out device. Split change only (filter `split in
+{"train","val"}` instead of `"train"` in `make_splits.py`, new dir e.g. `duke-cv-kermany-dme0-noval`). Check fold 1's
+best epoch is in the reference range before letting all 5 run (~8 h). Alternative: fixed epoch count (~28, the
+reference median), which needs a config change. Until a fair run exists, the paper rests the DME claim on the LOSO
+DME-recall breakdown only.
 
-**Reading:** a clear Kermany drop (legacy: ~6 points), mostly in DME recall, supports the cause in the paper. No drop
-means the legacy result does not carry over to fill-aware and the paper drops the claim. Caveat as for D: local vs
-cluster hardware, no fused seed floor.
+### H. AdaBN on fill-aware LOSO (handoff)
+
+**Question:** does re-estimating BatchNorm statistics on the unseen device close the gap? Legacy median-pad result:
+Kermany +1.1, OCTDL about −20 (`docs/reports/20261004-adabn.md` on `legacy/docs/cross-device-plan`). Smoke run on
+fill-aware LOSO OCTDL fold 1: 91.7 → 82.3.
+
+**What:** from the `docs/paper` worktree (`../repo-paper`, which has the port), the 16 fill-aware LOSO checkpoints
+`loso-{kermany,octdl,paima}-local-20261008-174938-fold{1..5}` and `loso-duke-local-20261008-174938`, each on its
+held-out source's full manifest, `--adapt-bn --adapt-bn-layers all` (patient cross-fit, default folds and seed),
+output `<run>/evaluations/<source>-loso-adabn-all/`. Class labels as in the stored `<source>-loso/metrics.json`
+(PAIMA: normal, amd). Score with the paired patient-level bootstrap against the stored `<source>-loso` predictions,
+as `data/paper/logit-bias/` does; outputs in `data/paper/adabn/` (strict JSON).
 
 ## Reading Rule for the Side-by-Side LOSO Table
 
@@ -362,3 +366,7 @@ Fixed before the OCTDL and Duke square-crop results come in, so the choice does 
   DME better, AUROC 93.7 vs 91.5) but the conclusion holds: the cutoff is a minor part of the gap. AdaBN ported from
   `c3c1d93` (statistics pass now fp32); with adapt-bn off it reproduces stored LOSO OCTDL fold 1 (macro-F1 identical,
   max |Δp| 0.002 on CPU); smoke run with adapt-bn on: 91.7 → 82.3, as in legacy. Full eval waits for F.
+- 2026-10-14 (F stopped): zero-DME fold 1 kept its epoch-0 checkpoint because Kermany val still holds DME while
+  training removes it; the legacy zero-DME run had the same flaw (epochs 0-2). Run stopped during fold 2; legacy
+  zero-DME numbers withdrawn from the paper. Fair rerun (no Kermany DME in val either) deferred. AdaBN (H) runs
+  first on the free GPU, then Grad-CAM (I).
