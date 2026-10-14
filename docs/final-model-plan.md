@@ -298,7 +298,7 @@ macro average still included DME (predicted on a few images) as an F1 term of 0,
 Kermany dominates the size-weighted selection mean, so the mean barely moved (0.684-0.697) and the best epoch was
 close to arbitrary. Partial run deleted.
 
-**Fix (`fix/cross-device`, see commit after `73d64eb`):** `calculate_metrics` now averages macro-F1 over the classes
+**Fix (`fix/cross-device` `f7f772d`):** `calculate_metrics` now averages macro-F1 over the classes
 present in the targets. A DME call on a Kermany normal still counts as a miss (lowers normal recall), so selection
 penalises exactly the over-calling under test; there is just no artificial zero term. Every other source and split
 has all its classes present, so its macro-F1 is unchanged (tested).
