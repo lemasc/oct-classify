@@ -77,10 +77,10 @@ Mean ± SD over 5 Duke folds; AUROC within 0.2 between the two. White fill does 
 
 | Held out | Full source [95% CI] | AUROC | Test split | Seen (fused) | Gap on test split |
 |---|---:|---:|---:|---:|---:|
-| Kermany | 73.8 [72.5, 75.0] | 93.7 | 82.6 | 97.4 | ~15 |
-| OCTDL | 92.0 [90.1, 93.8] | 98.7 | not computed | 95.9 | — |
-| PAIMA | 86.4 [84.9, 87.7] | 92.8 | not computed | 90.8 | — |
-| Duke | 89.7 [84.3, 93.7] | 97.8 | not computed | 95.2 | — |
+| Kermany | 73.8 [72.4, 74.9] | 93.7 | 82.6 | 97.4 | −14.8 [−16.5, −13.3] |
+| OCTDL | 92.0 [90.0, 93.8] | 98.7 | 91.6 | 95.9 | −4.3 [−9.8, −0.2] |
+| PAIMA | 86.4 [84.8, 87.7] | 92.8 | 85.2 | 90.8 | −5.7 [−8.2, −3.6] |
+| Duke | 89.7 [84.4, 93.7] | 97.8 | 89.7 | 95.2 | −5.5 [−10.1, −2.4] |
 
 CIs are patient-level bootstrap. Duke is one model on 45 eyes, so supporting evidence only.
 
@@ -138,7 +138,7 @@ OCTDL and Duke held out (seed 20260913 only; paired patient-level bootstrap, scr
 | B | LOSO square crop, OCTDL and Duke held out | local | — | done |
 | C | PAIMA tissue-scale check | local | ~1 h | done, negative |
 | D | Fused square-crop CV | local, 2026-10-13 20:44 to 2026-10-14 02:48 (`58824` cancelled) | ~6 h total | done |
-| E | Score all three variants | CPU | ~1 day | todo; all runs finished, can start |
+| E | Score all three variants | CPU | ~1 min | done 2026-10-14, seed 20260913 only |
 
 Dropped for this deadline: appearance augmentation (cross-device exp. 3b) and OCT-specific pretraining (exp. 5).
 3b needs about half a day of code plus ~10 LOSO models, a full day of the only GPU; listed as future work.
@@ -197,9 +197,9 @@ Duke folds, test split, point estimates from `metrics-test.json` (no CIs yet, se
 
 Kermany and OCTDL are within the ~2-point reading; PAIMA (+2.2) and Duke (−2.1) sit just past it in opposite
 directions. Most of Duke's drop is fold 4 (83.7 vs 89.9; fold 4 is low in every variant). Hardware differs (local vs
-cluster) and there is no fused seed floor, so these differences are unconfirmed. Provisional wording: square crop
+cluster) and there is no fused seed floor, so these differences are unconfirmed. Provisional wording (superseded by E's paired result): square crop
 costs nothing in-domain on Kermany and OCTDL, and moves PAIMA and Duke by about 2 points either way. Confirm with the
-paired patient-level deltas in E before stating it.
+paired patient-level deltas in E before stating it. E confirmed it: see E's result below.
 
 ### E. Scoring
 
@@ -213,6 +213,54 @@ For every variant and arm:
 
 Measurement rules from [cross-device-plan.md](cross-device-plan.md#measurement-rules) apply, including the seed-based
 minimum deltas.
+
+**Result (done 2026-10-14):** script `.scratchpad/6fc182a_final-scoring/score.py` (+ `report.py`), outputs in
+`data/final-scoring/` (`results.json`, `tables.md` with every table incl. per-class recall and the Normal/AMD view).
+Patient-level cluster bootstrap (2000 draws; AUROC 500), one resample shared by all arms of a comparison so deltas are
+paired. Duke 5-fold arms are pooled out-of-fold (all 3231 images, 45 eyes), the same images LOSO Duke sees. Stored
+metrics reproduce exactly (F1 diff 0, AUROC diff <3e-4). Seed 20260913 only. Macro-F1 in percent.
+
+**Seen devices, paired on the test split:**
+
+| Source | Square crop − fused fill-aware | Fused fill-aware − per-dataset |
+|---|---|---|
+| Kermany | +0.3 [−0.5, +1.1] | −1.4 [−2.1, −0.7] |
+| OCTDL | +0.2 [−3.4, +3.5] | −1.7 [−4.3, +0.6] |
+| PAIMA (Normal/AMD) | +2.1 [+1.1, +3.3] | +0.8 [−0.5, +2.2] |
+| Duke | −2.4 [−7.5, +1.7] | +1.1 [−2.2, +4.5] |
+
+- **Square crop costs nothing in-domain:** no source loses beyond noise. PAIMA gains (AUROC +1.3 [+0.7, +2.1]). Duke's
+  −2.4 is within noise (fold 4). Caveat: local vs cluster hardware, no fused seed floor.
+- **Fusing costs a little on Kermany only** (−1.4, small but outside noise); the others are within noise of the
+  per-dataset model.
+
+**LOSO gap on the test split (held out minus fused, same images; macro-F1 [95% CI]):**
+
+| Held out | Fill-aware | Square crop | Square − fill (held out) |
+|---|---|---|---|
+| Kermany | −14.8 [−16.5, −13.3] | −8.9 [−10.4, −7.4] | +6.3 [+4.7, +7.8] |
+| OCTDL | −4.3 [−9.8, −0.2] | −10.7 [−15.9, −6.0] | −6.2 [−13.3, +0.5] |
+| PAIMA | −5.7 [−8.2, −3.6] | −8.3 [−10.5, −6.4] | −0.5 [−2.5, +1.7] |
+| Duke | −5.5 [−10.1, −2.4] | −5.7 [−11.4, −0.2] | −2.5 [−4.7, −0.4] |
+
+- **Every held-out source loses beyond noise, in both arms.** Fill-aware gaps are 4-6 points for OCTDL, PAIMA and Duke,
+  and ~15 for Kermany. Square crop closes about 40% of Kermany's gap and widens the others, so its Kermany gain does not
+  generalise (consistent with the reading rule).
+- **Most of the gap is DME recall.** Held-out DME recall falls 13-34 points against fused (3-class view), while the
+  Normal/AMD-only gap is small for OCTDL (−1.7 [−4.5, +0.6]) and Duke (−1.5 [−4.2, +0.2]), and remains for Kermany
+  (−11.2, normal recall) and PAIMA (−5.7, AMD recall −11.6). This matches the "DME seen only on other devices" cause.
+- **Normal/AMD view, square crop vs fill-aware (full source):** OCTDL +0.3 [−0.7, +1.3] and Duke +0.5 [−0.1, +1.4]:
+  the OCTDL and Duke losses above come from DME, not from Normal/AMD.
+- **Kermany test split is not representative:** 942 of its 1000 images are 1024×496, so the held-out Kermany test
+  score (82.6) sits above the full-source score (73.8); use the full source for the unseen-device claim.
+
+**Kermany by image size (LOSO, full source, normal recall fill → square crop):** 512×496 80.5 → 86.4; 768×496
+58.4 → 91.1 (normal → DME 36.6% → 4.5%); 1536×496 87.7 → 89.6; 1024×496 68.5 → 78.4. DME recall rises at four of five
+sizes (512×512 69.1 → 81.7; 1536×496 55.9 → 78.1) but falls at 768×496 (89.0 → 79.3). The gain is largest where the size
+cue was, as in the Kermany finding above. On the fused Kermany test split sizes other than 1024×496 have ≤ 29 images
+per class, so no size claim is made there.
+
+**PAIMA:** only Normal/AMD exists, so there is no 3-class view. Per-dataset 90.0, fused 90.8, fused square crop 93.0.
 
 ## Reading Rule for the Side-by-Side LOSO Table
 
@@ -253,3 +301,9 @@ Fixed before the OCTDL and Duke square-crop results come in, so the choice does 
   fill-aware on Kermany and OCTDL, +2.2 on PAIMA, -2.1 on Duke (mostly fold 4). Unconfirmed across hardware, no seed
   floor. All training runs are now done; only scoring (E) remains. `checkpoint-last.pt` of the five folds still to
   delete.
+- 2026-10-14 (E done): all variants scored with patient-level bootstrap and paired deltas (`data/final-scoring/`).
+  Square crop costs nothing in-domain (PAIMA +2.1, others within noise). Every held-out source loses beyond noise
+  against its fused model on the same test split (fill-aware −4 to −6, Kermany −15), mostly through DME recall;
+  square crop narrows Kermany's gap and widens OCTDL's, so the reading-rule outcome stands (fill-aware main, square
+  crop ablation). Seed 20260913 only. Remaining: delete `checkpoint-last.pt` of the five fused square-crop folds
+  (held back at user's request).
