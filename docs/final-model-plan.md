@@ -30,7 +30,7 @@ Run paths are under `artifacts/runs/<source or fused>/resnet50/`. Status: `done`
 |---|---|---|---|---|
 | Per-dataset | fill-aware | `local-final-fill-aware-duke-fold{1..5}`, `local-final-fill-aware-{octdl,paima,kermany}` | `resnet50-fill-aware.toml` | done |
 | Fused | fill-aware | `exp4-fill-aware-58577-fold{1..5}` | `resnet50-fused-fill-aware.toml` | done (cluster) |
-| Fused | square crop | `fused-square-crop-local-fold{1..5}` (local) or `fused-square-crop-58824-fold{1..5}` (cluster) | `resnet50-fused-fill-aware-square-crop.toml` | running locally (started 2026-10-13 20:44, folds 1-5 in sequence); `58824` cancelled |
+| Fused | square crop | `fused-square-crop-local-fold{1..5}` (local) or `fused-square-crop-58824-fold{1..5}` (cluster) | `resnet50-fused-fill-aware-square-crop.toml` | done (local, 2026-10-13 20:44 to 2026-10-14 02:48); `58824` cancelled |
 | LOSO | fill-aware | `loso-<held out>-local-20261008-174938[-fold<N>]` | `resnet50-loso-fill-aware.toml` | done, all 4 held out |
 | LOSO | square crop | `loso-<held out>-local-3a-r2-square-crop[-fold<N>]` | `resnet50-loso-fill-aware-square-crop.toml` | done, all 4 held out |
 
@@ -137,8 +137,8 @@ OCTDL and Duke held out (seed 20260913 only; paired patient-level bootstrap, scr
 | A | Per-dataset fill-aware | local | — | done |
 | B | LOSO square crop, OCTDL and Duke held out | local | — | done |
 | C | PAIMA tissue-scale check | local | ~1 h | done, negative |
-| D | Fused square-crop CV | local, started 2026-10-13 20:44 (`58824` cancelled) | ~4-5 h per fold | running |
-| E | Score all three variants | CPU | ~1 day | todo, as runs finish |
+| D | Fused square-crop CV | local, 2026-10-13 20:44 to 2026-10-14 02:48 (`58824` cancelled) | ~6 h total | done |
+| E | Score all three variants | CPU | ~1 day | todo; all runs finished, can start |
 
 Dropped for this deadline: appearance augmentation (cross-device exp. 3b) and OCT-specific pretraining (exp. 5).
 3b needs about half a day of code plus ~10 LOSO models, a full day of the only GPU; listed as future work.
@@ -184,6 +184,22 @@ of a few points as unconfirmed.
 
 **Reading:** if it scores within ~2 points of fused fill-aware on every source, square crop costs nothing in-domain
 and the report can say so. A clear loss on a source stays in the report as the cost of removing the shortcut.
+
+**Result (done 2026-10-14):** all five folds finished (6 h total, 0.9-1.7 h per fold). Macro-F1 (AUROC), mean ± SD over 5
+Duke folds, test split, point estimates from `metrics-test.json` (no CIs yet, see E):
+
+| Source | Square crop (local) | Fill-aware (exp. 4, cluster) | Δ F1 |
+|---|---:|---:|---:|
+| Kermany | 97.7 ± 0.9 (99.8) | 97.4 ± 0.6 (99.8) | +0.3 |
+| OCTDL | 96.0 ± 0.7 (99.9) | 95.9 ± 2.2 (99.5) | +0.1 |
+| PAIMA | 93.0 ± 0.8 (97.0) | 90.8 ± 0.3 (95.7) | +2.2 |
+| Duke | 93.1 ± 6.1 (98.2) | 95.2 ± 3.1 (99.6) | −2.1 |
+
+Kermany and OCTDL are within the ~2-point reading; PAIMA (+2.2) and Duke (−2.1) sit just past it in opposite
+directions. Most of Duke's drop is fold 4 (83.7 vs 89.9; fold 4 is low in every variant). Hardware differs (local vs
+cluster) and there is no fused seed floor, so these differences are unconfirmed. Provisional wording: square crop
+costs nothing in-domain on Kermany and OCTDL, and moves PAIMA and Duke by about 2 points either way. Confirm with the
+paired patient-level deltas in E before stating it.
 
 ### E. Scoring
 
@@ -233,3 +249,7 @@ Fixed before the OCTDL and Duke square-crop results come in, so the choice does 
   monotonically (pooled −1.7 at 0.90 to −9.7 at 0.65), so scale does not explain square crop's PAIMA loss; it stays an
   open limitation. The first D launcher had died with the earlier session; relaunched detached at 20:44, `58824`
   cancelled, folds 1-5 train locally in sequence. `checkpoint-last.pt` of each fold is deleted by hand when it finishes.
+- 2026-10-14 (D done): fused square-crop CV finished locally, five folds. Per-source macro-F1 within 0.3 of fused
+  fill-aware on Kermany and OCTDL, +2.2 on PAIMA, -2.1 on Duke (mostly fold 4). Unconfirmed across hardware, no seed
+  floor. All training runs are now done; only scoring (E) remains. `checkpoint-last.pt` of the five folds still to
+  delete.
