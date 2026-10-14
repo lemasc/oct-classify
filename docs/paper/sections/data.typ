@@ -48,7 +48,8 @@ trained on Duke can therefore learn image size as a label cue; @sec-shortcut sho
 
 #figure(
   kind: image,
-  placeholder(5cm)[F2: image size × class per
-    source, from `artifacts/eda/features.csv`],
-  caption: [Image sizes by class in each source. In Duke, 768×496 is DME only and 1024×496 is AMD only.],
+  fig("size-class"),
+  caption: [Class mix at each image size. In Duke, every 768×496 image is DME and every 1024×496 image is AMD;
+    in Kermany, every 512×512 image is DME. OCTDL images are cropped to many different sizes and are shown as one
+    row; 23 Kermany images of rare sizes are omitted.],
 ) <fig-size-class>

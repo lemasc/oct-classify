@@ -63,9 +63,9 @@ PAIMA is the hardest source even when seen (#pt(k("seen", "paima"), "fused-fill"
 
 #figure(
   kind: image,
-  placeholder(5cm)[F4: dumbbell per source,
-    seen (fused) → unseen (LOSO) macro-F1 on the test split, fill-aware and square crop, with CIs],
-  caption: [Macro-F1 on each source's test split when the device is seen (fused) and unseen (LOSO).],
+  fig("gap"),
+  caption: [Macro-F1 on each source's test split when the device is seen (fused, hollow) and unseen (LOSO, filled),
+    for fill-aware and square-crop models. Lines are 95% intervals; paired gaps are in @tab-unseen.],
 ) <fig-gap>
 
 Every source loses accuracy when its device is unseen, beyond noise (@tab-unseen, @fig-gap). For OCTDL, PAIMA and
@@ -108,13 +108,15 @@ and `data/analysis/heldout-size-test`]
 (#dl("loso_full|kermany|all", "loso-sq - loso-fill")), and close about 40% of the test-split gap
 (#dl("gap_test|kermany|all", "loso-fill - fused-fill") becomes #dl("gap_test|kermany|all", "loso-sq - fused-sq")).
 The gain is largest exactly where the cue was (@fig-kermany-size): for 768×496 normal images, the share called DME
-falls from 36.6% to 4.5%. #todo[load by-size numbers from `results.json` size_loso keys]
+falls from #share("size_loso:768x496|kermany|all", "fill", "normal", "dme")% to
+#share("size_loso:768x496|kermany|all", "sq", "normal", "dme")%.
 
 #figure(
   kind: image,
-  placeholder(5cm)[F5: held-out Kermany,
-    recall per class by image size, fill-aware vs square crop],
-  caption: [Held-out Kermany by image size. Square crop helps most at 768×496, the size Duke labels DME only.],
+  fig("kermany-size"),
+  caption: [Held-out Kermany (all images) by image size and true class: recall of fill-aware and square-crop
+    LOSO models, with 95% intervals. Square crop helps most for normal and AMD images at 768×496, the width that is
+    DME only in Duke, and costs DME recall there.],
 ) <fig-kermany-size>
 
 *But removing the cue does not help everywhere.* On the other held-out sources square crop is no better and

@@ -64,3 +64,11 @@
 #let EYE = json("/data/paper/duke-eye-level.json")
 #let eye-wrong(arm) = str(EYE.arms.at(arm).misclassified_eyes)
 #let eye-f1(arm) = fmt(EYE.arms.at(arm).macro_f1.point)
+
+// Share (%) of true class `t` predicted as class `p`, mean over models, from a result's confusion matrix.
+#let share(key, arm, t, p) = {
+  let order = ("normal", "amd", "dme")
+  let row = R.at(key).arms.at(arm).confusion.at(order.position(c => c == t))
+  fmt(row.at(order.position(c => c == p)) / row.sum())
+}
+#let fig(name, width: 100%) = image("figures/" + name + ".svg", width: width)
