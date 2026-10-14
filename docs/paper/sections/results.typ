@@ -20,8 +20,8 @@
     )).flatten(),
   ),
   caption: [Macro-F1 (%) on each source's test split, with 95% patient-level bootstrap intervals. PAIMA is scored
-    on normal vs AMD. Duke is pooled over its five folds (all 45 eyes, each scored by the model that did not train
-    on it).],
+    on normal vs AMD. Scored per B-scan. Duke is pooled over its five folds (all 3,231 B-scans of its 45 eyes, each
+    scored by the model that did not train on it).],
 ) <tab-seen>
 
 On the device it was trained on, a ResNet-50 reaches #pt(k("seen", "paima"), "per-dataset")–#pt(k("seen", "kermany"),

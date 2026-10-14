@@ -57,7 +57,7 @@ versions of the fused and LOSO models with otherwise identical settings.
 
 == Evaluation
 
-We report macro-F1 (the mean of the per-class F1 scores) as the main metric, because the classes are imbalanced
+All metrics are computed per B-scan, for every source. We report macro-F1 (the mean of the per-class F1 scores) as the main metric, because the classes are imbalanced
 and differ in balance between sources, together with macro-AUROC (one-vs-rest, averaged over classes), which
 measures ranking and does not depend on the decision cutoff. PAIMA is always scored on normal vs AMD, with the
 softmax restricted to those two outputs. We also report a _Normal/AMD view_ for every source, which drops DME

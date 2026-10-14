@@ -14,7 +14,7 @@ scans, OCTDL is not — check before claiming "different devices" for every pair
     table.header[Source][Images][Groups][Normal / AMD / DME][Label unit][Split],
     [Kermany], [101,217], [5,419 patients], [50,263 / 39,857 / 11,097], [image], [supplied test; train 85/15],
     [OCTDL], [1,709], [637 patients], [332 / 1,230 / 147], [image], [70/15/15 by patient],
-    [PAIMA], [16,601], [437 volumes], [8,521 / 8,080 / --], [image], [70/15/15 by patient],
+    [PAIMA], [16,601], [437 patients], [8,521 / 8,080 / --], [image], [70/15/15 by patient],
     [Duke], [3,231], [45 eyes], [1,407 / 723 / 1,101], [eye], [5-fold CV by eye],
   ),
   caption: [The four sources after deduplication. Groups are the unit kept within one split and resampled by the
