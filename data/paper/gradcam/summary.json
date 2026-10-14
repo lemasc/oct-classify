@@ -1,0 +1,676 @@
+{
+ "models": "LOSO-Kermany fill-aware folds 1-5 (loso-kermany-local-20261008-174938); layer4 Grad-CAM, predicted class",
+ "per_group_all_folds": [
+  {
+   "group": "768 normal \u2192 DME",
+   "n": 200,
+   "mean_band_share": 0.4275736880209297,
+   "median_band_share": 0.30719102919101715,
+   "over_half": 0.435,
+   "band_area": 0.35267857142857145
+  },
+  {
+   "group": "768 normal \u2192 normal",
+   "n": 200,
+   "mean_band_share": 0.017713545602537125,
+   "median_band_share": 0.009213061537593603,
+   "over_half": 0.0,
+   "band_area": 0.35267857142857145
+  },
+  {
+   "group": "768 AMD \u2192 DME",
+   "n": 200,
+   "mean_band_share": 0.3790791578206699,
+   "median_band_share": 0.2104971632361412,
+   "over_half": 0.345,
+   "band_area": 0.35267857142857145
+  },
+  {
+   "group": "768 AMD \u2192 AMD",
+   "n": 200,
+   "mean_band_share": 0.007878273203479011,
+   "median_band_share": 0.0017047408618964255,
+   "over_half": 0.0,
+   "band_area": 0.35267857142857145
+  },
+  {
+   "group": "768 DME \u2192 DME",
+   "n": 200,
+   "mean_band_share": 0.19877984639897478,
+   "median_band_share": 0.09587107971310616,
+   "over_half": 0.13,
+   "band_area": 0.35267857142857145
+  },
+  {
+   "group": "512 normal \u2192 DME",
+   "n": 200,
+   "mean_band_share": 0.00905841432928355,
+   "median_band_share": 0.00460990029387176,
+   "over_half": 0.0,
+   "band_area": 0.03125
+  },
+  {
+   "group": "512 normal \u2192 normal",
+   "n": 200,
+   "mean_band_share": 0.00871285156092199,
+   "median_band_share": 0.005205223569646478,
+   "over_half": 0.0,
+   "band_area": 0.03125
+  },
+  {
+   "group": "512 DME \u2192 DME",
+   "n": 200,
+   "mean_band_share": 0.004287781443224788,
+   "median_band_share": 0.0015054965042509139,
+   "over_half": 0.0,
+   "band_area": 0.03125
+  }
+ ],
+ "mean_band_share_by_fold": {
+  "768 normal \u2192 DME": {
+   "1": 0.75007269019261,
+   "2": 0.7367522690445185,
+   "3": 0.4213963784277439,
+   "4": 0.14485234329476954,
+   "5": 0.08479475914500653
+  },
+  "768 normal \u2192 normal": {
+   "1": 0.006007931453177661,
+   "2": 0.014242077060043812,
+   "3": 0.016127361866529098,
+   "4": 0.03944533575559035,
+   "5": 0.012745021877344697
+  },
+  "768 AMD \u2192 DME": {
+   "1": 0.6953905230388046,
+   "2": 0.7514037188142538,
+   "3": 0.2224579531699419,
+   "4": 0.1430914439726621,
+   "5": 0.08305215010768734
+  },
+  "768 AMD \u2192 AMD": {
+   "1": 0.011964651104062796,
+   "2": 0.005799974734509305,
+   "3": 0.004588472915929742,
+   "4": 0.005020503474230509,
+   "5": 0.012017763788662705
+  },
+  "768 DME \u2192 DME": {
+   "1": 0.3235746756225126,
+   "2": 0.4232092990539968,
+   "3": 0.15797171355225145,
+   "4": 0.05683061295421794,
+   "5": 0.032312930811895055
+  },
+  "512 normal \u2192 DME": {
+   "1": 0.018825555882358458,
+   "2": 0.004373297784059105,
+   "3": 0.004167019172746223,
+   "4": 0.0047255180237698365,
+   "5": 0.013200680783484131
+  },
+  "512 normal \u2192 normal": {
+   "1": 0.005432646218469017,
+   "2": 0.009445526762283407,
+   "3": 0.008275348544702864,
+   "4": 0.004802777706936467,
+   "5": 0.015607958572218195
+  },
+  "512 DME \u2192 DME": {
+   "1": 0.0047562145751172125,
+   "2": 0.0017554585866491833,
+   "3": 0.0028523986155960302,
+   "4": 0.0019209455200325464,
+   "5": 0.010153889918728964
+  }
+ },
+ "reproduced_rate": 1.0,
+ "randomization_fold1_768_normal_to_dme": {
+  "n": 40,
+  "spearman_median": 0.014887411106863516,
+  "band_share_trained_mean": 0.75007269019261,
+  "band_share_randomized_mean": 0.3450654946267605
+ },
+ "intervention_by_fold": [
+  {
+   "fold": 1,
+   "group": "768 normal \u2192 DME",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 1.0,
+   "called true class": 0.0,
+   "mean p(DME)": 0.7808440923690796
+  },
+  {
+   "fold": 1,
+   "group": "768 normal \u2192 DME",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.1,
+   "called true class": 0.9,
+   "mean p(DME)": 0.09336541593074799
+  },
+  {
+   "fold": 1,
+   "group": "768 normal \u2192 DME",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.025,
+   "called true class": 0.975,
+   "mean p(DME)": 0.06991040706634521
+  },
+  {
+   "fold": 1,
+   "group": "768 normal \u2192 normal",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.044962771236896515
+  },
+  {
+   "fold": 1,
+   "group": "768 normal \u2192 normal",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.00601122435182333
+  },
+  {
+   "fold": 1,
+   "group": "768 normal \u2192 normal",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.0029093027114868164
+  },
+  {
+   "fold": 1,
+   "group": "768 AMD \u2192 DME",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 1.0,
+   "called true class": 0.0,
+   "mean p(DME)": 0.7856210470199585
+  },
+  {
+   "fold": 1,
+   "group": "768 AMD \u2192 DME",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.15,
+   "called true class": 0.8,
+   "mean p(DME)": 0.15492336452007294
+  },
+  {
+   "fold": 1,
+   "group": "768 AMD \u2192 DME",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.075,
+   "called true class": 0.85,
+   "mean p(DME)": 0.129971444606781
+  },
+  {
+   "fold": 1,
+   "group": "768 AMD \u2192 AMD",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.03960321098566055
+  },
+  {
+   "fold": 1,
+   "group": "768 AMD \u2192 AMD",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.006019162014126778
+  },
+  {
+   "fold": 1,
+   "group": "768 AMD \u2192 AMD",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.0052906060591340065
+  },
+  {
+   "fold": 2,
+   "group": "768 normal \u2192 DME",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 1.0,
+   "called true class": 0.0,
+   "mean p(DME)": 0.8314111828804016
+  },
+  {
+   "fold": 2,
+   "group": "768 normal \u2192 DME",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.08596644550561905
+  },
+  {
+   "fold": 2,
+   "group": "768 normal \u2192 DME",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 0.975,
+   "mean p(DME)": 0.051954664289951324
+  },
+  {
+   "fold": 2,
+   "group": "768 normal \u2192 normal",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.160247340798378
+  },
+  {
+   "fold": 2,
+   "group": "768 normal \u2192 normal",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.04214242473244667
+  },
+  {
+   "fold": 2,
+   "group": "768 normal \u2192 normal",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.02532905898988247
+  },
+  {
+   "fold": 2,
+   "group": "768 AMD \u2192 DME",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 1.0,
+   "called true class": 0.0,
+   "mean p(DME)": 0.8577272295951843
+  },
+  {
+   "fold": 2,
+   "group": "768 AMD \u2192 DME",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.1,
+   "called true class": 0.875,
+   "mean p(DME)": 0.11059335619211197
+  },
+  {
+   "fold": 2,
+   "group": "768 AMD \u2192 DME",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.05,
+   "called true class": 0.925,
+   "mean p(DME)": 0.08403956890106201
+  },
+  {
+   "fold": 2,
+   "group": "768 AMD \u2192 AMD",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.16174644231796265
+  },
+  {
+   "fold": 2,
+   "group": "768 AMD \u2192 AMD",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.0252675861120224
+  },
+  {
+   "fold": 2,
+   "group": "768 AMD \u2192 AMD",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.021161844953894615
+  },
+  {
+   "fold": 3,
+   "group": "768 normal \u2192 DME",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 1.0,
+   "called true class": 0.0,
+   "mean p(DME)": 0.7829833030700684
+  },
+  {
+   "fold": 3,
+   "group": "768 normal \u2192 DME",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.575,
+   "called true class": 0.4,
+   "mean p(DME)": 0.5094283223152161
+  },
+  {
+   "fold": 3,
+   "group": "768 normal \u2192 DME",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.275,
+   "called true class": 0.625,
+   "mean p(DME)": 0.37039199471473694
+  },
+  {
+   "fold": 3,
+   "group": "768 normal \u2192 normal",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.175840824842453
+  },
+  {
+   "fold": 3,
+   "group": "768 normal \u2192 normal",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.11245818436145782
+  },
+  {
+   "fold": 3,
+   "group": "768 normal \u2192 normal",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.06773614883422852
+  },
+  {
+   "fold": 3,
+   "group": "768 AMD \u2192 DME",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 1.0,
+   "called true class": 0.0,
+   "mean p(DME)": 0.8757335543632507
+  },
+  {
+   "fold": 3,
+   "group": "768 AMD \u2192 DME",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.675,
+   "called true class": 0.3,
+   "mean p(DME)": 0.664718508720398
+  },
+  {
+   "fold": 3,
+   "group": "768 AMD \u2192 DME",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.575,
+   "called true class": 0.4,
+   "mean p(DME)": 0.586957573890686
+  },
+  {
+   "fold": 3,
+   "group": "768 AMD \u2192 AMD",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.04469659924507141
+  },
+  {
+   "fold": 3,
+   "group": "768 AMD \u2192 AMD",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.025186944752931595
+  },
+  {
+   "fold": 3,
+   "group": "768 AMD \u2192 AMD",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.019264450296759605
+  },
+  {
+   "fold": 4,
+   "group": "768 normal \u2192 DME",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 1.0,
+   "called true class": 0.0,
+   "mean p(DME)": 0.7921179533004761
+  },
+  {
+   "fold": 4,
+   "group": "768 normal \u2192 DME",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.05,
+   "called true class": 0.925,
+   "mean p(DME)": 0.0752880722284317
+  },
+  {
+   "fold": 4,
+   "group": "768 normal \u2192 DME",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.05,
+   "called true class": 0.925,
+   "mean p(DME)": 0.0693112164735794
+  },
+  {
+   "fold": 4,
+   "group": "768 normal \u2192 normal",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.034479089081287384
+  },
+  {
+   "fold": 4,
+   "group": "768 normal \u2192 normal",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.0015353888738900423
+  },
+  {
+   "fold": 4,
+   "group": "768 normal \u2192 normal",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.0012906730407848954
+  },
+  {
+   "fold": 4,
+   "group": "768 AMD \u2192 DME",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 1.0,
+   "called true class": 0.0,
+   "mean p(DME)": 0.8478372693061829
+  },
+  {
+   "fold": 4,
+   "group": "768 AMD \u2192 DME",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.125,
+   "called true class": 0.8,
+   "mean p(DME)": 0.14913585782051086
+  },
+  {
+   "fold": 4,
+   "group": "768 AMD \u2192 DME",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.125,
+   "called true class": 0.825,
+   "mean p(DME)": 0.1364721953868866
+  },
+  {
+   "fold": 4,
+   "group": "768 AMD \u2192 AMD",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.02863026224076748
+  },
+  {
+   "fold": 4,
+   "group": "768 AMD \u2192 AMD",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.001147204078733921
+  },
+  {
+   "fold": 4,
+   "group": "768 AMD \u2192 AMD",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.0008598644053563476
+  },
+  {
+   "fold": 5,
+   "group": "768 normal \u2192 DME",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 1.0,
+   "called true class": 0.0,
+   "mean p(DME)": 0.7478687167167664
+  },
+  {
+   "fold": 5,
+   "group": "768 normal \u2192 DME",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.3,
+   "called true class": 0.675,
+   "mean p(DME)": 0.37774530053138733
+  },
+  {
+   "fold": 5,
+   "group": "768 normal \u2192 DME",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.25,
+   "called true class": 0.75,
+   "mean p(DME)": 0.3851012885570526
+  },
+  {
+   "fold": 5,
+   "group": "768 normal \u2192 normal",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.08143772184848785
+  },
+  {
+   "fold": 5,
+   "group": "768 normal \u2192 normal",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.040592048317193985
+  },
+  {
+   "fold": 5,
+   "group": "768 normal \u2192 normal",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.041782110929489136
+  },
+  {
+   "fold": 5,
+   "group": "768 AMD \u2192 DME",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 1.0,
+   "called true class": 0.0,
+   "mean p(DME)": 0.7869614362716675
+  },
+  {
+   "fold": 5,
+   "group": "768 AMD \u2192 DME",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.55,
+   "called true class": 0.45,
+   "mean p(DME)": 0.5206819176673889
+  },
+  {
+   "fold": 5,
+   "group": "768 AMD \u2192 DME",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.525,
+   "called true class": 0.425,
+   "mean p(DME)": 0.5232227444648743
+  },
+  {
+   "fold": 5,
+   "group": "768 AMD \u2192 AMD",
+   "band fill": "trained",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.009759766981005669
+  },
+  {
+   "fold": 5,
+   "group": "768 AMD \u2192 AMD",
+   "band fill": "black",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 1.0,
+   "mean p(DME)": 0.005629388149827719
+  },
+  {
+   "fold": 5,
+   "group": "768 AMD \u2192 AMD",
+   "band fill": "speckle",
+   "n": 40,
+   "called DME": 0.0,
+   "called true class": 0.975,
+   "mean p(DME)": 0.005719748325645924
+  }
+ ]
+}
