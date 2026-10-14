@@ -140,8 +140,8 @@ OCTDL and Duke held out (seed 20260913 only; paired patient-level bootstrap, scr
 | D | Fused square-crop CV | local, 2026-10-13 20:44 to 2026-10-14 02:48 (`58824` cancelled) | ~6 h total | done |
 | E | Score all three variants | CPU | ~1 min | done 2026-10-14, seed 20260913 only |
 | F | Fused zero-Kermany-DME CV, fill-aware | local | ~2-6 h | running (local, started 2026-10-14 13:26) |
-| G | Logit-bias rescoring of fill-aware LOSO | CPU, `docs/paper` worktree | minutes | todo |
-| H | AdaBN on fill-aware LOSO (port from `legacy/docs/cross-device-plan`) | port: temporary worktree; eval: local GPU after F | ~1-1.5 h GPU | todo |
+| G | Logit-bias rescoring of fill-aware LOSO | CPU, `docs/paper` worktree | minutes | done 2026-10-14 (`docs/paper` `285ce16`) |
+| H | AdaBN on fill-aware LOSO (port from `legacy/docs/cross-device-plan`) | port: temporary worktree; eval: local GPU after F | ~1-1.5 h GPU | port done (`feat/adabn-port` `8a65095`, merged into `docs/paper`); eval todo after F |
 | I | Grad-CAM on final models | local GPU after F | minutes | todo |
 
 F-I rerun, on the final fill-aware models, the cross-device diagnostics the paper cites (originally run on median-pad
@@ -356,3 +356,9 @@ Fixed before the OCTDL and Duke square-crop results come in, so the choice does 
   fill-aware models for consistency: F (zero-Kermany-DME fused CV, local GPU), G (logit bias, CPU), H (AdaBN, port in
   a temporary worktree, GPU eval after F), I (Grad-CAM, after F). The DME cut to 122 patients is not rerun. Paper and
   analysis work moves to a `docs/paper` worktree (`../repo-paper`) branched from here; training stays here.
+- 2026-10-14 (G done, H ported): logit bias on fill-aware LOSO (`data/paper/logit-bias/` on `docs/paper`). `none`
+  reproduces final scoring exactly. Cross-fit bias: Kermany 73.8 → 77.5 (+3.8 [+3.5, +4.0]); OCTDL +0.5 and Duke +0.6,
+  within noise; in-sample grid ceiling on Kermany 80.8 against 97.4 seen. Larger than the legacy +0.5 (fill-aware ranks
+  DME better, AUROC 93.7 vs 91.5) but the conclusion holds: the cutoff is a minor part of the gap. AdaBN ported from
+  `c3c1d93` (statistics pass now fp32); with adapt-bn off it reproduces stored LOSO OCTDL fold 1 (macro-F1 identical,
+  max |Δp| 0.002 on CPU); smoke run with adapt-bn on: 91.7 → 82.3, as in legacy. Full eval waits for F.
