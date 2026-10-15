@@ -1,18 +1,12 @@
-// Presubmission draft. Build: typst compile --root ../.. main.typ
-#set document(title: [Cross-Dataset Generalization of CNN Retinal OCT Classifiers])
-#set page(paper: "a4", margin: 2.5cm, numbering: "1")
-#set text(size: 11pt)
-#set par(justify: true)
-#set heading(numbering: "1.1")
-#show figure.caption: set text(size: 9.5pt)
-// Tables use rules only: one on top (here), one under the header and one at the bottom (`table.hline()` in each table).
-#set table(stroke: (_, y) => if y == 0 { (top: 0.5pt) })
-#set table.hline(stroke: 0.5pt)
-
+// Presubmission draft (English). Build: typst compile --root ../.. main.typ
+// Thai companion: th/main.typ (same sections, English wherever a Thai section is not written yet).
+#import "template.typ": paper
 #import "lib.typ": *
 
+#show: paper.with(title: [Cross-Dataset Generalization of CNN Retinal OCT Classifiers])
+
 #align(center)[
-  #text(size: 16pt, weight: "bold")[Cross-Dataset Generalization of CNN Retinal OCT Classifiers]
+  #text(size: 1.45em, weight: "bold")[Cross-Dataset Generalization of CNN Retinal OCT Classifiers]
   #v(0.5em)
   #todo[authors, affiliation]
 ]

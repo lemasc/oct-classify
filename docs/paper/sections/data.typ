@@ -19,7 +19,7 @@ unseen dataset and, only for OCTDL, also an unseen device. @fig-examples shows o
 
 #figure(
   {
-    set text(size: 9.5pt)
+    set text(size: (9.5 / 11) * 1em)
     table(
       columns: 9,
       align: (left, right, right, right, right, right, right, right, left),

@@ -43,7 +43,7 @@ beyond noise against the fused model, and PAIMA gains #dl(k("seen", "paima"), "f
 
 // Per-class recall table; `rows-of(src)` gives that source's rows (from `recall-row`).
 #let recall-table(rows-of) = {
-  set text(size: 9.5pt)
+  set text(size: (9.5 / 11) * 1em)
   table(
     columns: 7,
     align: (left, left, right, right, right, right, right),
@@ -87,7 +87,7 @@ of cases by both models.
 
 #figure(
   {
-    set text(size: 9.5pt)
+    set text(size: (9.5 / 11) * 1em)
     table(
       columns: 7,
       align: (left, right, right, right, right, right, right),
@@ -158,7 +158,7 @@ held Duke out.
   [#fmt(e.at(2) / 100, signed: true) [#fmt(e.at(3) / 100, signed: true), #fmt(e.at(4) / 100, signed: true)]])
 #figure(
   {
-    set text(size: 9.5pt)
+    set text(size: (9.5 / 11) * 1em)
     table(
       columns: 4,
       align: (left, right, right, right),
@@ -195,7 +195,7 @@ main but not the only route. #{
 
 #figure(
   {
-    set text(size: 9.5pt)
+    set text(size: (9.5 / 11) * 1em)
     table(
       columns: 7,
       align: (left, right, right, right, right, right, right),
@@ -271,7 +271,7 @@ ranking that varies strongly with the seed (@sec-limits).
 
 #figure(
   {
-    set text(size: 9.5pt)
+    set text(size: (9.5 / 11) * 1em)
     table(
       columns: 8,
       align: (left, right, right, right, right, right, right, right),
@@ -309,7 +309,7 @@ neither source lost beyond noise.
 
 #figure(
   {
-    set text(size: 9.5pt)
+    set text(size: (9.5 / 11) * 1em)
     table(
       columns: 6,
       align: (left, right, right, right, right, right),
@@ -370,7 +370,7 @@ without its DME, so the comparison with the fused model isolates the missing DME
 
 #figure(
   {
-    set text(size: 9.5pt)
+    set text(size: (9.5 / 11) * 1em)
     table(
       columns: 6,
       align: (left, right, right, right, right, right),
@@ -429,7 +429,7 @@ size cue; a shift shared by all images cannot undo errors that depend on image s
 #let lbk(s) = s + "|" + view3(s)
 #figure(
   {
-    set text(size: 9.5pt)
+    set text(size: (9.5 / 11) * 1em)
     table(
       columns: 6,
       align: (left, right, right, right, right, right),
