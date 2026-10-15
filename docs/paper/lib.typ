@@ -150,3 +150,21 @@
 
 #let srcs = ("kermany", "octdl", "paima", "duke")
 #let k(kind, src) = kind + "|" + src + "|" + view3(src)
+
+// Seed variation, LOSO full source (scripts/paper/export_seeds.py): per source, arm ("loso-fill", "loso-sq") and
+// seed, the mean over the 5 models.
+#let SEED = json("/data/paper/seeds.json")
+#let seed-vals(src, arm, name: "macro_f1") = SEED.at(src).at(arm).values().map(m => m.at(name))
+// Per seed, square crop minus letterbox macro-F1 (fractions).
+#let seed-gain(src) = SEED.at(src).at("loso-sq").keys().map(s => (
+  SEED.at(src).at("loso-sq").at(s).macro_f1 - SEED.at(src).at("loso-fill").at(s).macro_f1
+))
+// Range "a–b" of fractions as percent with one decimal, absolute values.
+#let span1(xs) = {
+  let v = xs.map(calc.abs)
+  [#fmt(calc.min(..v))–#fmt(calc.max(..v))]
+}
+
+// Multi-window pooling on square-crop LOSO models (data/analysis/3a-multiwindow, exp. 3a section 4): entries are
+// [single centre window, pooled, delta lo, delta hi] in %.
+#let MW = json("/data/analysis/3a-multiwindow/compare.json")

@@ -26,7 +26,8 @@ DME recall, and PAIMA loses ranking quality. One possible cause for OCTDL and Du
 512×496 scan, but only about two thirds of a 768×496 scan and about a third of a typical 880×320 OCTDL scan, and
 almost every OCTDL scan is that elongated. About #whole(size-share("kermany", "512x496"))% of Kermany is 512×496, where little tissue is lost. We have not
 tested this for OCTDL or Duke. It does not explain PAIMA: averaging predictions over several square windows that
-together cover the whole PAIMA scan leaves its AUROC unchanged. We found no single preprocessing that is best
+together cover the whole PAIMA scan moves its AUROC only from #fmt(MW.paima.all.mean.auroc.at(0) / 100) to
+#fmt(MW.paima.all.mean.auroc.at(1) / 100). We found no single preprocessing that is best
 on every unseen source.
 
 *DME is the weak point, but not the whole story.* Once the size cue is accounted for, most of the remaining gap is DME
@@ -46,9 +47,12 @@ about PAIMA's drusen scans is, and our data cannot tell what. A single AMD score
 == Limitations <sec-limits>
 
 - *One seed.* Every table reports seed 20260913. Two extra seeds exist for the LOSO Kermany and PAIMA models, in
-  both arms. Held-out Kermany varies by a few points across seeds, and square crop's gain holds at every seed.
-  Held-out PAIMA with square crop loses against letterbox at every seed, but by very different amounts, so the
-  loss is real but its size is unstable.
+  both arms. On the full source, held-out Kermany scores #span1(seed-vals("kermany", "loso-fill")) macro-F1
+  across the three seeds, and square crop's gain holds at every seed (#fmt(calc.min(..seed-gain("kermany")), signed: true) to
+  #fmt(calc.max(..seed-gain("kermany")), signed: true)). Held-out PAIMA
+  with square crop loses against letterbox at every seed, but by #span1(seed-gain("paima")) points (AUROC
+  #seed-vals("paima", "loso-sq", name: "macro_auroc").map(x => fmt(x)).join(", ") against
+  #span1(seed-vals("paima", "loso-fill", name: "macro_auroc"))), so the loss is real but its size is unstable.
 - *Small Duke.* Duke has 45 eyes, and Duke held out is a single LOSO model. Its intervals are wide, and we use it
   only to support directions seen on the other sources.
 - *Unexplained PAIMA loss under square crop.* Shrinking the test tissue toward the scale seen in training lowers
