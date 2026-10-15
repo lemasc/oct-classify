@@ -115,3 +115,38 @@
   let m = AS.at(key).deltas.at(st).at(pair)
   [#fmt(m.point, signed: true) [#fmt(m.lo, signed: true), #fmt(m.hi, signed: true)]]
 }
+
+// Dataset statistics (scripts/paper/export_data_stats.py): counts, group units, image sizes, deduplication.
+#let DS = json("/data/paper/data-stats.json").sources
+// AMD stage share of a source's AMD images (data/paper/amd-stage, full source). Duke's AMD is all dry.
+#let stage-share(src, st) = {
+  if src == "duke" { return if st == "dry" { "100" } else { none } }
+  let stages = AS.at("full|" + src + "|" + view3(src)).stages
+  let total = ("dry", "wet", "intermediate").map(s => if s in stages { stages.at(s).n_images } else { 0 }).sum()
+  str(calc.round(stages.at(st).n_images / total * 100))
+}
+// Share (0-1) of a source's images with a given size ("WxH").
+#let size-share(src, size) = DS.at(src).sizes.at(size) / DS.at(src).n_images
+
+// Test-time image-size changes (data/analysis/{kermany,heldout}-size-test): entries are [before, after, delta, lo, hi] in %.
+#let KS = json("/data/analysis/kermany-size-test/size-test.json")
+#let HS = json("/data/analysis/heldout-size-test/size-test.json")
+#let pct1(x) = str(calc.round(x, digits: 1))
+// Range "a–b" of fractions as whole percentage points, from the rounded values.
+#let span(xs) = {
+  let v = xs.map(x => calc.round(calc.abs(x) * 100))
+  [#int(calc.min(..v))–#int(calc.max(..v))]
+}
+
+// Duke eyes of a class (at one image size, or in total).
+#let duke-eyes(cls, size: none) = {
+  let by = DS.duke.eyes_by_size_class
+  str(by.pairs().filter(((sz, _)) => size == none or sz == size).map(((_, c)) => c.at(cls, default: 0)).sum())
+}
+// Kermany images outside the five sizes shown in the size figure.
+#let kermany-rare = num(DS.kermany.n_images - ("512x496", "768x496", "1024x496", "1536x496", "512x512").map(z => DS.kermany.sizes.at(z)).sum())
+// Whole percentage points of a fraction (absolute value).
+#let whole(x) = str(calc.round(calc.abs(x) * 100))
+
+#let srcs = ("kermany", "octdl", "paima", "duke")
+#let k(kind, src) = kind + "|" + src + "|" + view3(src)

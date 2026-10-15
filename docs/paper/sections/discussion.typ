@@ -2,9 +2,9 @@
 
 = Discussion <sec-discussion>
 
-*Accuracy on a seen source overstates accuracy on a new one.* All four sources score 90–99 macro-F1 when the model
-has seen them, and every one of them loses accuracy beyond noise when it has not: 4–6 points for OCTDL,
-PAIMA and Duke, and about 15 for Kermany on its test split. A single-dataset benchmark, the most common way OCT
+*Accuracy on a seen source overstates accuracy on a new one.* All four sources score #span(("kermany", "octdl", "paima", "duke").map(s => metric(k("seen", s), "per-dataset").point)) macro-F1 when the model
+has seen them, and every one of them loses accuracy beyond noise when it has not: #span(("octdl", "paima", "duke").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) points for OCTDL,
+PAIMA and Duke, and about #whole(delta(k("gap_test", "kermany"), "loso-fill - fused-fill").point) for Kermany on its test split. A single-dataset benchmark, the most common way OCT
 classifiers are evaluated, cannot show this. A
 different device is not needed for the drop: three of the four sources come from the same manufacturer
 (Heidelberg), and OCTDL, the only other vendor, does not have a larger gap than they do. Site, population, protocol and labelling are enough.
@@ -24,7 +24,7 @@ carry it.
 costs the other unseen sources in different ways: OCTDL loses normal recall (normal images called DME), Duke loses
 DME recall, and PAIMA loses ranking quality. One possible cause for OCTDL and Duke is lost tissue: the square window keeps nearly the whole width of a
 512×496 scan, but only about two thirds of a 768×496 scan and about a third of a typical 880×320 OCTDL scan, and
-almost every OCTDL scan is that elongated. About half of Kermany is 512×496, where little tissue is lost. We have not
+almost every OCTDL scan is that elongated. About #whole(size-share("kermany", "512x496"))% of Kermany is 512×496, where little tissue is lost. We have not
 tested this for OCTDL or Duke. It does not explain PAIMA: averaging predictions over several square windows that
 together cover the whole PAIMA scan leaves its AUROC unchanged. We found no single preprocessing that is best
 on every unseen source.

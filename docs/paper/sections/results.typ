@@ -2,8 +2,6 @@
 
 = Results <sec-results>
 
-#let srcs = ("kermany", "octdl", "paima", "duke")
-#let k(kind, src) = kind + "|" + src + "|" + view3(src)
 
 == Seen sources <sec-seen>
 
@@ -20,7 +18,7 @@
     )).flatten(),
   ),
   caption: [Macro-F1 (%) on each source's test split, with 95% patient-level bootstrap intervals. PAIMA is scored
-    on normal vs AMD. Scored per B-scan. Duke is pooled over its five folds (all 3,231 B-scans of its 45 eyes, each
+    on normal vs AMD. Scored per B-scan. Duke is pooled over its five folds (all #num(DS.duke.n_images) B-scans of its #DS.duke.n_groups eyes, each
     scored by the model that did not train on it).],
 ) <tab-seen>
 
@@ -129,7 +127,7 @@ of cases by every model in the table, seen or held out.
 ) <fig-gap>
 
 Every source loses accuracy when it is unseen, beyond noise (@tab-unseen, @fig-gap). For OCTDL, PAIMA and
-Duke the gap is 4–6 macro-F1 points; for Kermany it is #dl(k("gap_test", "kermany"), "loso-fill - fused-fill").
+Duke the gap is #span(("octdl", "paima", "duke").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) macro-F1 points; for Kermany it is #dl(k("gap_test", "kermany"), "loso-fill - fused-fill").
 For the three-class sources the AUROC gap is much smaller than the macro-F1 gap
 (#dl(k("gap_test", "kermany"), "loso-fill - fused-fill", name: "macro_auroc") for Kermany,
 #dl(k("gap_test", "octdl"), "loso-fill - fused-fill", name: "macro_auroc") for OCTDL and
@@ -138,25 +136,24 @@ right class highly for most images but the decision falls on the wrong side of t
 exception: its AUROC gap is #dl(k("gap_test", "paima"), "loso-fill - fused-fill", name: "macro_auroc") against
 #dp(k("gap_test", "paima"), "loso-fill - fused-fill") in macro-F1, a change in ranking, not only in the cutoff.
 
-Kermany's test split is not representative of the source: #todo[942] of its 1,000 images are 1024×496, a size that
-makes up about 1% of Kermany overall. On all #num(R.at("loso_full|kermany|all").n_images) images the held-out Kermany
+Kermany's test split is not representative of the source: #DS.kermany.test_sizes.at("1024x496") of its #num(DS.kermany.n_test) images are 1024×496, a size that
+makes up #pct1(size-share("kermany", "1024x496") * 100)% of Kermany overall. On all #num(R.at("loso_full|kermany|all").n_images) images the held-out Kermany
 score is #pt("loso_full|kermany|all", "loso-fill"), well below the #pt("gap_test|kermany|all", "loso-fill") on the
 test split. We use the full-source score for claims about Kermany as an unseen source. The next section shows why
 image size matters so much.
 
 == The image-size shortcut <sec-shortcut>
 
-In Duke, image size identifies the label for a third of the eyes: every 768×496 scan is DME and every 1024×496
+In Duke, image size identifies the label for #calc.round((int(duke-eyes("amd", size: "1024x496")) + int(duke-eyes("dme", size: "768x496"))) / DS.duke.n_groups * 100)% of the eyes: every 768×496 scan is DME and every 1024×496
 scan is AMD (@fig-size-class). Models that train on Duke can learn "768 wide means DME" as a rule, which is
 correct within Duke and wrong elsewhere. Three tests show that they do.
 
 *Changing only the size of test images.* We take the held-out Kermany models and rescore Kermany images after
 changing only their width, with no retraining (@fig-size-test). Padding normal 512×496 images to 768 wide (Duke's
-DME-only width) moves the share called DME from 12.4% to 59.8%. Cropping 768×496 normal images to 512 wide does
-the reverse, from 36.6% to 8.3%. The effect is not limited to Kermany: padding Duke's own 512×496 images by
-16 rows to 512×512, a size that is DME-only in Kermany, sends 99% of Duke's normal images to DME in the model that
-held Duke out. #todo[move these numbers to a tracked file and load them; now from `data/analysis/kermany-size-test`
-and `data/analysis/heldout-size-test`]
+DME-only width) moves the share called DME from #pct1(KS.pad.at("512x496").at("normal->dme").at(0))% to #pct1(KS.pad.at("512x496").at("normal->dme").at(1))%. Cropping 768×496 normal images to 512 wide does
+the reverse, from #pct1(KS.crop.at("768x496").at("normal->dme").at(0))% to #pct1(KS.crop.at("768x496").at("normal->dme").at(1))%. The effect is not limited to Kermany: padding Duke's own 512×496 images by
+16 rows to 512×512, a size that is DME-only in Kermany, sends #calc.round(HS.at("duke/pad512x512").all.at("normal->dme").at(1))% of Duke's normal images to DME in the model that
+held Duke out.
 
 #figure(
   kind: image,
@@ -236,7 +233,7 @@ intervention as the evidence and Grad-CAM as an illustration.
 #pt("loso_full|kermany|all", "loso-sq") on the full source against #pt("loso_full|kermany|all", "loso-fill")
 (#dl("loso_full|kermany|all", "loso-sq - loso-fill")). On the test split, each arm measured against the fused
 model of the same arm, the gap narrows from #dl("gap_test|kermany|all", "loso-fill - fused-fill") to
-#dl("gap_test|kermany|all", "loso-sq - fused-sq"), about 40%. The gain is largest exactly where the cue was
+#dl("gap_test|kermany|all", "loso-sq - fused-sq"), about #calc.round((1 - delta("gap_test|kermany|all", "loso-sq - fused-sq").point / delta("gap_test|kermany|all", "loso-fill - fused-fill").point) * 100)%. The gain is largest exactly where the cue was
 (@fig-kermany-size): for 768×496 normal images, recall rises from
 #pt("size_loso:768x496|kermany|all", "fill", name: "recall_normal") to
 #pt("size_loso:768x496|kermany|all", "sq", name: "recall_normal"), and the share called DME falls from
@@ -327,7 +324,7 @@ neither source lost beyond noise.
     DME class removes most of the gap for OCTDL and Duke; PAIMA has no DME.],
 ) <tab-remaining>
 
-Most of what remains is DME (@tab-remaining). On the test split, held-out DME recall falls by 13–16 points for
+Most of what remains is DME (@tab-remaining). On the test split, held-out DME recall falls by #span(("kermany", "octdl", "duke").map(s => delta("gap_test|" + s + "|all", "loso-fill - fused-fill", name: "recall_dme").point)) points for
 Kermany, OCTDL and Duke. In the Normal/AMD view, the OCTDL and Duke gaps are within noise of zero
 (#dl("gap_test|octdl|normal_amd", "loso-fill - fused-fill") and #dl("gap_test|duke|normal_amd", "loso-fill - fused-fill")). Kermany keeps a large Normal/AMD gap, through normal images called AMD: held out, its normal recall falls from
 #pt("gap_test|kermany|all", "fused-fill", name: "recall_normal") to
