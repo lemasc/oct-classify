@@ -330,7 +330,8 @@ def picker(rows: list[tuple[str, str, str]], old: str, new: str) -> str:
         body += (
             f'<tr><td><input type="radio" name="from" value="{sha}"{from_on}{never}></td>'
             f'<td><input type="radio" name="to" value="{sha}"{to_on}></td>'
-            f"<td><code>{name}</code></td><td>{when}</td><td>{html.escape(subject)}</td></tr>"
+            f'<td><code>{name}</code> <a href="/{sha if sha == WORKTREE else sha[:7]}">view</a></td>'
+            f"<td>{when}</td><td>{html.escape(subject)}</td></tr>"
         )
     return (
         '<form class="history" action="/" method="get">'
