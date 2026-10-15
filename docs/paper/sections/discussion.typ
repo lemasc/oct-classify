@@ -35,6 +35,12 @@ with Kermany held out learns DME from 122 patients in two sources, one per vendo
 separates "unseen source" from "unseen DME": it loses #zd-share()% of Kermany's held-out gap, all through DME recall, and the rest
 falls on normal recall, as the size cue predicts. Whether DME from more sources would close the DME part is still untested.
 
+*Dry AMD is a weak point for one source.* AMD merges a dry and a wet stage, and the sources mix them very
+differently (@tab-data). PAIMA, where most AMD is dry, misses its drusen scans far more often than its wet ones,
+both when seen and when held out, while Kermany's drusen scans are recognised almost perfectly by every model
+(@sec-seen). The dry stage is therefore not hard in general; something about PAIMA's drusen scans is, and our data
+cannot tell what. A single AMD score hides this difference, which is why we report the two stages separately.
+
 == Limitations <sec-limits>
 
 - *One seed.* Every table reports seed 20260913. Two extra seeds exist for the LOSO Kermany and PAIMA models:
@@ -45,6 +51,10 @@ falls on normal recall, as the size cue predicts. Whether DME from more sources 
   only to support directions seen on the other sources.
 - *Unexplained PAIMA loss under square crop.* Shrinking the test tissue toward the scale seen in training lowers
   PAIMA's AUROC instead of recovering it, so tissue scale does not explain the loss (enlarging was not tested).
+  Nor does AMD stage: with seed 20260913 the AUROC loss is in separating normal from dry AMD
+  (#pa-dl(20260913, "dry")) rather than from wet AMD (#pa-dl(20260913, "wet")), but with the other two seeds both
+  stages lose about equally (dry #pa-dl(20260914, "dry") and wet #pa-dl(20260914, "wet") with seed 20260914, dry
+  #pa-dl(20260915, "dry") and wet #pa-dl(20260915, "wet") with seed 20260915).
 - *Hardware.* The fused fill-aware models were trained on a different GPU from the fused square-crop models, and no
   seed noise floor exists for the fused models. Differences of a few points between the fused arms are therefore
   not confirmed.

@@ -102,3 +102,21 @@
   let f(a) = ZD.at("kermany|all").arms.at(a).metrics.macro_f1.point
   str(calc.round((f("fused-fill") - f("zero-dme")) / (f("fused-fill") - f("loso-fill")) * 100))
 }
+
+// AMD recall by stage (data/paper/amd-stage). Keys "test|<src>|<view>" and "full|<src>|<view>"; stages dry, wet,
+// intermediate (OCTDL), normal, dme. Arms: per-dataset, fused-fill, fused-sq, loso-fill, loso-sq (full: LOSO only).
+#let AS = json("/data/paper/amd-stage/results.json")
+#let as-rec(key, st, arm) = fmt(AS.at(key).stages.at(st).arms.at(arm).recall)
+#let as-dl(key, st, pair) = {
+  let m = AS.at(key).deltas.at(st).at(pair)
+  [#fmt(m.point, signed: true) [#fmt(m.lo, signed: true), #fmt(m.hi, signed: true)]]
+}
+// Lowest recall of a stage over all arms of a key.
+#let as-min(key, st) = fmt(calc.min(..AS.at(key).stages.at(st).arms.values().map(a => a.recall)))
+// PAIMA held out, full source: AUROC normal vs dry / wet, fill-aware vs square crop, per seed.
+#let PA = json("/data/paper/amd-stage/paima-auroc.json")
+#let pa-dl(seed, st) = {
+  let r = PA.at(str(seed) + "|normal_vs_" + st)
+  let d = fmt(r.sq - r.fill, signed: true)
+  if "delta_ci" in r [#d [#fmt(r.delta_ci.at(0), signed: true), #fmt(r.delta_ci.at(1), signed: true)]] else [#d]
+}

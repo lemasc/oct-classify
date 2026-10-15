@@ -32,7 +32,13 @@ PAIMA (#dl(k("seen", "paima"), "fused-fill - per-dataset")) and Duke (#dl(k("see
 beyond noise against the fused model, and PAIMA gains #dl(k("seen", "paima"), "fused-sq - fused-fill").
 
 PAIMA is the hardest source even when seen (#pt(k("seen", "paima"), "fused-fill") fused), mostly through AMD recall
-(#pt(k("seen", "paima"), "fused-fill", name: "recall_amd")%).
+(#pt(k("seen", "paima"), "fused-fill", name: "recall_amd")%), and within AMD through its dry stage: the fused model
+recognises #as-rec("test|paima|normal_amd", "dry", "fused-fill")% of PAIMA's drusen scans but
+#as-rec("test|paima|normal_amd", "wet", "fused-fill")% of its wet ones, and calls the missed drusen scans normal. The
+per-dataset PAIMA model shows the same (#as-rec("test|paima|normal_amd", "dry", "per-dataset")% vs
+#as-rec("test|paima|normal_amd", "wet", "per-dataset")%), so this comes from PAIMA's drusen scans, not from fusing.
+Kermany's drusen scans, in contrast, are recognised in at least #as-min("test|kermany|all", "dry")% of cases by
+every model.
 
 == Unseen sources <sec-unseen>
 
@@ -208,7 +214,9 @@ Kermany, OCTDL and Duke. With DME images removed, the OCTDL and Duke gaps are wi
 (#dl("gap_test|octdl|normal_amd", "loso-fill - fused-fill") and #dl("gap_test|duke|normal_amd", "loso-fill - fused-fill")). Kermany keeps a large Normal/AMD gap, through normal images called AMD (normal recall
 #dl("gap_test|kermany|normal_amd", "loso-fill - fused-fill", name: "recall_normal")), consistent with the size cue
 above: most of its test split is 1024×496, Duke's AMD-only size. PAIMA, which has no DME, keeps a #dl("gap_test|paima|normal_amd", "loso-fill - fused-fill") gap,
-through AMD recall.
+through AMD recall, and again mostly dry AMD: held-out recall falls by
+#as-dl("test|paima|normal_amd", "dry", "loso-fill - fused-fill") for drusen scans and by
+#as-dl("test|paima|normal_amd", "wet", "loso-fill - fused-fill") for wet ones.
 
 A likely reason is that each LOSO model sees DME from fewer sources: PAIMA has none, so with Kermany held out the
 model learns DME from OCTDL and Duke alone (122 patients). We tested this for Kermany with a fused model, trained
