@@ -8,10 +8,14 @@
 Each revision is extracted with `git archive` and compiled with `typst --features html`; the
 built HTML is cached per commit under artifacts/paper-diff/. The two HTML bodies are tokenised
 and diffed with difflib. Tables are diffed as whole blocks (old table dimmed above the new one,
-changed cells shaded), since a per-cell diff breaks when columns move. Standard library only.
+changed cells shaded), since a per-cell diff breaks when columns move. Images get the same
+treatment: each is identified by its Git blob id (the id `git ls-tree` reports for the figure file,
+recovered from the data URI Typst embeds), and a changed blob shows old dimmed above new.
+Standard library only.
 """
 
 import argparse
+import base64
 import hashlib
 import html
 import re
@@ -49,8 +53,9 @@ del.del{background:var(--del);color:var(--delfg)}
 .tbl-ins{outline:2px solid #6c6}
 .tbl-del{outline:2px dashed #c66;opacity:.7}
 .tbl-ins::before,.tbl-del::before{font:12px sans-serif}
-.tbl-ins::before{content:'new / changed table';color:var(--insfg)}
-.tbl-del::before{content:'removed table';color:var(--delfg)}
+.tbl-ins::before{content:'new / changed table or figure';color:var(--insfg)}
+.tbl-del::before{content:'removed table or figure';color:var(--delfg)}
+.tbl-ins img,.tbl-del img{max-width:100%;height:auto}
 td.chg,th.chg{background:var(--chg)}
 .legend{position:sticky;top:0;background:Canvas;font:13px sans-serif;padding:.4rem 0;
  border-bottom:1px solid #8884;z-index:1}
@@ -66,6 +71,7 @@ td.chg,th.chg{background:var(--chg)}
 
 BLOCKS = {"p", "h1", "h2", "h3", "h4", "li", "ul", "ol", "figure", "figcaption", "tr", "div"}
 TOKEN = re.compile(r"<[^>]+>|[^<\s]+|\s+")
+DATA_URI = re.compile(r'src="data:[^;"]*;base64,([^"]*)"')
 TABLE = re.compile(r"<table.*?</table>", re.DOTALL)
 ROW = re.compile(r"<tr>(.*?)</tr>", re.DOTALL)
 CELL = re.compile(r"<(t[dh])([^>]*)>(.*?)</\1>", re.DOTALL)
@@ -182,6 +188,15 @@ def title_of(page: str) -> str:
     return html.unescape(re.search(r"<title>(.*?)</title>", page).group(1))
 
 
+def blob_id(img_tag: str) -> str:
+    """Git blob id of the file embedded in an <img> tag, i.e. what `git ls-tree` lists for it."""
+    m = DATA_URI.search(img_tag)
+    if not m:
+        return "tag:" + hashlib.md5(img_tag.encode()).hexdigest()  # external src: compare the tag
+    data = base64.b64decode(m.group(1))
+    return hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
+
+
 def tokenize(body: str) -> list[tuple]:
     """Tokens are (kind, raw, key); keys ignore id/href so renumbered references still match."""
     tokens, space, pos = [], "", 0
@@ -203,9 +218,10 @@ def tokenize(body: str) -> list[tuple]:
             elif text.startswith("<"):
                 name = re.match(r"</?\s*([a-zA-Z0-9]+)", text)
                 name = name.group(1).lower() if name else "?"
-                key = "img:" + hashlib.md5(text.encode()).hexdigest() if name == "img" else (
-                    ("/" if text.startswith("</") else "") + name)  # fmt: skip
-                tokens.append(("tag", space + text, key))
+                if name == "img":
+                    tokens.append(("img", space + text, "img:" + blob_id(text)))
+                else:
+                    tokens.append(("tag", space + text, ("/" if text[1] == "/" else "") + name))
                 space = ""
             else:
                 tokens.append(("text", space + text, text))
@@ -232,12 +248,17 @@ def opcodes(old: list, new: list) -> list[tuple]:
                 changed = True
                 break
 
-    def first_table(tokens, lo, hi):
-        return next((i for i in range(lo, hi) if tokens[i][0] == "table"), None)
+    def first_block(tokens, lo, hi, kind=None):
+        """Index of the first table or image in the range (of the given kind, if any)."""
+        return next(
+            (i for i in range(lo, hi) if tokens[i][0] in ("table", "img") and kind in (None, tokens[i][0])),
+            None,
+        )
 
     def pair_tables(tag, a0, a1, b0, b1):
-        """Split an edit at its first table on each side so old and new tables stay together."""
-        ia, ib = first_table(old, a0, a1), first_table(new, b0, b1)
+        """Split an edit at its first table/image on each side so old and new stay together."""
+        ia = first_block(old, a0, a1)
+        ib = None if ia is None else first_block(new, b0, b1, old[ia][0])
         if tag == "equal" or ia is None or ib is None:
             return [(tag, a0, a1, b0, b1)]
         return [*pair_tables("replace", a0, ia, b0, ib), ("replace", ia, ia + 1, ib, ib + 1),
@@ -271,6 +292,8 @@ def redline(old_page: str | None, new_page: str, label: str, picker: str = "") -
             flush()
             if kind == "table":
                 out.append(f'<div class="tbl-{tag}"><div class="tbl">{raw}</div></div>')
+            elif kind == "img":
+                out.append(f'<div class="tbl-{tag}">{raw}</div>')
             elif keep_tags:
                 out.append(raw)
             elif re.match(rf"<({'|'.join(BLOCKS)})[\s>]", raw.lstrip()):
@@ -285,14 +308,17 @@ def redline(old_page: str | None, new_page: str, label: str, picker: str = "") -
             ]
         elif (
             tag == "replace"
-            and old[a0][0] == "table"
-            and new[b0][0] == "table"
+            and old[a0][0] == new[b0][0] in ("table", "img")
             and a1 - a0 == b1 - b0 == 1
         ):
-            out.append(f'<div class="tbl-del"><div class="tbl">{old[a0][1]}</div></div>')
-            out.append(
-                f'<div class="tbl-ins"><div class="tbl">{mark_table(old[a0][1], new[b0][1])}</div></div>'
-            )
+            if old[a0][0] == "img":
+                out.append(f'<div class="tbl-del">{old[a0][1]}</div>')
+                out.append(f'<div class="tbl-ins">{new[b0][1]}</div>')
+            else:
+                out.append(f'<div class="tbl-del"><div class="tbl">{old[a0][1]}</div></div>')
+                out.append(
+                    f'<div class="tbl-ins"><div class="tbl">{mark_table(old[a0][1], new[b0][1])}</div></div>'
+                )
         else:
             wrap(old[a0:a1], "del", keep_tags=False)
             wrap(new[b0:b1], "ins", keep_tags=True)
