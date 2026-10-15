@@ -21,7 +21,7 @@ fitting a wide scan into a square canvas creates, so any preprocessing that leav
 carry it.
 
 *Removing a shortcut is not free.* Square crop removes the size cue and recovers much of Kermany's gap, but it
-costs the other unseen sources in different ways (@sec-square-other): OCTDL loses normal recall (normal images called DME), Duke loses
+costs the other unseen sources in different ways: OCTDL loses normal recall (normal images called DME), Duke loses
 DME recall, and PAIMA loses ranking quality. One possible cause for OCTDL and Duke is lost tissue: the square window keeps nearly the whole width of a
 512×496 scan, but only about two thirds of a 768×496 scan and about a third of a typical 880×320 OCTDL scan, and
 almost every OCTDL scan is that elongated. About #whole(size-share("kermany", "512x496"))% of Kermany is 512×496, where little tissue is lost. We have not
