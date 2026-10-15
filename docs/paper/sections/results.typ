@@ -324,7 +324,7 @@ Kermany, OCTDL and Duke. In the Normal/AMD view, the OCTDL and Duke gaps are wit
 (#dl("gap_test|octdl|normal_amd", "loso-fill - fused-fill") and #dl("gap_test|duke|normal_amd", "loso-fill - fused-fill")). Kermany keeps a large Normal/AMD gap, through normal images called AMD: held out, its normal recall falls from
 #pt("gap_test|kermany|all", "fused-fill", name: "recall_normal") to
 #pt("gap_test|kermany|all", "loso-fill", name: "recall_normal") (@tab-recall-unseen), and most of the missed normal images
-are called AMD. This is consistent with the size cue above: most of its test split is 1024×496, Duke's AMD-only
+are called AMD. This is consistent with the size cue above (@fig-kermany-size): most of its test split is 1024×496, Duke's AMD-only
 size. PAIMA, which has no DME, keeps a gap of
 #dl("gap_test|paima|normal_amd", "loso-fill - fused-fill"), through AMD recall, and again mostly dry AMD: held-out
 recall changes by #as-dl("test|paima|normal_amd", "dry", "loso-fill - fused-fill") for drusen scans and by
