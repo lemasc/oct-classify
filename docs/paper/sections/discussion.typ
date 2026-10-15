@@ -37,11 +37,11 @@ alone costs about #zd-share()% as much as the held-out gap, all through DME reca
 as the held-out model loses. The held-out model's other loss, normal recall, comes from the source being unseen, as
 the size cue predicts. Whether DME from more sources would close the DME part is still untested.
 
-*Dry AMD is a weak point for one source.* AMD merges a dry and a wet stage, and the sources mix them very
+*Dry AMD is hard on some sources, not all.* AMD merges a dry and a wet stage, and the sources mix them very
 differently (@tab-data). PAIMA, where most AMD is dry, misses its drusen scans far more often than its wet ones,
-both when seen and when held out, while Kermany's drusen scans are recognised almost perfectly by every model
-(@sec-seen). The dry stage is therefore not hard in general; something about PAIMA's drusen scans is, and our data
-cannot tell what. A single AMD score hides this difference, which is why we report the two stages separately.
+both when seen and when held out, and OCTDL shows the same on a few dozen scans, while Kermany's drusen scans are
+recognised almost perfectly by every model (@tab-recall). The dry stage is therefore not hard in general; something
+about PAIMA's drusen scans is, and our data cannot tell what. A single AMD score hides this difference, which is why we report the two stages separately.
 
 == Limitations <sec-limits>
 
