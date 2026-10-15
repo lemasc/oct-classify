@@ -2,34 +2,38 @@
 
 = Discussion <sec-discussion>
 
-*Accuracy on a seen device overstates accuracy on a new one.* All four sources score 90–99 macro-F1 when the model
-has seen their device, and every one of them loses accuracy beyond noise when it has not: 4–6 points for OCTDL,
+*Accuracy on a seen source overstates accuracy on a new one.* All four sources score 90–99 macro-F1 when the model
+has seen them, and every one of them loses accuracy beyond noise when it has not: 4–6 points for OCTDL,
 PAIMA and Duke, and about 15 for Kermany on its test split. A single-dataset benchmark, the most common way OCT
-classifiers are evaluated, cannot show this.
+classifiers are evaluated, cannot show this. A
+different device is not needed for the drop: three of the four sources come from the same Heidelberg device, and
+OCTDL, the only other vendor, does not have the largest gap. Site, population, protocol and labelling are enough.
 
 *Pooling datasets can import their shortcuts.* The largest gap, Kermany's, is partly caused by a property of
 _another_ dataset: in Duke, image size gives the label away, and models trained with Duke apply that rule to
 Kermany. The shortcut is invisible on Duke itself, where it is always right, and the fused model scores well
-on every source. It only shows when the model meets a device where the rule is wrong. A simple check would have
+on every source. It only shows when the model meets a source where the rule is wrong. The rule is an artifact of
+acquisition settings on one device (@sec-data), so it would not be caught by matching devices across datasets. A
+simple check would have
 caught it before training: tabulate image size (and other acquisition properties) against the label in each
 source, as in @fig-size-class. The route matters too: here the cue reaches the model through the letterbox bands that
 fitting a wide scan into a square canvas creates, so any preprocessing that leaves shape-dependent padding can
 carry it.
 
 *Removing a shortcut is not free.* Square crop removes the size cue and recovers much of Kermany's gap, but it
-costs the other unseen devices in different ways: OCTDL loses normal recall (normal images called DME), Duke loses
+costs the other unseen sources in different ways: OCTDL loses normal recall (normal images called DME), Duke loses
 DME recall, and PAIMA loses ranking quality. One possible cause for OCTDL and Duke is lost tissue: the square window keeps nearly the whole width of a
 512×496 scan, but only about two thirds of a 768×496 scan and about a third of a typical 880×320 OCTDL scan, and
 almost every OCTDL scan is that elongated. About half of Kermany is 512×496, where little tissue is lost. We have not
 tested this for OCTDL or Duke. It does not explain PAIMA: averaging predictions over several square windows that
 together cover the whole PAIMA scan leaves its AUROC unchanged. We found no single preprocessing that is best
-on every unseen device.
+on every unseen source.
 
 *DME is the weak point, but not the whole story.* Once the size cue is accounted for, most of the remaining gap is DME
-recall. DME is also the class with the fewest training examples from the fewest devices: PAIMA has none, so a model
-with Kermany held out learns DME from 122 patients on two devices. A fused model trained without Kermany's DME
-separates "unseen device" from "unseen DME": it loses #zd-share()% of Kermany's held-out gap, all through DME recall, and the rest
-falls on normal recall, as the size cue predicts. Whether more devices' DME would close the DME part is still untested.
+recall. DME is also the class with the fewest training examples from the fewest sources: PAIMA has none, so a model
+with Kermany held out learns DME from 122 patients in two sources, one per vendor. A fused model trained without Kermany's DME
+separates "unseen source" from "unseen DME": it loses #zd-share()% of Kermany's held-out gap, all through DME recall, and the rest
+falls on normal recall, as the size cue predicts. Whether DME from more sources would close the DME part is still untested.
 
 == Limitations <sec-limits>
 
@@ -47,16 +51,17 @@ falls on normal recall, as the size cue predicts. Whether more devices' DME woul
 - *Zero-DME control.* The fused model without Kermany DME is one seed trained on a different GPU from the fused
   reference, and removing Kermany's DME also changes Kermany's share of each training batch. Its Duke result rests on
   45 eyes and mostly two folds.
-- *Dataset is not device.* Each source differs from the others in device, but also in population, labelling
-  protocol and label unit (Duke labels whole eyes, the others single B-scans). The gaps we measure combine all of
-  these.
+- *Source is not device.* Three of the four sources share one device, so our gaps measure a shift between datasets
+  (site, population, acquisition protocol, labelling and label unit; Duke labels whole eyes, the others single
+  B-scans), not a shift between devices. Only OCTDL adds a vendor change, and a single source cannot separate it
+  from the rest.
 - *One architecture.* All results are for ImageNet-pretrained ResNet-50.
 
 == Future work
 
-Two directions follow from the remaining gap. Augmentation that mimics other devices' appearance (speckle,
+Two directions follow from the remaining gap. Augmentation that mimics other sources' appearance (speckle,
 contrast, resolution) would target the part of the gap that size and DME do not explain. OCT-specific pretraining,
-for example self-supervised pretraining on unlabelled scans from all devices including the unseen one, would change
+for example self-supervised pretraining on unlabelled scans from all sources including the unseen one, would change
 the features themselves, which our diagnostics point to as the limiting factor.
 
 = Conclusion

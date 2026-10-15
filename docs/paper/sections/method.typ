@@ -26,18 +26,18 @@ size, is kept. All runs use one seed (20260913); @sec-limits discusses seed vari
   kind: image,
   placeholder(4.5cm)[F3: design diagram.
     Rows: per-dataset, fused, LOSO. Columns: the four sources, marked train / test / held out.],
-  caption: [The three training variants. Per-dataset and fused models are tested on devices they trained on;
-    leave-one-source-out (LOSO) models are tested on a device they never saw.],
+  caption: [The three training variants. Per-dataset and fused models are tested on sources they trained on;
+    leave-one-source-out (LOSO) models are tested on a source they never saw.],
 ) <fig-design>
 
 We train three variants (@fig-design), all scored on the same images:
 
 - *Per-dataset*: one model per source, trained and tested on that source. This is the usual single-dataset
-  setting and our reference for "own device" accuracy.
+  setting and our reference for "own source" accuracy.
 - *Fused*: one model trained on all four sources together and tested on each source's test split. It measures
-  whether a single model can serve every device it has seen.
+  whether a single model can serve every source it has seen.
 - *Leave-one-source-out (LOSO)*: for each source, a model trained on the other three and tested on the held-out
-  source. It measures accuracy on an unseen device.
+  source. It measures accuracy on an unseen source.
 
 Duke's five folds are used throughout: the per-dataset Duke model and every model that trains on Duke (fused,
 and LOSO with Kermany, OCTDL or PAIMA held out) are trained five times, once per Duke fold, so Duke is always
@@ -45,7 +45,7 @@ scored on eyes the model did not train on. Kermany, OCTDL and PAIMA have fixed t
 scores are the mean over the five models. The LOSO model with Duke held out is a single model.
 
 *The gap.* The fused model and the LOSO model are scored on the same test images of a source; the difference is
-its _unseen-device gap_. A LOSO model can also be scored on _all_ images of its held-out source, since none were
+its _unseen-source gap_. A LOSO model can also be scored on _all_ images of its held-out source, since none were
 used in training; we call this the _full-source_ score.
 
 == Square crop: removing the image-size cue

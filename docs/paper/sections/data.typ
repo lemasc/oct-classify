@@ -2,10 +2,13 @@
 
 = Data <sec-data>
 
-We use four public retinal OCT datasets, each acquired with different devices and protocols. We treat each
-dataset as one _source_ and, because each comes from a distinct acquisition setup, as a proxy for one device.
-#todo[confirm device/vendor per source from the dataset papers; Kermany, Duke and PAIMA are Spectralis-like 496-row
-scans, OCTDL is not — check before claiming "different devices" for every pair]
+We use four public retinal OCT datasets and treat each as one _source_. The sources differ in clinical site,
+population, acquisition protocol and labelling, but mostly not in device. Kermany @kermany2018 (five centres in the
+United States and China), Duke @srinivasan2014 (three centres in the United States) and PAIMA
+@sotoudehpaima2022 (one hospital in Iran) were all acquired with Heidelberg Engineering spectral-domain OCT (Spectralis for Kermany and Duke; the PAIMA
+paper names only the manufacturer); only
+OCTDL @kulyabin2024octdl comes from another vendor (Optovue Avanti RTVue XR). An unseen source is therefore an
+unseen dataset and, only for OCTDL, also an unseen device.
 
 #figure(
   table(
@@ -43,8 +46,10 @@ cross-validation (9 test eyes per fold, 3 per class).
 *Image geometry.* The sources differ in image size (@fig-size-class). PAIMA is all 768×496; Kermany has five main
 sizes (512×496, 768×496, 1024×496, 1536×496 and 512×512, the last DME only); OCTDL images are cropped to varying
 sizes, mostly around 880×320. Duke has three sizes, and two of them carry a single label: every 768×496 Duke image
-is DME and every 1024×496 image is AMD. A model
-trained on Duke can therefore learn image size as a label cue; @sec-shortcut shows that it does.
+is DME and every 1024×496 image is AMD. The link comes from scan settings on the same device, not from the
+disease: in Duke's acquisition protocol @srinivasan2014, all 15 normal volumes have 512 A-scans per B-scan, 6 of the
+15 AMD volumes have 1,024 and 9 of the 15 DME volumes have 768. A model trained on Duke can therefore learn image
+size as a label cue; @sec-shortcut shows that it does.
 
 #figure(
   kind: image,

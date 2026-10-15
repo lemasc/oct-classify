@@ -1,5 +1,5 @@
 // Presubmission draft. Build: typst compile --root ../.. main.typ
-#set document(title: [Cross-Device Generalization of CNN Retinal OCT Classifiers])
+#set document(title: [Cross-Dataset Generalization of CNN Retinal OCT Classifiers])
 #set page(paper: "a4", margin: 2.5cm, numbering: "1")
 #set text(size: 11pt)
 #set par(justify: true)
@@ -9,7 +9,7 @@
 #import "lib.typ": *
 
 #align(center)[
-  #text(size: 16pt, weight: "bold")[Cross-Device Generalization of CNN Retinal OCT Classifiers]
+  #text(size: 16pt, weight: "bold")[Cross-Dataset Generalization of CNN Retinal OCT Classifiers]
   #v(0.5em)
   #todo[authors, affiliation]
 ]

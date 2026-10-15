@@ -5,7 +5,7 @@
 #let srcs = ("kermany", "octdl", "paima", "duke")
 #let k(kind, src) = kind + "|" + src + "|" + view3(src)
 
-== Seen devices <sec-seen>
+== Seen sources <sec-seen>
 
 #figure(
   table(
@@ -24,17 +24,17 @@
     scored by the model that did not train on it).],
 ) <tab-seen>
 
-On the device it was trained on, a ResNet-50 reaches #pt(k("seen", "paima"), "per-dataset")–#pt(k("seen", "kermany"),
+On the source it was trained on, a ResNet-50 reaches #pt(k("seen", "paima"), "per-dataset")–#pt(k("seen", "kermany"),
 "per-dataset") macro-F1 (@tab-seen). Training one model on all four sources costs little: against the
 per-dataset models the fused model is within noise on OCTDL (#dl(k("seen", "octdl"), "fused-fill - per-dataset")),
 PAIMA (#dl(k("seen", "paima"), "fused-fill - per-dataset")) and Duke (#dl(k("seen", "duke"), "fused-fill - per-dataset")), and is slightly but measurably lower on Kermany
-(#dl(k("seen", "kermany"), "fused-fill - per-dataset")). Square crop, which hides the image size (@sec-method), also costs nothing on seen devices: no source loses
+(#dl(k("seen", "kermany"), "fused-fill - per-dataset")). Square crop, which hides the image size (@sec-method), also costs nothing on seen sources: no source loses
 beyond noise against the fused model, and PAIMA gains #dl(k("seen", "paima"), "fused-sq - fused-fill").
 
 PAIMA is the hardest source even when seen (#pt(k("seen", "paima"), "fused-fill") fused), mostly through AMD recall
 (#pt(k("seen", "paima"), "fused-fill", name: "recall_amd")%).
 
-== Unseen devices <sec-unseen>
+== Unseen sources <sec-unseen>
 
 #figure(
   table(
@@ -56,7 +56,7 @@ PAIMA is the hardest source even when seen (#pt(k("seen", "paima"), "fused-fill"
       pt(k("loso_full", s), "loso-fill", name: "macro_auroc"),
     )).flatten(),
   ),
-  caption: [Seen vs unseen devices (fill-aware models). _Gap_ is the paired difference between the LOSO model and
+  caption: [Seen vs unseen sources (fill-aware models). _Gap_ is the paired difference between the LOSO model and
     the fused model on the same test images, with its 95% interval. _Full source_ scores the LOSO model on every
     image of the held-out source. Duke held out is one model on 45 eyes.],
 ) <tab-unseen>
@@ -64,13 +64,13 @@ PAIMA is the hardest source even when seen (#pt(k("seen", "paima"), "fused-fill"
 #figure(
   kind: image,
   fig("gap"),
-  caption: [Macro-F1 on each source's test split when the device is seen (fused, hollow) and unseen (LOSO, filled),
+  caption: [Macro-F1 on each source's test split when the source is seen (fused, hollow) and unseen (LOSO, filled),
     for fill-aware and square-crop models. Lines are 95% intervals of the unseen score; paired gaps are in
     @tab-unseen. Both scores use the same test images, which for Kermany are mostly 1024×496 and score higher than
     Kermany as a whole (@tab-unseen, full source).],
 ) <fig-gap>
 
-Every source loses accuracy when its device is unseen, beyond noise (@tab-unseen, @fig-gap). For OCTDL, PAIMA and
+Every source loses accuracy when it is unseen, beyond noise (@tab-unseen, @fig-gap). For OCTDL, PAIMA and
 Duke the gap is 4–6 macro-F1 points; for Kermany it is #dl(k("gap_test", "kermany"), "loso-fill - fused-fill").
 AUROC drops much less than macro-F1 for the three-class sources, so the models still rank the right class
 highly for most images but the decision falls on the wrong side of the cutoff more often. PAIMA is the exception: its
@@ -80,7 +80,7 @@ change in ranking, not only in the cutoff.
 Kermany's test split is not representative of the source: #todo[942] of its 1,000 images are 1024×496, a size that
 makes up about 1% of Kermany overall. On all #num(R.at("loso_full|kermany|all").n_images) images the held-out Kermany
 score is #pt("loso_full|kermany|all", "loso-fill"), well below the #pt("gap_test|kermany|all", "loso-fill") on the
-test split. We use the full-source score for claims about Kermany as an unseen device. The next section shows why
+test split. We use the full-source score for claims about Kermany as an unseen source. The next section shows why
 image size matters so much.
 
 == The image-size shortcut <sec-shortcut>
@@ -199,7 +199,7 @@ this reading rule was fixed before the OCTDL/Duke square-crop results; true per 
     )).flatten(),
     [PAIMA], [--], [--], dl("gap_test|paima|normal_amd", "loso-fill - fused-fill"),
   ),
-  caption: [Where the unseen-device gap comes from (fill-aware, test split, LOSO minus fused, percentage points).
+  caption: [Where the unseen-source gap comes from (fill-aware, test split, LOSO minus fused, percentage points).
     Dropping DME images removes most of the gap for OCTDL and Duke.],
 ) <tab-remaining>
 
@@ -210,11 +210,11 @@ Kermany, OCTDL and Duke. With DME images removed, the OCTDL and Duke gaps are wi
 above: most of its test split is 1024×496, Duke's AMD-only size. PAIMA, which has no DME, keeps a #dl("gap_test|paima|normal_amd", "loso-fill - fused-fill") gap,
 through AMD recall.
 
-A likely reason is that each LOSO model sees DME from fewer devices: PAIMA has none, so with Kermany held out the
+A likely reason is that each LOSO model sees DME from fewer sources: PAIMA has none, so with Kermany held out the
 model learns DME from OCTDL and Duke alone (122 patients). We tested this for Kermany with a fused model, trained
-on all four devices, from which we removed every Kermany DME image (in training and validation; the other classes
-and sources are unchanged; five Duke folds, same recipe as the fused model). Kermany is then a seen device
-without its DME, so the comparison with the fused model isolates the missing DME, and the comparison with the LOSO model isolates the device.
+on all four sources, from which we removed every Kermany DME image (in training and validation; the other classes
+and sources are unchanged; five Duke folds, same recipe as the fused model). Kermany is then a seen source
+without its DME, so the comparison with the fused model isolates the missing DME, and the comparison with the LOSO model isolates the source.
 
 #figure(
   table(
@@ -239,9 +239,9 @@ Removing Kermany's DME costs Kermany #zd-dl("kermany|all", "zero-dme - fused-fil
 its normal and AMD recall stay within noise (#zd-dl("kermany|all", "zero-dme - fused-fill", name: "recall_normal"),
 #zd-dl("kermany|all", "zero-dme - fused-fill", name: "recall_amd")). That is about #zd-share()% of the held-out gap on the
 same images (LOSO #zd-pt("kermany|all", "loso-fill"), without Kermany DME #zd-pt("kermany|all", "zero-dme"), fused
-#zd-pt("kermany|all", "fused-fill")). The rest comes from the device being unseen and falls on normal recall
+#zd-pt("kermany|all", "fused-fill")). The rest comes from the source being unseen and falls on normal recall
 (LOSO minus no-DME #zd-dl("kermany|all", "loso-fill - zero-dme", name: "recall_normal")), which matches the size cue. Missing DME is therefore a
-real but partial cause. The effect is not confined to the device that lost its DME: Duke's DME recall also falls
+real but partial cause. The effect is not confined to the source that lost its DME: Duke's DME recall also falls
 (#zd-dl("duke|all", "zero-dme - fused-fill", name: "recall_dme")), so Kermany's DME helps the model recognise Duke's. Duke's drop
 comes mostly from two of its five folds and rests on 45 eyes, so we take it as supporting evidence. OCTDL and PAIMA are
 within noise.
@@ -255,7 +255,7 @@ and Duke (#lb-dl("duke|all", "bias-crossfit")) within noise. Even the best shift
 Kermany's labels reaches only #fmt(LB.at("kermany|all").grid.best). Since this uses labels a deployed model would
 not have, it is an upper bound; the cutoff explains a few points of Kermany's gap, not most of it.
 Second, image statistics. AdaBN @li2016adabn, the standard first remedy for such a shift, re-estimates the
-BatchNorm statistics on the unseen device's own unlabelled images; we again estimate on one half of the patients
+BatchNorm statistics on the unseen source's own unlabelled images; we again estimate on one half of the patients
 and predict the other. It raises held-out Kermany only from #ab-pt("kermany|all", "none") to #ab-pt("kermany|all", "adabn-all")
 (#ab-dl("kermany|all")), leaves Duke within noise (#ab-dl("duke|all")), and costs OCTDL
 #ab-dl("octdl|all"), because it shifts OCTDL's normal and AMD images toward DME: DME recall rises from
