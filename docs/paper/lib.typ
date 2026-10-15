@@ -26,6 +26,8 @@
   let m = delta(key, pair, name: name)
   [#fmt(m.point, signed: true) [#fmt(m.lo, signed: true), #fmt(m.hi, signed: true)]]
 }
+// Signed point of a paired delta, without its interval.
+#let dp(key, pair, name: "macro_f1") = fmt(delta(key, pair, name: name).point, signed: true)
 // Mean ± SD over folds, for arms with five models.
 #let sd(key, arm, name: "macro_f1") = {
   let m = metric(key, arm, name: name)

@@ -43,28 +43,32 @@ every model in this paper, including the held-out models of the next section.
 == Unseen sources <sec-unseen>
 
 #figure(
-  table(
-    columns: 6,
-    align: (left, right, right, right, right, right),
-    table.header(
-      table.cell(rowspan: 2)[Held out],
-      table.cell(rowspan: 2)[Seen (fused)],
-      table.cell(colspan: 2)[Unseen (LOSO), test split],
-      table.cell(colspan: 2)[Unseen, full source],
-      [Macro-F1], [Gap], [Macro-F1], [AUROC],
-    ),
-    ..srcs.map(s => (
-      [#source-name.at(s)],
-      pt(k("gap_test", s), "fused-fill"),
-      pt(k("gap_test", s), "loso-fill"),
-      dl(k("gap_test", s), "loso-fill - fused-fill"),
-      ci(k("loso_full", s), "loso-fill"),
-      pt(k("loso_full", s), "loso-fill", name: "macro_auroc"),
-    )).flatten(),
-  ),
-  caption: [Seen vs unseen sources (letterbox models). _Gap_ is the paired difference between the LOSO model and
-    the fused model on the same test images, with its 95% interval. _Full source_ scores the LOSO model on every
-    image of the held-out source. Duke held out is one model on 45 eyes.],
+  {
+    set text(size: 9.5pt)
+    table(
+      columns: 7,
+      align: (left, right, right, right, right, right, right),
+      table.header(
+        table.cell(rowspan: 2)[Held out],
+        table.cell(colspan: 3)[Macro-F1, test split],
+        table.cell(colspan: 2)[AUROC, test split],
+        table.cell(rowspan: 2)[Macro-F1, \ full source],
+        [Seen], [Unseen], [Gap], [Seen], [Unseen],
+      ),
+      ..srcs.map(s => (
+        [#source-name.at(s)],
+        pt(k("gap_test", s), "fused-fill"),
+        pt(k("gap_test", s), "loso-fill"),
+        dl(k("gap_test", s), "loso-fill - fused-fill"),
+        pt(k("gap_test", s), "fused-fill", name: "macro_auroc"),
+        pt(k("gap_test", s), "loso-fill", name: "macro_auroc"),
+        ci(k("loso_full", s), "loso-fill"),
+      )).flatten(),
+    )
+  },
+  caption: [Seen (fused) vs unseen (LOSO) sources, letterbox models. _Gap_ is the paired difference between the
+    LOSO model and the fused model on the same test images, with its 95% interval. _Full source_ scores the LOSO
+    model on every image of the held-out source. Duke held out is one model on 45 eyes.],
 ) <tab-unseen>
 
 #figure(
@@ -78,10 +82,13 @@ every model in this paper, including the held-out models of the next section.
 
 Every source loses accuracy when it is unseen, beyond noise (@tab-unseen, @fig-gap). For OCTDL, PAIMA and
 Duke the gap is 4–6 macro-F1 points; for Kermany it is #dl(k("gap_test", "kermany"), "loso-fill - fused-fill").
-AUROC drops much less than macro-F1 for the three-class sources, so the models still rank the right class
-highly for most images but the decision falls on the wrong side of the cutoff more often. PAIMA is the exception: its
-AUROC changes by #dl(k("gap_test", "paima"), "loso-fill - fused-fill", name: "macro_auroc") on the test split, a
-change in ranking, not only in the cutoff.
+For the three-class sources the AUROC gap is much smaller than the macro-F1 gap
+(#dl(k("gap_test", "kermany"), "loso-fill - fused-fill", name: "macro_auroc") for Kermany,
+#dl(k("gap_test", "octdl"), "loso-fill - fused-fill", name: "macro_auroc") for OCTDL and
+#dl(k("gap_test", "duke"), "loso-fill - fused-fill", name: "macro_auroc") for Duke), so the models still rank the
+right class highly for most images but the decision falls on the wrong side of the cutoff more often. PAIMA is the
+exception: its AUROC gap is #dl(k("gap_test", "paima"), "loso-fill - fused-fill", name: "macro_auroc") against
+#dp(k("gap_test", "paima"), "loso-fill - fused-fill") in macro-F1, a change in ranking, not only in the cutoff.
 
 Kermany's test split is not representative of the source: #todo[942] of its 1,000 images are 1024×496, a size that
 makes up about 1% of Kermany overall. On all #num(R.at("loso_full|kermany|all").n_images) images the held-out Kermany
@@ -168,27 +175,44 @@ model of the same arm, the gap narrows from #dl("gap_test|kermany|all", "loso-fi
 ) <fig-kermany-size>
 
 *But removing the cue does not help everywhere.* On the other held-out sources square crop is no better and
-sometimes worse (@tab-square): OCTDL changes by #dl("loso_full|octdl|all", "loso-sq - loso-fill") on the full source,
-almost all through normal images called DME, and Duke by #dl("loso_full|duke|all", "loso-sq - loso-fill"),
-through DME recall. PAIMA loses ranking quality (AUROC #dl("loso_full|paima|normal_amd", "loso-sq - loso-fill",
-name: "macro_auroc")), and this loss varies strongly with the seed (@sec-limits). In the Normal/AMD view, which
-removes the DME class, the OCTDL and Duke losses disappear (#dl("loso_full|octdl|normal_amd", "loso-sq - loso-fill")
-and #dl("loso_full|duke|normal_amd", "loso-sq - loso-fill")), so square crop's cost on those sources involves DME:
-too many DME calls on OCTDL, too few on Duke.
+sometimes worse (@tab-square). On OCTDL, normal recall changes by
+#dl("loso_full|octdl|all", "loso-sq - loso-fill", name: "recall_normal") as the share of normal images called DME
+goes from #share("loso_full|octdl|all", "loso-fill", "normal", "dme")% to
+#share("loso_full|octdl|all", "loso-sq", "normal", "dme")%; on Duke, DME recall changes by
+#dl("loso_full|duke|all", "loso-sq - loso-fill", name: "recall_dme"). In the Normal/AMD view, which removes the DME
+class, both losses disappear (#dl("loso_full|octdl|normal_amd", "loso-sq - loso-fill") and
+#dl("loso_full|duke|normal_amd", "loso-sq - loso-fill")), so square crop's cost on these sources involves DME: too
+many DME calls on OCTDL, too few on Duke. PAIMA changes by #dl("loso_full|paima|normal_amd", "loso-sq - loso-fill")
+in macro-F1 and #dl("loso_full|paima|normal_amd", "loso-sq - loso-fill", name: "macro_auroc") in AUROC, a loss in
+ranking that varies strongly with the seed (@sec-limits).
 
 #figure(
-  table(
-    columns: 4,
-    align: (left, right, right, right),
-    table.header[Held out (full source)][Letterbox][Square crop][Paired difference],
-    ..srcs.map(s => (
-      [#source-name.at(s)],
-      pt(k("loso_full", s), "loso-fill"),
-      pt(k("loso_full", s), "loso-sq"),
-      dl(k("loso_full", s), "loso-sq - loso-fill"),
-    )).flatten(),
-  ),
-  caption: [LOSO macro-F1 (%) on the full held-out source, with and without the image-size cue.],
+  {
+    set text(size: 9.5pt)
+    table(
+      columns: 8,
+      align: (left, right, right, right, right, right, right, right),
+      table.header(
+        table.cell(rowspan: 2)[Held out], table.cell(colspan: 3)[Macro-F1], table.cell(colspan: 2)[AUROC],
+        table.cell(colspan: 2)[Normal/AMD macro-F1],
+        [Letterbox], [Square], [Difference], [Letterbox], [Square], [Letterbox], [Square],
+      ),
+      ..srcs.map(s => (
+        [#source-name.at(s)],
+        pt(k("loso_full", s), "loso-fill"),
+        pt(k("loso_full", s), "loso-sq"),
+        dl(k("loso_full", s), "loso-sq - loso-fill"),
+        pt(k("loso_full", s), "loso-fill", name: "macro_auroc"),
+        pt(k("loso_full", s), "loso-sq", name: "macro_auroc"),
+        ..if s == "paima" { ([--], [--]) } else {
+          (pt("loso_full|" + s + "|normal_amd", "loso-fill"), pt("loso_full|" + s + "|normal_amd", "loso-sq"))
+        },
+      )).flatten(),
+    )
+  },
+  caption: [LOSO models on the full held-out source, with (letterbox) and without (square crop) the image-size cue
+    (%). _Difference_ is paired, with its 95% interval. PAIMA is scored on normal vs AMD only, so its Normal/AMD
+    view is its main score.],
 ) <tab-square>
 
 We therefore keep letterbox models as the main result and treat square crop as an ablation. It confirms that
