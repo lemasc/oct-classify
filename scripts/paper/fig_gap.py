@@ -44,7 +44,7 @@ def main() -> None:
     handles = [
         Line2D([], [], marker="o", ls="", mfc="white", mec=style.INK_2, mew=1.4, ms=6.5, label="Seen (fused)"),
         Line2D([], [], marker="o", ls="", mfc=style.INK_2, mec=style.INK_2, ms=6.5, label="Unseen (LOSO)"),
-        Line2D([], [], color=style.ARM_COLOR["fill"], lw=2, label="Fill-aware"),
+        Line2D([], [], color=style.ARM_COLOR["fill"], lw=2, label=style.ARM_NAME["fill"]),
         Line2D([], [], color=style.ARM_COLOR["sq"], lw=2, label="Square crop"),
     ]
     ax.legend(handles=handles, ncol=4, loc="lower left", bbox_to_anchor=(0, 1.0), columnspacing=1.4)

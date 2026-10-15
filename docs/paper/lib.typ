@@ -10,7 +10,7 @@
   let v = calc.round(x * 100, digits: 1)
   let s = str(calc.abs(v))
   if not s.contains(".") { s += ".0" }
-  if v < 0 { "−" + s } else if signed and v > 0 { "+" + s } else if signed { "±" + s } else { s }
+  if v < 0 { "−" + s } else if signed and v > 0 { "+" + s } else { s }
 }
 
 #let metric(key, arm, name: "macro_f1") = R.at(key).arms.at(arm).metrics.at(name)

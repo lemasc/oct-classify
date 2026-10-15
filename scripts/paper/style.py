@@ -2,7 +2,7 @@
 
 Colours come from the validated reference palette (dataviz skill):
 - classes: normal / AMD / DME = slots 1-3, validated all-pairs; DME aqua is < 3:1 on white, so bars carry direct labels.
-- arms: fill-aware violet, square crop green, validated as a pair; seen (fused) is a neutral hollow marker.
+- arms: letterbox (fill-aware) violet, square crop green, validated as a pair; seen (fused) is a neutral hollow marker.
 """
 
 import json
@@ -18,7 +18,7 @@ INK, INK_2, INK_3, GRID = "#0b0b0b", "#52514e", "#8a8984", "#e6e5e1"
 CLASS_COLOR = {"normal": "#2a78d6", "amd": "#eb6834", "dme": "#1baf7a"}
 CLASS_NAME = {"normal": "Normal", "amd": "AMD", "dme": "DME"}
 ARM_COLOR = {"fill": "#6250d6", "sq": "#008300"}
-ARM_NAME = {"fill": "Fill-aware", "sq": "Square crop"}
+ARM_NAME = {"fill": "Letterbox", "sq": "Square crop"}
 SOURCE_NAME = {"kermany": "Kermany", "octdl": "OCTDL", "paima": "PAIMA", "duke": "Duke"}
 
 TEXT_WIDTH_IN = 6.3  # A4 with 2.5 cm margins
