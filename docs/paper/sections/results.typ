@@ -300,20 +300,31 @@ neither source lost beyond noise.
 == What remains of the gap <sec-remaining>
 
 #figure(
-  table(
-    columns: 4,
-    align: (left, right, right, right),
-    table.header[Held out][3-class gap][DME recall change][Normal/AMD gap],
-    ..("kermany", "octdl", "duke").map(s => (
-      [#source-name.at(s)],
-      dl("gap_test|" + s + "|all", "loso-fill - fused-fill"),
-      dl("gap_test|" + s + "|all", "loso-fill - fused-fill", name: "recall_dme"),
-      dl("gap_test|" + s + "|normal_amd", "loso-fill - fused-fill"),
-    )).flatten(),
-    [PAIMA], [--], [--], dl("gap_test|paima|normal_amd", "loso-fill - fused-fill"),
-  ),
-  caption: [Where the unseen-source gap comes from (letterbox, test split, LOSO minus fused, percentage points).
-    Removing the DME class removes most of the gap for OCTDL and Duke.],
+  {
+    set text(size: 9.5pt)
+    table(
+      columns: 6,
+      align: (left, right, right, right, right, right),
+      table.header(
+        table.cell(rowspan: 2)[Held out], table.cell(rowspan: 2)[3-class gap],
+        table.cell(rowspan: 2)[DME recall change], table.cell(colspan: 3)[Normal/AMD macro-F1],
+        [Seen], [Unseen], [Gap],
+      ),
+      ..srcs.map(s => (
+        [#source-name.at(s)],
+        ..if s == "paima" { ([--], [--]) } else {
+          (dl("gap_test|" + s + "|all", "loso-fill - fused-fill"),
+           dl("gap_test|" + s + "|all", "loso-fill - fused-fill", name: "recall_dme"))
+        },
+        pt("gap_test|" + s + "|normal_amd", "fused-fill"),
+        pt("gap_test|" + s + "|normal_amd", "loso-fill"),
+        dl("gap_test|" + s + "|normal_amd", "loso-fill - fused-fill"),
+      )).flatten(),
+    )
+  },
+  caption: [Where the unseen-source gap comes from (letterbox, test split, LOSO minus fused, percentage points, with
+    paired 95% intervals). The 3-class scores are in @tab-unseen and the DME recalls in @tab-recall. Removing the
+    DME class removes most of the gap for OCTDL and Duke; PAIMA has no DME.],
 ) <tab-remaining>
 
 Most of what remains is DME (@tab-remaining). On the test split, held-out DME recall falls by 13–16 points for
