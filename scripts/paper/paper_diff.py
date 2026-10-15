@@ -25,6 +25,7 @@ from urllib.parse import parse_qs, unquote
 
 REPO = Path(__file__).resolve().parents[2]
 PAPER = "docs/paper"
+DATA_DIRS = ("data/paper", "data/analysis")  # result files the paper loads via json()
 CACHE = REPO / "artifacts/paper-diff"
 WORKTREE = "WORKTREE"
 MIN_ANCHOR = 4  # equal runs shorter than this between two edits are folded into the edit
@@ -114,10 +115,13 @@ def build(sha: str) -> str:
     with BUILD_LOCK:
         if not cached.exists():
             with tempfile.TemporaryDirectory() as tmp:
-                archive = git("archive", sha, PAPER, "data/paper")
-                if archive.returncode:
-                    raise Error(404, f"{PAPER} not found at {sha[:7]}")
-                subprocess.run(["tar", "-x", "-C", tmp], input=archive.stdout, check=True)
+                for path in (PAPER, *DATA_DIRS):
+                    archive = git("archive", sha, path)
+                    if archive.returncode:
+                        if path == PAPER:
+                            raise Error(404, f"{PAPER} not found at {sha[:7]}")
+                        continue  # older revisions may predate this data folder
+                    subprocess.run(["tar", "-x", "-C", tmp], input=archive.stdout, check=True)
                 CACHE.mkdir(parents=True, exist_ok=True)
                 partial = cached.with_suffix(".tmp")
                 typst(Path(tmp) / PAPER, partial)
