@@ -8,7 +8,7 @@
 Each revision is extracted with `git archive` and compiled with `typst --features html`; the
 built HTML is cached per commit under artifacts/paper-diff/. The two HTML bodies are tokenised
 and diffed with difflib. Tables are diffed as whole blocks (old table dimmed above the new one,
-changed cells shaded), since a per-cell diff breaks when columns move. Images get the same
+changed cells shaded green in the new table, removed cells red in the old), since a per-cell diff breaks when columns move. Images get the same
 treatment: each is identified by its Git blob id (the id `git ls-tree` reports for the figure file,
 recovered from the data URI Typst embeds), and a changed blob shows old dimmed above new.
 Standard library only.
@@ -57,6 +57,7 @@ del.del{background:var(--del);color:var(--delfg)}
 .tbl-del::before{content:'removed table or figure';color:var(--delfg)}
 .tbl-ins img,.tbl-del img{max-width:100%;height:auto}
 td.chg,th.chg{background:var(--chg)}
+td.gone,th.gone{background:var(--del)}
 .legend{position:sticky;top:0;background:Canvas;font:13px sans-serif;padding:.4rem 0;
  border-bottom:1px solid #8884;z-index:1}
 .legend code{font-size:12px}
@@ -154,7 +155,7 @@ def table_rows(table: str) -> dict:
     return rows
 
 
-def mark_table(old: str, new: str) -> str:
+def mark_table(old: str, new: str, cls: str = "chg") -> str:
     """Shade cells of `new` whose text is not in the matching row of `old`."""
     old_rows, seen = table_rows(old), {}
 
@@ -172,7 +173,7 @@ def mark_table(old: str, new: str) -> str:
                 pool.remove(text)
                 return cell.group(0)
             tag, attrs, inner = cell.groups()
-            return f'<{tag}{attrs} class="chg">{inner}</{tag}>'
+            return f'<{tag}{attrs} class="{cls}">{inner}</{tag}>'
 
         return "<tr>" + CELL.sub(mark_cell, row.group(1)) + "</tr>"
 
@@ -315,7 +316,10 @@ def redline(old_page: str | None, new_page: str, label: str, picker: str = "") -
                 out.append(f'<div class="tbl-del">{old[a0][1]}</div>')
                 out.append(f'<div class="tbl-ins">{new[b0][1]}</div>')
             else:
-                out.append(f'<div class="tbl-del"><div class="tbl">{old[a0][1]}</div></div>')
+                out.append(
+                    f'<div class="tbl-del"><div class="tbl">'
+                    f'{mark_table(new[b0][1], old[a0][1], "gone")}</div></div>'
+                )
                 out.append(
                     f'<div class="tbl-ins"><div class="tbl">{mark_table(old[a0][1], new[b0][1])}</div></div>'
                 )
