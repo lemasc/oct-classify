@@ -10,5 +10,5 @@ Figures (run from the repository root; matplotlib is not a project dependency):
 
 ```bash
 uv run python scripts/paper/export_results.py
-for f in size_class gap kermany_size; do uv run --with matplotlib python scripts/paper/fig_$f.py; done
+for f in design size_class gap kermany_size; do uv run --with matplotlib python scripts/paper/fig_$f.py; done
 ```

@@ -24,8 +24,7 @@ size, is kept. All runs use one seed (20260913); @sec-limits discusses seed vari
 
 #figure(
   kind: image,
-  placeholder(4.5cm)[F3: design diagram.
-    Rows: per-dataset, fused, LOSO. Columns: the four sources, marked train / test / held out.],
+  fig("design"),
   caption: [The three training variants. Per-dataset and fused models are tested on sources they trained on;
     leave-one-source-out (LOSO) models are tested on a source they never saw.],
 ) <fig-design>
@@ -48,7 +47,7 @@ scores are the mean over the five models. The LOSO model with Duke held out is a
 its _unseen-source gap_. A LOSO model can also be scored on _all_ images of its held-out source, since none were
 used in training; we call this the _full-source_ score.
 
-== Square crop: removing the image-size cue
+== Square crop: removing the image-size cue <sec-square>
 
 To test whether models use image size as a label cue (@sec-shortcut), we add one arm that hides it. _Square crop_
 trains on a random square window (height × height) of each scan and tests on the centred window. Every input is
