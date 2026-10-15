@@ -12,3 +12,9 @@ Figures (run from the repository root; matplotlib is not a project dependency):
 uv run python scripts/paper/export_results.py
 for f in examples design size_class gap kermany_size; do uv run --with matplotlib python scripts/paper/fig_$f.py; done
 ```
+
+Review changes between two revisions (redline, like latexdiff; standard library only, needs `typst`):
+
+```bash
+uv run python scripts/paper/paper_diff.py   # then open http://localhost:8731/main..HEAD  (`<base>..` = vs. working tree)
+```
