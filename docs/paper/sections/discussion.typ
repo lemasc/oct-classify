@@ -40,7 +40,7 @@ the size cue predicts. Whether DME from more sources would close the DME part is
 *Dry AMD is hard on some sources, not all.* AMD merges a dry and a wet stage, and the sources mix them very
 differently (@tab-data). PAIMA, where most AMD is dry, misses its drusen scans far more often than its wet ones,
 both when seen and when held out, and OCTDL shows the same on a few dozen scans, while Kermany's drusen scans are
-recognised almost perfectly by every model (@tab-recall). The dry stage is therefore not hard in general; something
+recognised almost perfectly by every model (@tab-recall, @tab-recall-unseen). The dry stage is therefore not hard in general; something
 about PAIMA's drusen scans is, and our data cannot tell what. A single AMD score hides this difference, which is why we report the two stages separately.
 
 == Limitations <sec-limits>

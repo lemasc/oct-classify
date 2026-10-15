@@ -40,36 +40,32 @@ beyond noise against the fused model, and PAIMA gains #dl(k("seen", "paima"), "f
   [#label], rc(m, "normal"), rc(m, "amd"), stage-rc(src, arm, "dry", m), stage-rc(src, arm, "wet", m), rc(m, "dme"),
 )
 
+// Per-class recall table; `rows-of(src)` gives that source's rows (from `recall-row`).
+#let recall-table(rows-of) = {
+  set text(size: 9.5pt)
+  table(
+    columns: 7,
+    align: (left, left, right, right, right, right, right),
+    stroke: none,
+    table.header(
+      table.cell(rowspan: 2)[Source], table.cell(rowspan: 2)[Model], table.cell(rowspan: 2)[Normal],
+      table.cell(rowspan: 2)[AMD], table.cell(colspan: 2, align: center)[AMD stage], table.cell(rowspan: 2)[DME],
+      [dry], [wet],
+    ),
+    table.hline(stroke: 0.5pt),
+    ..srcs.map(s => {
+      let rows = rows-of(s)
+      (table.cell(rowspan: rows.len())[#source-name.at(s)], ..rows.flatten(), table.hline(stroke: 0.3pt + gray))
+    }).flatten(),
+  )
+}
+#let seen-row(s, label, arm) = recall-row(s, label, R.at("seen|" + s + "|" + view3(s)).arms.at(arm).metrics, arm)
+
 #figure(
-  {
-    set text(size: 9.5pt)
-    table(
-      columns: 7,
-      align: (left, left, right, right, right, right, right),
-      stroke: none,
-      table.header(
-        table.cell(rowspan: 2)[Source], table.cell(rowspan: 2)[Model], table.cell(rowspan: 2)[Normal],
-        table.cell(rowspan: 2)[AMD], table.cell(colspan: 2, align: center)[AMD stage], table.cell(rowspan: 2)[DME],
-        [dry], [wet],
-      ),
-      table.hline(stroke: 0.5pt),
-      ..srcs.map(s => {
-        let key = s + "|" + view3(s)
-        let rows = (
-          recall-row(s, "Per-dataset", R.at("seen|" + key).arms.at("per-dataset").metrics, "per-dataset"),
-          recall-row(s, "Fused", R.at("seen|" + key).arms.at("fused-fill").metrics, "fused-fill"),
-        )
-        if s == "kermany" {
-          rows.push(recall-row(s, "Fused, no Kermany DME", ZD.at("kermany|all").arms.at("zero-dme").metrics, none))
-        }
-        rows.push(recall-row(s, "LOSO (held out)", R.at("gap_test|" + key).arms.at("loso-fill").metrics, "loso-fill"))
-        (table.cell(rowspan: rows.len())[#source-name.at(s)], ..rows.flatten(), table.hline(stroke: 0.3pt + gray))
-      }).flatten(),
-    )
-  },
-  caption: [Recall (%) per class on each source's test split, letterbox models, mean over models. _Dry_ and _wet_
-    are recall within AMD; Duke's AMD is all dry, and OCTDL's intermediate stage is not shown. PAIMA has no DME.
-    Differences cited in the text carry paired 95% intervals.],
+  recall-table(s => (seen-row(s, "Per-dataset", "per-dataset"), seen-row(s, "Fused", "fused-fill"))),
+  caption: [Recall (%) per class on each source's test split, seen letterbox models, mean over models. _Dry_ and
+    _wet_ are recall within AMD; Duke's AMD is all dry, and OCTDL's intermediate stage is not shown. PAIMA has no
+    DME.],
 ) <tab-recall>
 
 Per-class recall (@tab-recall) shows where the errors are. PAIMA is the hardest source even when seen
@@ -83,8 +79,8 @@ OCTDL's drusen scans are also recognised less often than its wet ones
 (#as-rec("test|octdl|all", "dry", "fused-fill")% vs #as-rec("test|octdl|all", "wet", "fused-fill")% fused), but its
 test split has only #AS.at("test|octdl|all").stages.dry.n_images of them, from
 #AS.at("test|octdl|all").stages.dry.n_groups patients. Kermany's drusen scans are recognised in at least
-#fmt(calc.min(..("per-dataset", "fused-fill", "loso-fill").map(a => AS.at("test|kermany|all").stages.dry.arms.at(a).recall)))%
-of cases by every model in the table, seen or held out.
+#fmt(calc.min(..("per-dataset", "fused-fill").map(a => AS.at("test|kermany|all").stages.dry.arms.at(a).recall)))%
+of cases by both models.
 
 == Unseen sources <sec-unseen>
 
@@ -320,7 +316,7 @@ neither source lost beyond noise.
     )
   },
   caption: [Where the unseen-source gap comes from (letterbox, test split, LOSO minus fused, percentage points, with
-    paired 95% intervals). The 3-class scores are in @tab-unseen and the DME recalls in @tab-recall. Removing the
+    paired 95% intervals). The 3-class scores are in @tab-unseen and the DME recalls in @tab-recall-unseen. Removing the
     DME class removes most of the gap for OCTDL and Duke; PAIMA has no DME.],
 ) <tab-remaining>
 
@@ -328,12 +324,26 @@ Most of what remains is DME (@tab-remaining). On the test split, held-out DME re
 Kermany, OCTDL and Duke. In the Normal/AMD view, the OCTDL and Duke gaps are within noise of zero
 (#dl("gap_test|octdl|normal_amd", "loso-fill - fused-fill") and #dl("gap_test|duke|normal_amd", "loso-fill - fused-fill")). Kermany keeps a large Normal/AMD gap, through normal images called AMD: held out, its normal recall falls from
 #pt("gap_test|kermany|all", "fused-fill", name: "recall_normal") to
-#pt("gap_test|kermany|all", "loso-fill", name: "recall_normal") (@tab-recall), and most of the missed normal images
+#pt("gap_test|kermany|all", "loso-fill", name: "recall_normal") (@tab-recall-unseen), and most of the missed normal images
 are called AMD. This is consistent with the size cue above: most of its test split is 1024×496, Duke's AMD-only
 size. PAIMA, which has no DME, keeps a gap of
 #dl("gap_test|paima|normal_amd", "loso-fill - fused-fill"), through AMD recall, and again mostly dry AMD: held-out
 recall changes by #as-dl("test|paima|normal_amd", "dry", "loso-fill - fused-fill") for drusen scans and by
 #as-dl("test|paima|normal_amd", "wet", "loso-fill - fused-fill") for wet ones.
+
+#figure(
+  recall-table(s => {
+    let rows = (seen-row(s, "Fused (seen)", "fused-fill"),)
+    if s == "kermany" {
+      rows.push(recall-row(s, "Fused, no Kermany DME", ZD.at("kermany|all").arms.at("zero-dme").metrics, none))
+    }
+    rows.push(recall-row(s, "LOSO (held out)", R.at(k("gap_test", s)).arms.at("loso-fill").metrics, "loso-fill"))
+    rows
+  }),
+  caption: [Recall (%) per class on each source's test split when the source is seen (fused) and held out (LOSO),
+    letterbox models; columns as in @tab-recall. For Kermany, also the fused model trained without Kermany's DME
+    (@tab-zero-dme). Differences cited in the text carry paired 95% intervals.],
+) <tab-recall-unseen>
 
 A likely reason is that each LOSO model sees DME from fewer sources: PAIMA has none, so with Kermany held out the
 model learns DME from OCTDL and Duke alone. We tested this for Kermany with a fused model, trained
@@ -369,7 +379,7 @@ without its DME, so the comparison with the fused model isolates the missing DME
     test split (%; PAIMA on Normal/AMD, without DME). _Difference_ is paired, with its patient-level 95% interval.],
 ) <tab-zero-dme>
 
-Per-class recall for the three Kermany models is in @tab-recall. Removing Kermany's DME changes Kermany by
+Per-class recall for the three Kermany models is in @tab-recall-unseen. Removing Kermany's DME changes Kermany by
 #zd-dl("kermany|all", "zero-dme - fused-fill"), all of it through DME recall (#zd-dl("kermany|all", "zero-dme - fused-fill", name: "recall_dme")); its normal and AMD recall stay within
 noise (#zd-dl("kermany|all", "zero-dme - fused-fill", name: "recall_normal"),
 #zd-dl("kermany|all", "zero-dme - fused-fill", name: "recall_amd")). On the same test images this is about
