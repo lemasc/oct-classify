@@ -244,8 +244,10 @@ model of the same arm, the gap narrows from #dl("gap_test|kermany|all", "loso-fi
     DME only in Duke, and costs DME recall there.],
 ) <fig-kermany-size>
 
-*But removing the cue does not help everywhere.* On the other held-out sources square crop is no better and
-sometimes worse (@tab-square). On OCTDL, normal recall changes by
+== Square crop on the other sources <sec-square-other>
+
+Removing the cue recovers much of Kermany's gap, but it does not help everywhere: on the other held-out sources
+square crop is no better and sometimes worse (@tab-square). On OCTDL, normal recall changes by
 #dl("loso_full|octdl|all", "loso-sq - loso-fill", name: "recall_normal") as the share of normal images called DME
 goes from #share("loso_full|octdl|all", "loso-fill", "normal", "dme")% to
 #share("loso_full|octdl|all", "loso-sq", "normal", "dme")%; on Duke, DME recall changes by
