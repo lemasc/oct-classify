@@ -2,7 +2,7 @@
 
 // Sections that are written in Thai. Anything not listed falls back to the English file in ../sections/.
 // Add a name here once th/sections/<name>.typ is translated.
-#let translated = ()
+#let translated = ("data")
 
 #let title = [การวางนัยทั่วไปข้ามชุดข้อมูลของตัวจำแนกภาพ OCT จอประสาทตาด้วย CNN]
 #let abstract-title = [บทคัดย่อ]
