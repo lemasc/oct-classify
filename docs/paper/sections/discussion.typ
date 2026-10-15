@@ -7,7 +7,7 @@ has seen them, and every one of them loses accuracy beyond noise when it has not
 PAIMA and Duke, and about 15 for Kermany on its test split. A single-dataset benchmark, the most common way OCT
 classifiers are evaluated, cannot show this. A
 different device is not needed for the drop: three of the four sources come from the same manufacturer
-(Heidelberg), and OCTDL, the only other vendor, has the smallest gap. Site, population, protocol and labelling are enough.
+(Heidelberg), and OCTDL, the only other vendor, does not have a larger gap than they do. Site, population, protocol and labelling are enough.
 
 *Pooling datasets can import their shortcuts.* The largest gap, Kermany's, is partly caused by a property of
 _another_ dataset: in Duke, image size gives the label away, and models trained with Duke apply that rule to
@@ -31,7 +31,7 @@ on every unseen source.
 
 *DME is the weak point, but not the whole story.* Once the size cue is accounted for, most of the remaining gap is DME
 recall. DME is also the class with the fewest training examples from the fewest sources: PAIMA has none, so a model
-with Kermany held out learns DME from 122 patients or eyes in two sources, one per vendor. A fused model trained
+with Kermany held out learns DME from only two sources, one per vendor. A fused model trained
 without Kermany's DME separates "unseen source" from "unseen DME". On Kermany's test split, missing in-device DME
 alone costs about #zd-share()% as much as the held-out gap, all through DME recall, and at least as much DME recall
 as the held-out model loses. The held-out model's other loss, normal recall, comes from the source being unseen, as
@@ -45,18 +45,16 @@ cannot tell what. A single AMD score hides this difference, which is why we repo
 
 == Limitations <sec-limits>
 
-- *One seed.* Every table reports seed 20260913. Two extra seeds exist for the LOSO Kermany and PAIMA models:
-  held-out Kermany scores 73.8–76.4 (letterbox) and 84.8–86.6 (square crop) across the three seeds, so its gain
-  holds at every seed; held-out PAIMA with square crop ranges 75.6–85.2 against 86.4–87.7 for letterbox, so its
-  loss is real but its size is unstable. #todo[load from a tracked file]
+- *One seed.* Every table reports seed 20260913. Two extra seeds exist for the LOSO Kermany and PAIMA models, in
+  both arms. Held-out Kermany varies by a few points across seeds, and square crop's gain holds at every seed.
+  Held-out PAIMA with square crop loses against letterbox at every seed, but by very different amounts, so the
+  loss is real but its size is unstable.
 - *Small Duke.* Duke has 45 eyes, and Duke held out is a single LOSO model. Its intervals are wide, and we use it
   only to support directions seen on the other sources.
 - *Unexplained PAIMA loss under square crop.* Shrinking the test tissue toward the scale seen in training lowers
   PAIMA's AUROC instead of recovering it, so tissue scale does not explain the loss (enlarging was not tested).
-  Nor does AMD stage: with seed 20260913 the AUROC loss is in separating normal from dry AMD
-  (#pa-dl(20260913, "dry")) rather than from wet AMD (#pa-dl(20260913, "wet")), but with the other two seeds both
-  stages lose about equally (dry #pa-dl(20260914, "dry") and wet #pa-dl(20260914, "wet") with seed 20260914, dry
-  #pa-dl(20260915, "dry") and wet #pa-dl(20260915, "wet") with seed 20260915).
+  Nor does AMD stage: with seed 20260913 the AUROC loss is mostly in separating normal from dry AMD, but with
+  the other two seeds both stages lose about equally.
 - *Hardware and batch size.* The fused letterbox models were trained on a different GPU from every other model,
   and no seed noise floor exists for the fused models. Every comparison with them therefore also crosses hardware:
   the unseen-source gap, fused vs per-dataset, and the two fused arms. The LOSO models also train with batch size
@@ -64,7 +62,7 @@ cannot tell what. A single AMD score hides this difference, which is why we repo
   gap is far larger than such effects; differences of a few points against the fused models are less certain.
 - *Zero-DME control.* The fused model without Kermany DME is one seed trained on a different GPU from the fused
   reference, and removing Kermany's DME also changes Kermany's share of each training batch. Its Duke result rests on
-  45 eyes and mostly two folds.
+  45 eyes.
 - *Source is not device.* Three of the four sources share one manufacturer, so our gaps measure a shift between datasets
   (site, population, acquisition protocol, labelling and label unit; Duke labels whole eyes, the others single
   B-scans), not a shift between devices. Only OCTDL adds a vendor change, and a single source cannot separate it

@@ -150,10 +150,13 @@ intervention as the evidence and Grad-CAM as an illustration.
 
 *Training without the cue.* Square-crop models never see the image width. With Kermany held out, they score
 #pt("loso_full|kermany|all", "loso-sq") on the full source against #pt("loso_full|kermany|all", "loso-fill")
-(#dl("loso_full|kermany|all", "loso-sq - loso-fill")), and close about 40% of the test-split gap
-(#dl("gap_test|kermany|all", "loso-fill - fused-fill") becomes #dl("gap_test|kermany|all", "loso-sq - fused-sq")).
-The gain is largest exactly where the cue was (@fig-kermany-size): for 768×496 normal images, the share called DME
-falls from #share("size_loso:768x496|kermany|all", "fill", "normal", "dme")% to
+(#dl("loso_full|kermany|all", "loso-sq - loso-fill")). On the test split, each arm measured against the fused
+model of the same arm, the gap narrows from #dl("gap_test|kermany|all", "loso-fill - fused-fill") to
+#dl("gap_test|kermany|all", "loso-sq - fused-sq"), about 40%. The gain is largest exactly where the cue was
+(@fig-kermany-size): for 768×496 normal images, recall rises from
+#pt("size_loso:768x496|kermany|all", "fill", name: "recall_normal") to
+#pt("size_loso:768x496|kermany|all", "sq", name: "recall_normal"), and the share called DME falls from
+#share("size_loso:768x496|kermany|all", "fill", "normal", "dme")% to
 #share("size_loso:768x496|kermany|all", "sq", "normal", "dme")%.
 
 #figure(
@@ -222,7 +225,7 @@ recall changes by #as-dl("test|paima|normal_amd", "dry", "loso-fill - fused-fill
 #as-dl("test|paima|normal_amd", "wet", "loso-fill - fused-fill") for wet ones.
 
 A likely reason is that each LOSO model sees DME from fewer sources: PAIMA has none, so with Kermany held out the
-model learns DME from OCTDL and Duke alone (122 patients or eyes). We tested this for Kermany with a fused model, trained
+model learns DME from OCTDL and Duke alone. We tested this for Kermany with a fused model, trained
 on all four sources, from which we removed every Kermany DME image (in training and validation; the other classes
 and sources are unchanged; five Duke folds, same recipe as the fused model). Kermany is then a seen source
 without its DME, so the comparison with the fused model isolates the missing DME, and the comparison with the LOSO model isolates the source.
@@ -259,8 +262,8 @@ it can account for the LOSO model's DME errors. The LOSO model's other loss is n
 comes from the source being unseen and matches the size cue. Missing DME is therefore a real but partial cause. The
 effect is not confined to the source that lost its DME: Duke's DME recall also changes
 (#zd-dl("duke|all", "zero-dme - fused-fill", name: "recall_dme")), which suggests that Kermany's DME helps the model
-recognise Duke's; this change comes mostly from two of Duke's five folds and rests on 45 eyes. OCTDL and PAIMA are
-within noise.
+recognise Duke's; this change rests on 45 eyes, so we take it as supporting evidence. OCTDL and PAIMA are within
+noise.
 
 *Causes we ruled out.* Two simpler explanations do not account for the gap. First, the decision cutoff: we fit a
 per-class shift of the output log-probabilities on the held-out source's own labels, fitting on one half of its
