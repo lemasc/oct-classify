@@ -1,8 +1,7 @@
 // Thai strings. Thai section files `#import` this after lib.typ, so these names shadow the English ones there.
 
 // Sections that are written in Thai. Anything not listed falls back to the English file in ../sections/.
-// Add a name here once th/sections/<name>.typ is translated.
-#let translated = ("data", "method")
+#let translated = ("data", "method", "results")
 
 #let title = [การวางนัยทั่วไปข้ามชุดข้อมูลของตัวจำแนกภาพ OCT จอประสาทตาด้วย CNN]
 #let abstract-title = [บทคัดย่อ]

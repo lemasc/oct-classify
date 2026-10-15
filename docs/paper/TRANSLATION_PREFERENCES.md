@@ -67,8 +67,8 @@ This document captures editorial conventions, workflow rules, and translation pr
 | **Introduction** | `sections/introduction.typ` | `th/sections/introduction.typ` | Deferred by author (stub only) |
 | **Data** | `sections/data.typ` | `th/sections/data.typ` | **Done & committed** (`e104c2f`) |
 | **Method** | `sections/method.typ` | `th/sections/method.typ` | **Done & committed** (`0a46097`) |
-| **Results** | `sections/results.typ` | `th/sections/results.typ` | **Next up** |
-| **Discussion** | `sections/discussion.typ` | `th/sections/discussion.typ` | Pending |
+| **Results** | `sections/results.typ` | `th/sections/results.typ` | **Initial draft ready for review** |
+| **Discussion** | `sections/discussion.typ` | `th/sections/discussion.typ` | Next up |
 | **Abstract** | `main.typ` | `i18n/th.typ` | Deferred by author |
 
-To resume in the next session, begin with **Section 4: Results** (`sections/results.typ` -> `th/sections/results.typ`).
+To resume in the next session, begin with **Section 5: Discussion** (`sections/discussion.typ` -> `th/sections/discussion.typ`) once Results is finalized.
