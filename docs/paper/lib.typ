@@ -77,11 +77,13 @@
 
 // Grad-CAM shortcut analysis (notebooks/gradcam_shortcut.py -> data/paper/gradcam/summary.json).
 #let GC = json("/data/paper/gradcam/summary.json")
-// Share (0-1) of a group's images called DME after changing the band pixels, for each fold.
-#let gc-dme(group, fill) = GC.intervention_by_fold.filter(r => r.group == group and r.at("band fill") == fill).map(r => r.at("called DME"))
-#let gc-band(group) = GC.mean_band_share_by_fold.at(group).values()
 #let pct0(x) = str(calc.round(x * 100)) // whole percent
-#let range0(xs) = pct0(calc.min(..xs)) + "–" + pct0(calc.max(..xs))
+// Share (0-1) of a group's images called DME with the given band fill, for one model (fold).
+#let gc-at(fold, group, fill) = GC.intervention_by_fold.find(r => (
+  r.fold == fold and r.group == group and r.at("band fill") == fill
+)).at("called DME")
+// Mean share (0-1) of the Grad-CAM map on the bands, for one group and model (fold).
+#let gc-band(group, fold) = GC.mean_band_share_by_fold.at(group).at(str(fold))
 #let gc-group-n(group) = GC.intervention_by_fold.find(r => r.group == group).n
 
 // AdaBN diagnostic (data/paper/adabn). Arms: "none", "adabn-all".
@@ -112,13 +114,4 @@
 #let as-dl(key, st, pair) = {
   let m = AS.at(key).deltas.at(st).at(pair)
   [#fmt(m.point, signed: true) [#fmt(m.lo, signed: true), #fmt(m.hi, signed: true)]]
-}
-// Lowest recall of a stage over all arms of a key.
-#let as-min(key, st) = fmt(calc.min(..AS.at(key).stages.at(st).arms.values().map(a => a.recall)))
-// PAIMA held out, full source: AUROC normal vs dry / wet, fill-aware vs square crop, per seed.
-#let PA = json("/data/paper/amd-stage/paima-auroc.json")
-#let pa-dl(seed, st) = {
-  let r = PA.at(str(seed) + "|normal_vs_" + st)
-  let d = fmt(r.sq - r.fill, signed: true)
-  if "delta_ci" in r [#d [#fmt(r.delta_ci.at(0), signed: true), #fmt(r.delta_ci.at(1), signed: true)]] else [#d]
 }
