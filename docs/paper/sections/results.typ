@@ -345,22 +345,31 @@ and sources are unchanged; five Duke folds, same recipe as the fused model). Ker
 without its DME, so the comparison with the fused model isolates the missing DME, and the comparison with the LOSO model isolates the source.
 
 #figure(
-  table(
-    columns: 5,
-    align: (left, right, right, right, right),
-    table.header[Source][Without Kermany DME][Fused][Difference][DME recall change],
-    ..(("kermany", "Kermany"), ("octdl", "OCTDL"), ("duke", "Duke")).map(((k, n)) => (
-      [#n],
-      zd-pt(k + "|all", "zero-dme"),
-      zd-pt(k + "|all", "fused-fill"),
-      zd-dl(k + "|all", "zero-dme - fused-fill"),
-      zd-dl(k + "|all", "zero-dme - fused-fill", name: "recall_dme"),
-    )).flatten(),
-    [PAIMA], zd-pt("paima|normal_amd", "zero-dme"), zd-pt("paima|normal_amd", "fused-fill"),
-    zd-dl("paima|normal_amd", "zero-dme - fused-fill"), [--],
-  ),
-  caption: [Fused model with and without Kermany's DME images (macro-F1 %, test split, percentage-point differences
-    with patient-level 95% intervals; PAIMA on Normal/AMD).],
+  {
+    set text(size: 9.5pt)
+    table(
+      columns: 6,
+      align: (left, right, right, right, right, right),
+      table.header(
+        table.cell(rowspan: 2)[Source], table.cell(colspan: 3)[Macro-F1], table.cell(colspan: 2)[DME recall],
+        [Without], [Fused], [Difference], [Without], [Fused],
+      ),
+      ..srcs.map(s => {
+        let key = s + "|" + view3(s)
+        (
+          [#source-name.at(s)],
+          zd-pt(key, "zero-dme"),
+          zd-pt(key, "fused-fill"),
+          zd-dl(key, "zero-dme - fused-fill"),
+          ..if s == "paima" { ([--], [--]) } else {
+            (zd-pt(key, "zero-dme", name: "recall_dme"), zd-pt(key, "fused-fill", name: "recall_dme"))
+          },
+        )
+      }).flatten(),
+    )
+  },
+  caption: [Fused model trained without Kermany's DME images (_Without_) and with them (_Fused_), on each source's
+    test split (%; PAIMA on Normal/AMD, without DME). _Difference_ is paired, with its patient-level 95% interval.],
 ) <tab-zero-dme>
 
 Per-class recall for the three Kermany models is in @tab-recall. Removing Kermany's DME changes Kermany by
