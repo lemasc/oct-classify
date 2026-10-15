@@ -117,8 +117,7 @@ of cases by both models.
   kind: image,
   fig("gap"),
   caption: [Macro-F1 on each source's test split when the source is seen (fused, hollow) and unseen (LOSO, filled),
-    for letterbox and square-crop models. Lines are 95% intervals of the unseen score; paired gaps are in
-    @tab-unseen. Both scores use the same test images, which for Kermany are mostly 1024×496 and score higher than
+    letterbox models. Lines are 95% intervals of the unseen score; paired gaps are in @tab-unseen. Both scores use the same test images, which for Kermany are mostly 1024×496 and score higher than
     Kermany as a whole (@tab-unseen, full source).],
 ) <fig-gap>
 
