@@ -5,6 +5,9 @@
 #set par(justify: true)
 #set heading(numbering: "1.1")
 #show figure.caption: set text(size: 9.5pt)
+// Tables use rules only: one on top (here), one under the header and one at the bottom (`table.hline()` in each table).
+#set table(stroke: (_, y) => if y == 0 { (top: 0.5pt) })
+#set table.hline(stroke: 0.5pt)
 
 #import "lib.typ": *
 

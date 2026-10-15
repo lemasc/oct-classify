@@ -23,12 +23,12 @@ unseen dataset and, only for OCTDL, also an unseen device. @fig-examples shows o
     table(
       columns: 9,
       align: (left, right, right, right, right, right, right, right, left),
-      stroke: (x, y) => if y <= 1 { (bottom: 0.5pt) },
       table.header(
         table.cell(rowspan: 2)[Source], table.cell(rowspan: 2)[Images], table.cell(rowspan: 2)[Groups],
         table.cell(rowspan: 2)[Normal], table.cell(rowspan: 2)[AMD], table.cell(colspan: 2, align: center)[AMD stage],
         table.cell(rowspan: 2)[DME], table.cell(rowspan: 2)[Split],
         [dry], [wet],
+        table.hline(),
       ),
       ..srcs.map(s => {
         let d = DS.at(s)
@@ -41,6 +41,7 @@ unseen dataset and, only for OCTDL, also an unseen device. @fig-examples shows o
           if d.classes.dme == 0 [--] else [#num(d.classes.dme)], [#split-name.at(s)],
         )
       }).flatten(),
+      table.hline(),
     )
   },
   caption: [The four sources after deduplication. Groups are the unit kept within one split and resampled by the

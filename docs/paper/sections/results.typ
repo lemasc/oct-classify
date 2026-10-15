@@ -9,16 +9,17 @@
   table(
     columns: 4,
     align: (left, right, right, right),
-    table.header[Source][Per-dataset][Fused][Fused, square crop],
+    table.header([Source], [Per-dataset], [Fused], [Fused, square crop], table.hline()),
     ..srcs.map(s => (
       [#source-name.at(s)],
       ci(k("seen", s), "per-dataset"),
       ci(k("seen", s), "fused-fill"),
       ci(k("seen", s), "fused-sq"),
     )).flatten(),
+    table.hline(),
   ),
   caption: [Macro-F1 (%) on each source's test split, with 95% patient-level bootstrap intervals. PAIMA is scored
-    on normal vs AMD. Scored per B-scan. Duke is pooled over its five folds (all #num(DS.duke.n_images) B-scans of its #DS.duke.n_groups eyes, each
+    on normal vs AMD. Duke is pooled over its five folds (all #num(DS.duke.n_images) B-scans of its #DS.duke.n_groups eyes, each
     scored by the model that did not train on it).],
 ) <tab-seen>
 
@@ -46,16 +47,16 @@ beyond noise against the fused model, and PAIMA gains #dl(k("seen", "paima"), "f
   table(
     columns: 7,
     align: (left, left, right, right, right, right, right),
-    stroke: none,
     table.header(
       table.cell(rowspan: 2)[Source], table.cell(rowspan: 2)[Model], table.cell(rowspan: 2)[Normal],
       table.cell(rowspan: 2)[AMD], table.cell(colspan: 2, align: center)[AMD stage], table.cell(rowspan: 2)[DME],
       [dry], [wet],
+      table.hline(),
     ),
-    table.hline(stroke: 0.5pt),
     ..srcs.map(s => {
       let rows = rows-of(s)
-      (table.cell(rowspan: rows.len())[#source-name.at(s)], ..rows.flatten(), table.hline(stroke: 0.3pt + gray))
+      let rule = if s == srcs.last() { table.hline() } else { table.hline(stroke: 0.3pt + gray) }
+      (table.cell(rowspan: rows.len())[#source-name.at(s)], ..rows.flatten(), rule)
     }).flatten(),
   )
 }
@@ -92,10 +93,11 @@ of cases by both models.
       align: (left, right, right, right, right, right, right),
       table.header(
         table.cell(rowspan: 2)[Held out],
-        table.cell(colspan: 3)[Macro-F1, test split],
-        table.cell(colspan: 2)[AUROC, test split],
+        table.cell(colspan: 3, align: center)[Macro-F1, test split],
+        table.cell(colspan: 2, align: center)[AUROC, test split],
         table.cell(rowspan: 2)[Macro-F1, \ full source],
         [Seen], [Unseen], [Gap], [Seen], [Unseen],
+        table.hline(),
       ),
       ..srcs.map(s => (
         [#source-name.at(s)],
@@ -106,6 +108,7 @@ of cases by both models.
         pt(k("gap_test", s), "loso-fill", name: "macro_auroc"),
         ci(k("loso_full", s), "loso-fill"),
       )).flatten(),
+      table.hline(),
     )
   },
   caption: [Seen (fused) vs unseen (LOSO) sources, letterbox models. _Gap_ is the paired difference between the
@@ -144,19 +147,31 @@ scan is AMD (@fig-size-class). Models that train on Duke can learn "768 wide mea
 correct within Duke and wrong elsewhere. Three tests show that they do.
 
 *Changing only the size of test images.* We take the held-out Kermany models and rescore Kermany images after
-changing only their width, with no retraining (@fig-size-test). Padding normal 512×496 images to 768 wide (Duke's
+changing only their width, with no retraining (@tab-size-test). Padding normal 512×496 images to 768 wide (Duke's
 DME-only width) moves the share called DME from #pct1(KS.pad.at("512x496").at("normal->dme").at(0))% to #pct1(KS.pad.at("512x496").at("normal->dme").at(1))%. Cropping 768×496 normal images to 512 wide does
 the reverse, from #pct1(KS.crop.at("768x496").at("normal->dme").at(0))% to #pct1(KS.crop.at("768x496").at("normal->dme").at(1))%. The effect is not limited to Kermany: padding Duke's own 512×496 images by
 16 rows to 512×512, a size that is DME-only in Kermany, sends #calc.round(HS.at("duke/pad512x512").all.at("normal->dme").at(1))% of Duke's normal images to DME in the model that
 held Duke out.
 
+// One test-time size change: [before, after, change, lo, hi] in % (KS / HS in lib.typ).
+#let size-row(label, e) = (label, pct1(e.at(0)), pct1(e.at(1)),
+  [#fmt(e.at(2) / 100, signed: true) [#fmt(e.at(3) / 100, signed: true), #fmt(e.at(4) / 100, signed: true)]])
 #figure(
-  kind: image,
-  placeholder(4cm)[F6 or table: test-time
-    size changes and the share of normal images predicted DME / AMD],
-  caption: [Changing only the width of test images moves predictions toward the label Duke associates with that
-    width. Held-out Kermany models, no retraining.],
-) <fig-size-test>
+  {
+    set text(size: 9.5pt)
+    table(
+      columns: 4,
+      align: (left, right, right, right),
+      table.header([Test images, size change], [Before], [After], [Change], table.hline()),
+      ..size-row([Kermany, pad 512×496 → 768×496], KS.pad.at("512x496").at("normal->dme")),
+      ..size-row([Kermany, crop 768×496 → 512×496], KS.crop.at("768x496").at("normal->dme")),
+      ..size-row([Duke, pad 512×496 → 512×512], HS.at("duke/pad512x512").all.at("normal->dme")),
+      table.hline(),
+    )
+  },
+  caption: [Share (%) of normal images called DME before and after changing only the test image size, LOSO models
+    on their held-out source, no retraining. _Change_ is paired, with its 95% interval.],
+) <tab-size-test>
 
 *Where the cue enters: the letterbox bands.* Width reaches the model through the letterbox. A 768×496 scan
 fitted to the square canvas leaves flat bands above and below the tissue, covering about a third of the canvas, and
@@ -185,9 +200,11 @@ main but not the only route. #{
       columns: 7,
       align: (left, right, right, right, right, right, right),
       table.header(
-        table.cell(rowspan: 2)[Model], table.cell(colspan: 2)[Normal called DME],
-        table.cell(colspan: 2)[AMD called DME], table.cell(colspan: 2)[Grad-CAM band share],
+        table.cell(rowspan: 2)[Model], table.cell(colspan: 2, align: center)[Normal called DME],
+        table.cell(colspan: 2, align: center)[AMD called DME],
+        table.cell(colspan: 2, align: center)[Grad-CAM band share],
         [black], [speckle], [black], [speckle], [errors], [correct],
+        table.hline(),
       ),
       ..range(1, 6).map(f => (
         [#f],
@@ -195,12 +212,12 @@ main but not the only route. #{
         pct0(gc-at(f, "768 AMD → DME", "black")), pct0(gc-at(f, "768 AMD → DME", "speckle")),
         pct0(gc-band("768 normal → DME", f)), pct0(gc-band("768 normal → normal", f)),
       )).flatten(),
+      table.hline(),
     )
   },
-  caption: [Changing only the letterbox bands of held-out Kermany 768×496 images that a LOSO-Kermany model wrongly
-    calls DME (all of them are called DME with the original bands). _Normal called DME_ and _AMD called DME_: share
-    (%) still called DME after the bands are replaced by black or by speckle. _Grad-CAM band share_: share (%) of the
-    map's mass on the bands, for normal images called DME (_errors_) and called normal (_correct_).],
+  caption: [Held-out Kermany 768×496 images that a LOSO-Kermany model wrongly calls DME: share (%) still called
+    DME after the letterbox bands are replaced by black or by speckle. _Grad-CAM band share_: share (%) of the map on
+    the bands, for normal images called DME (_errors_) and called normal (_correct_).],
 ) <tab-bands>
 
 Grad-CAM illustrates the same mechanism (@fig-gradcam), with a caveat. The share of the map on the bands is
@@ -216,12 +233,9 @@ intervention as the evidence and Grad-CAM as an illustration.
 
 #figure(
   image("../figures/gradcam.png", width: 100%),
-  caption: [Grad-CAM (last convolutional stage, predicted class) on held-out Kermany 768×496 normal images, from one
-    letterbox and one square-crop LOSO-Kermany model. Each column is one image as the model sees it: letterbox
-    with its bands (top), square crop without (bottom). In the first four columns the letterbox model calls
-    the image DME (bold) and its map sits on the top band; the square-crop model calls it normal and looks at the
-    retina. The last two columns are images both models call normal. How much of the map falls on the bands varies
-    between models (@tab-bands).],
+  caption: [Grad-CAM (last convolutional stage, predicted class) on held-out Kermany 768×496 normal images, as the
+    letterbox (top) and square-crop (bottom) LOSO-Kermany model see them; predicted class above each panel. The
+    last two columns are controls that both models call normal.],
 ) <fig-gradcam>
 
 *Training without the cue.* Square-crop models never see the image width. With Kermany held out, they score
@@ -262,9 +276,10 @@ ranking that varies strongly with the seed (@sec-limits).
       columns: 8,
       align: (left, right, right, right, right, right, right, right),
       table.header(
-        table.cell(rowspan: 2)[Held out], table.cell(colspan: 3)[Macro-F1], table.cell(colspan: 2)[AUROC],
-        table.cell(colspan: 2)[Normal/AMD macro-F1],
+        table.cell(rowspan: 2)[Held out], table.cell(colspan: 3, align: center)[Macro-F1],
+        table.cell(colspan: 2, align: center)[AUROC], table.cell(colspan: 2, align: center)[Normal/AMD macro-F1],
         [Letterbox], [Square], [Difference], [Letterbox], [Square], [Letterbox], [Square],
+        table.hline(),
       ),
       ..srcs.map(s => (
         [#source-name.at(s)],
@@ -277,6 +292,7 @@ ranking that varies strongly with the seed (@sec-limits).
           (pt("loso_full|" + s + "|normal_amd", "loso-fill"), pt("loso_full|" + s + "|normal_amd", "loso-sq"))
         },
       )).flatten(),
+      table.hline(),
     )
   },
   caption: [LOSO models on the full held-out source, with (letterbox) and without (square crop) the image-size cue
@@ -299,8 +315,9 @@ neither source lost beyond noise.
       align: (left, right, right, right, right, right),
       table.header(
         table.cell(rowspan: 2)[Held out], table.cell(rowspan: 2)[3-class gap],
-        table.cell(rowspan: 2)[DME recall change], table.cell(colspan: 3)[Normal/AMD macro-F1],
+        table.cell(rowspan: 2)[DME recall change], table.cell(colspan: 3, align: center)[Normal/AMD macro-F1],
         [Seen], [Unseen], [Gap],
+        table.hline(),
       ),
       ..srcs.map(s => (
         [#source-name.at(s)],
@@ -312,6 +329,7 @@ neither source lost beyond noise.
         pt("gap_test|" + s + "|normal_amd", "loso-fill"),
         dl("gap_test|" + s + "|normal_amd", "loso-fill - fused-fill"),
       )).flatten(),
+      table.hline(),
     )
   },
   caption: [Where the unseen-source gap comes from (letterbox, test split, LOSO minus fused, percentage points, with
@@ -357,8 +375,10 @@ without its DME, so the comparison with the fused model isolates the missing DME
       columns: 6,
       align: (left, right, right, right, right, right),
       table.header(
-        table.cell(rowspan: 2)[Source], table.cell(colspan: 3)[Macro-F1], table.cell(colspan: 2)[DME recall],
+        table.cell(rowspan: 2)[Source], table.cell(colspan: 3, align: center)[Macro-F1],
+        table.cell(colspan: 2, align: center)[DME recall],
         [Without], [Fused], [Difference], [Without], [Fused],
+        table.hline(),
       ),
       ..srcs.map(s => {
         let key = s + "|" + view3(s)
@@ -372,6 +392,7 @@ without its DME, so the comparison with the fused model isolates the missing DME
           },
         )
       }).flatten(),
+      table.hline(),
     )
   },
   caption: [Fused model trained without Kermany's DME images (_Without_) and with them (_Fused_), on each source's
@@ -414,9 +435,10 @@ size cue; a shift shared by all images cannot undo errors that depend on image s
       align: (left, right, right, right, right, right),
       table.header(
         table.cell(rowspan: 2)[Held out], table.cell(rowspan: 2)[LOSO],
-        table.cell(colspan: 2)[Cutoff shift], table.cell(rowspan: 2)[AdaBN],
+        table.cell(colspan: 2, align: center)[Cutoff shift], table.cell(rowspan: 2)[AdaBN],
         table.cell(rowspan: 2)[Square crop (retrained)],
         [Cross-fit], [Ceiling],
+        table.hline(),
       ),
       ..srcs.map(s => (
         [#source-name.at(s)],
@@ -426,14 +448,13 @@ size cue; a shift shared by all images cannot undo errors that depend on image s
         ab-dl(lbk(s)),
         dl(k("loso_full", s), "loso-sq - loso-fill"),
       )).flatten(),
+      table.hline(),
     )
   },
-  caption: [Fixes for the unseen-source gap, on the full held-out source (macro-F1 %, letterbox LOSO models; PAIMA on
-    normal vs AMD). _LOSO_ is the model as trained. Cross-fit shift, AdaBN and square crop are paired differences
-    from it with 95% intervals; the shift and AdaBN are fitted on one half of the patients and scored on the other.
-    _Ceiling_ is the macro-F1 of the best shift found by grid search on all labels
-    (#srcs.filter(s => LB.at(lbk(s)).grid.subsampled).map(s => source-name.at(s)).join(", ") on a random
-    subsample).],
+  caption: [Post-hoc fixes on the full held-out source (macro-F1 %, letterbox LOSO models; PAIMA on normal vs AMD).
+    _Cross-fit_ shift, AdaBN and square crop are paired differences from _LOSO_, with 95% intervals. _Ceiling_ is the best shift
+    on all labels (#srcs.filter(s => LB.at(lbk(s)).grid.subsampled).map(s => source-name.at(s)).join(", ") on a
+    random subsample).],
 ) <tab-posthoc>
 
 The second fix, AdaBN @li2016adabn, re-estimates the BatchNorm statistics on the unseen source's unlabelled
