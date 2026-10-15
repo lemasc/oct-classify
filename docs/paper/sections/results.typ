@@ -339,19 +339,50 @@ effect is not confined to the source that lost its DME: Duke's DME recall also c
 recognise Duke's; this change rests on 45 eyes, so we take it as supporting evidence. OCTDL and PAIMA are within
 noise.
 
-*Causes we ruled out.* Two simpler explanations do not account for the gap. First, the decision cutoff: we fit a
-per-class shift of the output log-probabilities on the held-out source's own labels, fitting on one half of its
-patients and scoring the other. This changes held-out Kermany by #lb-dl("kermany|all", "bias-crossfit") on the
-full source (#lb-pt("kermany|all", "none") to #lb-pt("kermany|all", "bias-crossfit")), against
-#dl("loso_full|kermany|all", "loso-sq - loso-fill") for removing the size cue on the same images, and leaves OCTDL
-(#lb-dl("octdl|all", "bias-crossfit")) and Duke (#lb-dl("duke|all", "bias-crossfit")) within noise. Even the best
-shift found by searching on all of Kermany's labels reaches only #fmt(LB.at("kermany|all").grid.best). Since this
-uses labels a deployed model would not have, it is an upper bound; the cutoff explains a few points of Kermany's
-gap, not most of it.
+*Causes we ruled out.* Two simpler explanations do not account for the gap (@tab-posthoc). First, the decision
+cutoff: we fit a per-class shift of the output log-probabilities on the held-out source's own labels, fitting on
+one half of its patients and scoring the other. This changes Kermany by #lb-dl("kermany|all", "bias-crossfit") and
+PAIMA by #lb-dl("paima|normal_amd", "bias-crossfit"), and leaves OCTDL (#lb-dl("octdl|all", "bias-crossfit")) and
+Duke (#lb-dl("duke|all", "bias-crossfit")) within noise. Even the best shift found by a grid search on all of a
+source's labels, which a deployed model could not do, reaches only #fmt(LB.at("kermany|all").grid.best) on
+Kermany, against #pt("loso_full|kermany|all", "loso-sq") for retraining without the size cue. The cutoff explains a
+few points of Kermany's gap, not most of it.
+
+#let lbk(s) = s + "|" + view3(s)
+#figure(
+  {
+    set text(size: 9.5pt)
+    table(
+      columns: 6,
+      align: (left, right, right, right, right, right),
+      table.header(
+        table.cell(rowspan: 2)[Held out], table.cell(rowspan: 2)[LOSO],
+        table.cell(colspan: 2)[Cutoff shift], table.cell(rowspan: 2)[AdaBN],
+        table.cell(rowspan: 2)[Square crop (retrained)],
+        [Cross-fit], [Ceiling],
+      ),
+      ..srcs.map(s => (
+        [#source-name.at(s)],
+        lb-pt(lbk(s), "none"),
+        lb-dl(lbk(s), "bias-crossfit"),
+        fmt(LB.at(lbk(s)).grid.best),
+        ab-dl(lbk(s)),
+        dl(k("loso_full", s), "loso-sq - loso-fill"),
+      )).flatten(),
+    )
+  },
+  caption: [Fixes for the unseen-source gap, on the full held-out source (macro-F1 %, letterbox LOSO models; PAIMA on
+    normal vs AMD). _LOSO_ is the model as trained. Cross-fit shift, AdaBN and square crop are paired differences
+    from it with 95% intervals; the shift and AdaBN are fitted on one half of the patients and scored on the other.
+    _Ceiling_ is the macro-F1 of the best shift found by grid search on all labels
+    (#srcs.filter(s => LB.at(lbk(s)).grid.subsampled).map(s => source-name.at(s)).join(", ") on a random
+    subsample).],
+) <tab-posthoc>
+
 Second, BatchNorm statistics. AdaBN @li2016adabn, a common first remedy for such a shift, re-estimates the
 BatchNorm statistics on the unseen source's own unlabelled images; we again estimate on one half of the patients
-and predict the other. It changes held-out Kermany by only #ab-dl("kermany|all") (#ab-pt("kermany|all", "none") to
-#ab-pt("kermany|all", "adabn-all")), leaves Duke within noise (#ab-dl("duke|all")), and changes OCTDL by
-#ab-dl("octdl|all"), because it shifts OCTDL's images toward DME: DME recall rises from
+and predict the other. It changes Kermany by #ab-dl("kermany|all"), less than the cutoff shift, leaves Duke
+within noise (#ab-dl("duke|all")), and changes OCTDL by #ab-dl("octdl|all") and PAIMA by
+#ab-dl("paima|normal_amd"). On OCTDL it shifts images toward DME: on the full source, DME recall rises from
 #ab-pt("octdl|all", "none", name: "recall_dme") to #ab-pt("octdl|all", "adabn-all", name: "recall_dme") while AMD
 recall falls from #ab-pt("octdl|all", "none", name: "recall_amd") to #ab-pt("octdl|all", "adabn-all", name: "recall_amd").
