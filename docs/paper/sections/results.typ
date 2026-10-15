@@ -397,14 +397,16 @@ effect is not confined to the source that lost its DME: Duke's DME recall also c
 recognise Duke's; this change rests on 45 eyes, so we take it as supporting evidence. OCTDL and PAIMA are within
 noise.
 
-*Causes we ruled out.* Two simpler explanations do not account for the gap (@tab-posthoc). First, the decision
-cutoff: we fit a per-class shift of the output log-probabilities on the held-out source's own labels, fitting on
-one half of its patients and scoring the other. This changes Kermany by #lb-dl("kermany|all", "bias-crossfit") and
-PAIMA by #lb-dl("paima|normal_amd", "bias-crossfit"), and leaves OCTDL (#lb-dl("octdl|all", "bias-crossfit")) and
-Duke (#lb-dl("duke|all", "bias-crossfit")) within noise. Even the best shift found by a grid search on all of a
-source's labels, which a deployed model could not do, reaches only #fmt(LB.at("kermany|all").grid.best) on
-Kermany, against #pt("loso_full|kermany|all", "loso-sq") for retraining without the size cue. The cutoff explains a
-few points of Kermany's gap, not most of it.
+== Post-hoc fixes <sec-posthoc>
+
+Two standard post-hoc fixes leave most of the gap in place (@tab-posthoc). Both are fitted on one half of the
+held-out source's patients and scored on the other. The first tests whether the gap is a misplaced decision cutoff
+(@sec-unseen): a per-class shift of the output log-probabilities, fitted on the source's own labels. It changes
+Kermany by #lb-dl("kermany|all", "bias-crossfit") and PAIMA by #lb-dl("paima|normal_amd", "bias-crossfit"), and
+leaves OCTDL (#lb-dl("octdl|all", "bias-crossfit")) and Duke (#lb-dl("duke|all", "bias-crossfit")) within noise.
+Even the best shift found on all of Kermany's labels, which a deployed model could not do, reaches only
+#fmt(LB.at("kermany|all").grid.best), against #pt("loso_full|kermany|all", "loso-sq") for retraining without the
+size cue; a shift shared by all images cannot undo errors that depend on image size.
 
 #let lbk(s) = s + "|" + view3(s)
 #figure(
@@ -437,10 +439,8 @@ few points of Kermany's gap, not most of it.
     subsample).],
 ) <tab-posthoc>
 
-Second, BatchNorm statistics. AdaBN @li2016adabn, a common first remedy for such a shift, re-estimates the
-BatchNorm statistics on the unseen source's own unlabelled images; we again estimate on one half of the patients
-and predict the other. It changes Kermany by #ab-dl("kermany|all"), less than the cutoff shift, leaves Duke
-within noise (#ab-dl("duke|all")), and changes OCTDL by #ab-dl("octdl|all") and PAIMA by
-#ab-dl("paima|normal_amd"). On OCTDL it shifts images toward DME: on the full source, DME recall rises from
-#ab-pt("octdl|all", "none", name: "recall_dme") to #ab-pt("octdl|all", "adabn-all", name: "recall_dme") while AMD
-recall falls from #ab-pt("octdl|all", "none", name: "recall_amd") to #ab-pt("octdl|all", "adabn-all", name: "recall_amd").
+The second fix, AdaBN @li2016adabn, re-estimates the BatchNorm statistics on the unseen source's unlabelled
+images. It changes Kermany by #ab-dl("kermany|all"), less than the cutoff shift, leaves Duke within noise
+(#ab-dl("duke|all")), and changes OCTDL by #ab-dl("octdl|all"), where it pushes images toward DME, and PAIMA by
+#ab-dl("paima|normal_amd"). Neither fix is reliable across sources, and on Kermany neither comes close to
+retraining without the size cue.
