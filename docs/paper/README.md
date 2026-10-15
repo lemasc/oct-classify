@@ -16,5 +16,5 @@ for f in examples design size_class gap kermany_size; do uv run --with matplotli
 Review changes between two revisions (redline, like latexdiff; standard library only, needs `typst`):
 
 ```bash
-uv run python scripts/paper/paper_diff.py   # then open http://localhost:8731/main..HEAD  (`<base>..` = vs. working tree)
+uv run python scripts/paper/paper_diff.py   # then open http://localhost:8731/main..HEAD  (`<base>..` = vs. working tree; `/<rev>` = view without diff)
 ```

@@ -3,6 +3,7 @@
     uv run python scripts/paper/paper_diff.py [--port 8731]
     http://localhost:8731/main..HEAD       compare two revisions (branch, tag or SHA)
     http://localhost:8731/HEAD~3..         compare against the working tree (uncommitted edits)
+    http://localhost:8731/4b9df74          view one revision without any diff
 
 Each revision is extracted with `git archive` and compiled with `typst --features html`; the
 built HTML is cached per commit under artifacts/paper-diff/. The two HTML bodies are tokenised
@@ -241,8 +242,10 @@ def opcodes(old: list, new: list) -> list[tuple]:
     return [piece for op in ops for piece in pair_tables(*op)]
 
 
-def redline(old_page: str, new_page: str, label: str, picker: str = "") -> str:
-    old, new = tokenize(body_of(old_page)), tokenize(body_of(new_page))
+def redline(old_page: str | None, new_page: str, label: str, picker: str = "") -> str:
+    """Diff `old_page` against `new_page`; with no `old_page`, just render `new_page` styled."""
+    new = tokenize(body_of(new_page))
+    old = new if old_page is None else tokenize(body_of(old_page))
     out: list[str] = []
 
     def wrap(tokens: list, tag: str, keep_tags: bool) -> None:
@@ -272,7 +275,10 @@ def redline(old_page: str, new_page: str, label: str, picker: str = "") -> str:
 
     for tag, a0, a1, b0, b1 in opcodes(old, new):
         if tag == "equal":
-            out += [raw for _, raw, _ in new[b0:b1]]
+            out += [
+                f'<div class="tbl">{raw}</div>' if kind == "table" else raw
+                for kind, raw, _ in new[b0:b1]
+            ]
         elif (
             tag == "replace"
             and old[a0][0] == "table"
@@ -288,8 +294,9 @@ def redline(old_page: str, new_page: str, label: str, picker: str = "") -> str:
             wrap(new[b0:b1], "ins", keep_tags=True)
 
     title = html.escape(title_of(new_page))
+    key = ' <ins class="ins">added</ins> <del class="del">removed</del>' if old_page else ""
     legend = (
-        f'<div class="legend">{label}: <ins class="ins">added</ins> <del class="del">removed</del>'
+        f'<div class="legend">{label}{key}'
         f"<details><summary>change range</summary>{picker}</details></div>"
     )
     return (
@@ -352,6 +359,12 @@ def diff_page(base: str, head: str) -> str:
     return redline(build(old_sha), build(new_sha), label, picker(history(), old_sha, new_sha))
 
 
+def view_page(rev: str) -> str:
+    """One revision, styled like the diff pages but with nothing marked."""
+    sha = resolve(rev)
+    return redline(None, build(sha), f"viewing {describe(rev, sha)}", picker(history(), "", sha))
+
+
 def index_page() -> str:
     rows = history()
     latest, previous = rows[1][0], rows[2][0]  # the working tree row is not a default
@@ -359,16 +372,20 @@ def index_page() -> str:
         "<!DOCTYPE html><meta charset=utf-8><meta name=viewport content='width=device-width'>"
         f"<style>{CSS}</style><body><h1>Paper diff</h1>"
         "<p>Pick a range below, or open <code>/&lt;base&gt;..&lt;head&gt;</code> directly, e.g. "
-        "<code>/main..HEAD</code>; an empty head means the working tree.</p>"
+        "<code>/main..HEAD</code>; an empty head means the working tree. "
+        "<code>/&lt;rev&gt;</code> alone views that revision with no diff.</p>"
         f"{picker(rows, previous, latest)}</body>"
     )
 
 
 def compare_redirect(query: dict[str, list[str]]) -> str | None:
     """Turn the picker's ?from=&to= into /<from>..<to>, swapping them if given newest-first."""
-    if "from" not in query or "to" not in query:
+    if "to" not in query:
         return None
-    old, new = query["from"][0], query["to"][0]
+    new = query["to"][0]
+    if "from" not in query:
+        return f"/{'WORKTREE' if new == WORKTREE else new[:7]}"
+    old = query["from"][0]
     order = [sha for sha, _, _ in history()]
     if old in order and new in order and order.index(old) < order.index(new):
         old, new = new, old
@@ -393,7 +410,7 @@ class Handler(BaseHTTPRequestHandler):
                 base, head = path.split("..", 1)
                 body, status = diff_page(base, head), 200
             else:
-                raise Error(400, "use /<base>..<head>, e.g. /main..HEAD")
+                body, status = view_page(path), 200
         except Error as error:
             body, status = f"<pre>{html.escape(str(error))}</pre>", error.status
         payload = body.encode()
