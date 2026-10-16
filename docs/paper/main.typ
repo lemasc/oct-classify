@@ -15,6 +15,7 @@
 #todo[write last]
 
 #include "sections/introduction.typ"
+#include "sections/background.typ"
 #include "sections/data.typ"
 #include "sections/method.typ"
 #include "sections/results.typ"

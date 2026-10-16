@@ -4,8 +4,8 @@
 = Data <sec-data>
 
 We use four public retinal OCT datasets and treat each as one _source_. The sources differ in clinical site,
-population, acquisition protocol and labelling, but mostly not in device. Kermany @kermany2018 (five centres in the
-United States and China), Duke @srinivasan2014 (three centres in the United States) and PAIMA
+population, acquisition protocol and labelling, but mostly not in device. Kermany @kermany2018 (version 3 of the public release @kermany2018data; five centres in
+the United States and China), Duke @srinivasan2014 (three centres in the United States) and PAIMA
 @sotoudehpaima2022 (one hospital in Iran) were all acquired with Heidelberg Engineering spectral-domain OCT (Spectralis for Kermany and Duke; the PAIMA
 paper names only the manufacturer); only
 OCTDL @kulyabin2024octdl comes from another vendor (Optovue Avanti RTVue XR). An unseen source is therefore an
@@ -51,8 +51,8 @@ unseen dataset and, only for OCTDL, also an unseen device. @fig-examples shows o
 ) <tab-data>
 
 *Taxonomy.* We merge the source labels into three classes: _normal_; _AMD_ (age-related macular degeneration);
-and _DME_ (diabetic macular edema). AMD merges two stages that look different on a B-scan (@fig-examples): dry AMD,
-with drusen under the retina, and wet AMD, with choroidal neovascularization (CNV, called MNV in OCTDL). The
+and _DME_ (diabetic macular edema). AMD merges two stages that look different on a B-scan (@sec-diseases, @fig-examples):
+dry AMD, with drusen under the retina, and wet AMD, with choroidal neovascularization (CNV, called MNV in OCTDL). The
 sources mix the two stages very differently (@tab-data): dry AMD is a fifth of Kermany's and OCTDL's AMD images,
 #stage-share("paima", "dry")% of PAIMA's and all of Duke's, whose AMD eyes are dry only @srinivasan2014. PAIMA contains only normal and AMD
 scans. Its lack of DME is structural, not a negative label: PAIMA images never contribute to the DME output during
