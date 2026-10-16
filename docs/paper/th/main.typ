@@ -30,6 +30,6 @@
 #heading(outlined: false, numbering: none)[#th.abstract-title]
 #if th.abstract == none [#todo[write last]] else [#th.abstract]
 
-#for name in ("introduction", "data", "method", "results", "discussion") { section(name) }
+#for name in ("introduction", "background", "data", "method", "results", "discussion") { section(name) }
 
 #bibliography("../refs.bib")
