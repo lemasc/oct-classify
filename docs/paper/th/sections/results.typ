@@ -3,13 +3,13 @@
 
 = ผลลัพธ์ <sec-results>
 
-== แหล่งข้อมูลที่เคยเห็น (Seen sources) <sec-seen>
+== แหล่งข้อมูลที่เคยเห็น <sec-seen>
 
 #figure(
   table(
     columns: 4,
     align: (left, right, right, right),
-    table.header([แหล่งข้อมูล], [Per-dataset], [Fused], [Fused, square crop], table.hline()),
+    table.header([Source], [Per-dataset], [Fused], [Fused, square crop], table.hline()),
     ..srcs.map(s => (
       [#source-name.at(s)],
       ci(k("seen", s), "per-dataset"),
@@ -18,14 +18,10 @@
     )).flatten(),
     table.hline(),
   ),
-  caption: [Macro-F1 (%) บน test split ของแต่ละแหล่งข้อมูล พร้อมช่วงความเชื่อมั่น bootstrap ระดับผู้ป่วยที่ 95% สำหรับ PAIMA ประเมินผลเฉพาะ normal กับ AMD ส่วน Duke รวมผลจากทั้ง 5 fold (ภาพ B-scan ทั้งหมด #num(DS.duke.n_images) ภาพ จาก #DS.duke.n_groups ดวงตา โดยแต่ละดวงตาประเมินด้วยโมเดลที่ไม่ได้ใช้ดวงตานั้นในการเทรน)],
+  caption: [ค่า Macro-F1 บนชุดข้อมูลทดสอบของแต่ละแหล่งข้อมูล พร้อมช่วงความเชื่อมั่นร้อยละ 95 จากการสุ่มตัวอย่างซ้ำด้วยวิธีบูตสแตรป ในระดับผู้ป่วย #super[a]สำหรับชุดข้อมูล PAIMA ได้รับการประเมินผลเฉพาะการจำแนกระหว่างภาพปกติ (normal) กับโรค AMD ส่วนชุดข้อมูล Duke เป็นการรวมผลลัพธ์จากทั้ง 5 ส่วน (5 folds) (รวมภาพ B-scan ทั้งหมด #num(DS.duke.n_images) ภาพ จากดวงตา #DS.duke.n_groups ดวง โดยดวงตาแต่ละดวงได้รับการประเมินด้วยโมเดลที่ไม่เคยใช้ดวงตาดังกล่าวในการฝึกสอน)],
 ) <tab-seen>
 
-เมื่อทดสอบบนแหล่งข้อมูลที่ใช้เทรน โมเดล ResNet-50 ทำคะแนน macro-F1 ได้ระหว่าง #pt(k("seen", "paima"), "per-dataset") ถึง #pt(k("seen", "kermany"), "per-dataset") (@tab-seen)
-
-การเทรนโมเดลเดี่ยวบนทั้ง 4 แหล่งข้อมูลร่วมกัน (fused model) แทบไม่สูญเสียความแม่นยำ: เมื่อเทียบกับโมเดลแบบ per-dataset ผลต่างของโมเดล fused อยู่ในระดับสัญญาณรบกวนบน OCTDL (#dl(k("seen", "octdl"), "fused-fill - per-dataset")), PAIMA (#dl(k("seen", "paima"), "fused-fill - per-dataset")) และ Duke (#dl(k("seen", "duke"), "fused-fill - per-dataset")) มีเพียง Kermany ที่คะแนนลดลงเล็กน้อยแต่มีนัยสำคัญ (#dl(k("seen", "kermany"), "fused-fill - per-dataset"))
-
-ในทำนองเดียวกัน วิธี square crop ซึ่งตัดสัญญาณขนาดภาพออกไป (@sec-square) ไม่ส่งผลเสียต่อแหล่งข้อมูลที่เคยเห็นเช่นกัน: ไม่มีแหล่งข้อมูลใดที่ได้คะแนนลดลงเกินระดับสัญญาณรบกวนเมื่อเทียบกับโมเดล fused และสำหรับ PAIMA ยังได้คะแนนเพิ่มขึ้นอีก #dl(k("seen", "paima"), "fused-sq - fused-fill")
+เมื่อทำการประเมินผลบนแหล่งข้อมูลที่ใช้ในการฝึกสอน โมเดล ResNet-50 สามารถทำค่า Macro-F1 ได้ระหว่างร้อยละ #pt(k("seen", "paima"), "per-dataset") ถึง #pt(k("seen", "kermany"), "per-dataset") (@tab-seen) การฝึกสอนโมเดลเดี่ยวบนทั้ง 4 แหล่งข้อมูลร่วมกัน (โมเดลแบบ fused) แทบไม่สูญเสียประสิทธิภาพ โดยเมื่อเปรียบเทียบกับโมเดลแบบรายชุดข้อมูล (per-dataset) ผลต่างประสิทธิภาพของโมเดลแบบ fused อยู่ในระดับสัญญาณรบกวน (noise level) บนชุดข้อมูล OCTDL (#dl(k("seen", "octdl"), "fused-fill - per-dataset")), PAIMA (#dl(k("seen", "paima"), "fused-fill - per-dataset")) และ Duke (#dl(k("seen", "duke"), "fused-fill - per-dataset")) มีเพียงชุดข้อมูล Kermany เท่านั้นที่มีคะแนนลดลงเล็กน้อยอย่างมีนัยสำคัญ (#dl(k("seen", "kermany"), "fused-fill - per-dataset")) ในทำนองเดียวกัน วิธีการครอบตัดภาพเป็นสี่เหลี่ยมจัตุรัส (square crop) ซึ่งขจัดสิ่งชี้แนะจากขนาดภาพออกไป (@sec-square) ไม่ส่งผลกระทบเชิงลบต่อแหล่งข้อมูลที่เคยเห็นเช่นกัน โดยไม่มีแหล่งข้อมูลใดที่มีคะแนนลดลงเกินระดับสัญญาณรบกวนเมื่อเปรียบเทียบกับโมเดลแบบ fused และสำหรับชุดข้อมูล PAIMA ยังคงมีคะแนนเพิ่มขึ้นอีก #dl(k("seen", "paima"), "fused-sq - fused-fill")
 
 #let rc(m, c) = if ("recall_" + c) in m { fmt(m.at("recall_" + c).point) } else [--]
 #let stage-rc(src, arm, st, m) = {
@@ -45,8 +41,8 @@
     columns: 7,
     align: (left, left, right, right, right, right, right),
     table.header(
-      table.cell(rowspan: 2)[แหล่งข้อมูล], table.cell(rowspan: 2)[โมเดล], table.cell(rowspan: 2)[Normal],
-      table.cell(rowspan: 2)[AMD], table.cell(colspan: 2, align: center)[ระยะของ AMD], table.cell(rowspan: 2)[DME],
+      table.cell(rowspan: 2)[Source], table.cell(rowspan: 2)[Model], table.cell(rowspan: 2)[Normal],
+      table.cell(rowspan: 2)[AMD], table.cell(colspan: 2, align: center)[AMD Stage], table.cell(rowspan: 2)[DME],
       [dry], [wet],
       table.hline(),
     ),
@@ -61,16 +57,10 @@
 
 #figure(
   recall-table(s => (seen-row(s, "Per-dataset", "per-dataset"), seen-row(s, "Fused", "fused-fill"))),
-  caption: [Recall (%) แยกตามคลาสบน test split ของแต่ละแหล่งข้อมูล สำหรับโมเดล letterbox ที่เคยเห็นข้อมูล (seen) โดยแสดงค่าเฉลี่ยข้ามโมเดล ทั้งนี้ _dry_ และ _wet_ คือ recall ภายในกลุ่ม AMD ส่วน AMD ของ Duke เป็นระยะ dry ทั้งหมด และไม่ได้แสดงระยะ intermediate ของ OCTDL นอกจากนี้ PAIMA ไม่มีคลาส DME],
+  caption: [ค่า recall แยกตามคลาสบนชุดข้อมูลทดสอบของแต่ละแหล่งข้อมูล สำหรับโมเดลแบบ letterbox ที่เคยเห็นข้อมูล โดยแสดงค่าเฉลี่ยข้ามโมเดล],
 ) <tab-recall>
 
-ค่า recall แยกตามคลาส (@tab-recall) เผยให้เห็นลักษณะข้อผิดพลาดที่เกิดขึ้น PAIMA เป็นแหล่งข้อมูลที่ท้าทายที่สุดแม้จะเป็นแหล่งข้อมูลที่เคยเห็นก็ตาม (ได้ macro-F1 #pt(k("seen", "paima"), "fused-fill") สำหรับโมเดล fused) โดยมีข้อผิดพลาดหลักอยู่ที่คลาส AMD (recall เพียง #pt(k("seen", "paima"), "fused-fill", name: "recall_amd"))
-
-และเมื่อพิจารณาเจาะลึกในกลุ่ม AMD พบว่าข้อผิดพลาดเกิดจากระยะ dry เป็นหลัก: โมเดล fused จำแนกภาพสแกนที่มี drusen ของ PAIMA ได้ถูกต้องเพียง #as-rec("test|paima|normal_amd", "dry", "fused-fill")% เทียบกับภาพระยะ wet ที่ทำได้ #as-rec("test|paima|normal_amd", "wet", "fused-fill")% โดยภาพ drusen ที่ทำนายผิดเกือบทั้งหมดถูกระบุว่าเป็น normal
-
-โมเดล per-dataset ของ PAIMA ก็แสดงผลแบบเดียวกัน (#as-rec("test|paima|normal_amd", "dry", "per-dataset")% เทียบกับ #as-rec("test|paima|normal_amd", "wet", "per-dataset")%) ปัญหานี้จึงเกิดจากลักษณะภาพสแกน drusen ของ PAIMA เอง ไม่ได้เกิดจากการรวมข้อมูล (fusing)
-
-ภาพ drusen ของ OCTDL ก็ได้รับการจำแนกถูกต้องน้อยกว่าระยะ wet เช่นกัน (#as-rec("test|octdl|all", "dry", "fused-fill")% เทียบกับ #as-rec("test|octdl|all", "wet", "fused-fill")% สำหรับโมเดล fused) ทว่าใน test split ของ OCTDL มีภาพ drusen เพียง #AS.at("test|octdl|all").stages.dry.n_images ภาพจากผู้ป่วย #AS.at("test|octdl|all").stages.dry.n_groups รายเท่านั้น ส่วนภาพ drusen ของ Kermany นั้น ทั้งสองโมเดลสามารถจำแนกได้ถูกต้องอย่างน้อย #fmt(calc.min(..("per-dataset", "fused-fill").map(a => AS.at("test|kermany|all").stages.dry.arms.at(a).recall)))% ของกรณีทั้งหมด
+ค่า recall แยกตามคลาส (@tab-recall) เผยให้เห็นลักษณะของข้อผิดพลาดที่เกิดขึ้น โดยชุดข้อมูล PAIMA เป็นแหล่งข้อมูลที่ท้าทายที่สุดแม้จะเป็นแหล่งข้อมูลที่เคยเห็นก็ตาม (ได้ค่า Macro-F1 เท่ากับร้อยละ #pt(k("seen", "paima"), "fused-fill") สำหรับโมเดลแบบ fused) ซึ่งข้อผิดพลาดหลักเกิดขึ้นในคลาส AMD (มีค่า recall เพียงร้อยละ #pt(k("seen", "paima"), "fused-fill", name: "recall_amd")) และเมื่อพิจารณาเจาะลึกในกลุ่ม AMD พบว่าข้อผิดพลาดเกิดจากโรค AMD ชนิดแห้ง (dry AMD) เป็นหลัก กล่าวคือ โมเดลแบบ fused สามารถจำแนกภาพสแกนที่มีดรูเซน (drusen) ในชุดข้อมูล PAIMA ได้ถูกต้องเพียงร้อยละ #as-rec("test|paima|normal_amd", "dry", "fused-fill") เมื่อเทียบกับภาพถ่ายชนิดเปียก (wet AMD) ที่ทำได้ถึงร้อยละ #as-rec("test|paima|normal_amd", "wet", "fused-fill") โดยภาพถ่ายชนิดมีดรูเซนที่ทำนายผิดเกือบทั้งหมดถูกจำแนกว่าเป็นภาพปกติ (normal) โมเดลแบบรายชุดข้อมูล (per-dataset) ของชุดข้อมูล PAIMA ก็แสดงผลลัพธ์ในลักษณะเดียวกัน (ร้อยละ #as-rec("test|paima|normal_amd", "dry", "per-dataset") เทียบกับร้อยละ #as-rec("test|paima|normal_amd", "wet", "per-dataset")) ข้อจำกัดนี้จึงเกิดจากลักษณะเฉพาะของภาพสแกนชนิดดรูเซนในชุดข้อมูล PAIMA เอง มิได้เกิดจากกระบวนการรวมข้อมูล (fusing) ภาพถ่ายชนิดมีดรูเซนในชุดข้อมูล OCTDL ได้รับการจำแนกถูกต้องน้อยกว่าชนิดเปียกเช่นกัน (ร้อยละ #as-rec("test|octdl|all", "dry", "fused-fill") เทียบกับร้อยละ #as-rec("test|octdl|all", "wet", "fused-fill") สำหรับโมเดลแบบ fused) ทว่าในชุดข้อมูลทดสอบ (test split) ของ OCTDL มีภาพถ่ายชนิดมีดรูเซนเพียง #AS.at("test|octdl|all").stages.dry.n_images ภาพจากผู้ป่วย #AS.at("test|octdl|all").stages.dry.n_groups รายเท่านั้น สำหรับภาพถ่ายชนิดมีดรูเซนในชุดข้อมูล Kermany นั้น ทั้งสองโมเดลสามารถจำแนกได้อย่างถูกต้องอย่างน้อยร้อยละ #fmt(calc.min(..("per-dataset", "fused-fill").map(a => AS.at("test|kermany|all").stages.dry.arms.at(a).recall))) ของกรณีทั้งหมด
 
 == แหล่งข้อมูลที่ไม่เคยเห็น (Unseen sources) <sec-unseen>
 
