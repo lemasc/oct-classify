@@ -62,7 +62,7 @@
 
 ค่า recall แยกตามคลาส (@tab-recall) เผยให้เห็นลักษณะของข้อผิดพลาดที่เกิดขึ้น โดยชุดข้อมูล PAIMA เป็นแหล่งข้อมูลที่ท้าทายที่สุดแม้จะเป็นแหล่งข้อมูลที่เคยเห็นก็ตาม (ได้ค่า Macro-F1 เท่ากับร้อยละ #pt(k("seen", "paima"), "fused-fill") สำหรับโมเดลแบบ fused) ซึ่งข้อผิดพลาดหลักเกิดขึ้นในคลาส AMD (มีค่า recall เพียงร้อยละ #pt(k("seen", "paima"), "fused-fill", name: "recall_amd")) และเมื่อพิจารณาเจาะลึกในกลุ่ม AMD พบว่าข้อผิดพลาดเกิดจากโรค AMD ชนิดแห้ง (dry AMD) เป็นหลัก กล่าวคือ โมเดลแบบ fused สามารถจำแนกภาพสแกนที่มีดรูเซน (drusen) ในชุดข้อมูล PAIMA ได้ถูกต้องเพียงร้อยละ #as-rec("test|paima|normal_amd", "dry", "fused-fill") เมื่อเทียบกับภาพถ่ายชนิดเปียก (wet AMD) ที่ทำได้ถึงร้อยละ #as-rec("test|paima|normal_amd", "wet", "fused-fill") โดยภาพถ่ายชนิดมีดรูเซนที่ทำนายผิดเกือบทั้งหมดถูกจำแนกว่าเป็นภาพปกติ (normal) โมเดลแบบรายชุดข้อมูล (per-dataset) ของชุดข้อมูล PAIMA ก็แสดงผลลัพธ์ในลักษณะเดียวกัน (ร้อยละ #as-rec("test|paima|normal_amd", "dry", "per-dataset") เทียบกับร้อยละ #as-rec("test|paima|normal_amd", "wet", "per-dataset")) ข้อจำกัดนี้จึงเกิดจากลักษณะเฉพาะของภาพสแกนชนิดดรูเซนในชุดข้อมูล PAIMA เอง มิได้เกิดจากกระบวนการรวมข้อมูล (fusing) ภาพถ่ายชนิดมีดรูเซนในชุดข้อมูล OCTDL ได้รับการจำแนกถูกต้องน้อยกว่าชนิดเปียกเช่นกัน (ร้อยละ #as-rec("test|octdl|all", "dry", "fused-fill") เทียบกับร้อยละ #as-rec("test|octdl|all", "wet", "fused-fill") สำหรับโมเดลแบบ fused) ทว่าในชุดข้อมูลทดสอบ (test split) ของ OCTDL มีภาพถ่ายชนิดมีดรูเซนเพียง #AS.at("test|octdl|all").stages.dry.n_images ภาพจากผู้ป่วย #AS.at("test|octdl|all").stages.dry.n_groups รายเท่านั้น สำหรับภาพถ่ายชนิดมีดรูเซนในชุดข้อมูล Kermany นั้น ทั้งสองโมเดลสามารถจำแนกได้อย่างถูกต้องอย่างน้อยร้อยละ #fmt(calc.min(..("per-dataset", "fused-fill").map(a => AS.at("test|kermany|all").stages.dry.arms.at(a).recall))) ของกรณีทั้งหมด
 
-== แหล่งข้อมูลที่ไม่เคยเห็น (Unseen sources) <sec-unseen>
+== แหล่งข้อมูลที่ไม่เคยเห็น <sec-unseen>
 
 #figure(
   {
@@ -90,26 +90,24 @@
       table.hline(),
     )
   },
-  caption: [การเปรียบเทียบแหล่งข้อมูลที่เคยเห็น (fused) กับไม่เคยเห็น (LOSO) สำหรับโมเดล letterbox โดย _Gap_ คือผลต่างแบบจับคู่ระหว่างโมเดล LOSO กับโมเดล fused บนภาพทดสอบชุดเดียวกัน พร้อมช่วงความเชื่อมั่น 95% ส่วน _Full source_ คือการวัดผลโมเดล LOSO บนทุกภาพของแหล่งข้อมูลที่กันไว้ สำหรับ Duke กรณี held out เป็นโมเดลเดี่ยวที่ทดสอบบน 45 ดวงตา],
+  caption: [การเปรียบเทียบระหว่างแหล่งข้อมูลที่เคยเห็น (fused) กับแหล่งข้อมูลที่ไม่เคยเห็น (LOSO) สำหรับโมเดลแบบ letterbox #super[a]โดยค่า Gap หมายถึงผลต่างแบบจับคู่ระหว่างโมเดลแบบ LOSO กับโมเดลแบบ fused บนชุดภาพทดสอบเดียวกัน พร้อมช่วงความเชื่อมั่นร้อยละ 95 ส่วนค่า Full source คือการประเมินผลโมเดลแบบ LOSO บนภาพทั้งหมดของแหล่งข้อมูลที่ถูกแยกไว้ สำหรับชุดข้อมูล Duke ในกรณีที่เป็นแหล่งข้อมูลที่ถูกแยกไว้ (held out) จะใช้โมเดลเดี่ยวที่ประเมินผลบนดวงตาทั้ง #DS.duke.n_groups ดวง],
 ) <tab-unseen>
 
 #figure(
   kind: image,
   fig("gap"),
-  caption: [Macro-F1 บน test split ของแต่ละแหล่งข้อมูล เมื่อแหล่งข้อมูลนั้นเป็นแบบเคยเห็น (fused, จุดโปร่ง) และไม่เคยเห็น (LOSO, จุดทึบ) สำหรับโมเดล letterbox โดยเส้นแทนช่วงความเชื่อมั่น 95% ของคะแนนแบบ unseen ส่วนผลต่างแบบจับคู่ (paired gaps) แสดงใน @tab-unseen ทั้งสองคะแนนประเมินบนชุดภาพทดสอบเดียวกัน ซึ่งสำหรับ Kermany ภาพส่วนใหญ่มีขนาด 1024×496 และได้คะแนนสูงกว่า Kermany ในภาพรวมทั้งชุดข้อมูล (@tab-unseen, full source)],
+  caption: [ค่า Macro-F1 บนชุดข้อมูลทดสอบ (test split) ของแต่ละแหล่งข้อมูล เมื่อแหล่งข้อมูลนั้นเป็นแบบเคยเห็น (fused, จุดโปร่ง) และไม่เคยเห็น (LOSO, จุดทึบ) สำหรับโมเดลแบบ letterbox #super[a]โดยเส้นแสดงช่วงความเชื่อมั่นร้อยละ 95 ของคะแนนบนแหล่งข้อมูลที่ไม่เคยเห็น (unseen) ส่วนผลต่างแบบจับคู่ (paired gaps) แสดงไว้ใน @tab-unseen โดยคะแนนทั้งสองรูปแบบได้รับการประเมินบนชุดภาพทดสอบเดียวกัน ทั้งนี้ สำหรับชุดข้อมูล Kermany ภาพส่วนใหญ่มีขนาด 1024×496 พิกเซล และได้คะแนนสูงกว่าชุดข้อมูล Kermany ในภาพรวมทั้งชุดข้อมูล (@tab-unseen, full source)],
 ) <fig-gap>
 
-ทุกแหล่งข้อมูลมีความแม่นยำลดลงอย่างมีนัยสำคัญเหนือสัญญาณรบกวนเมื่อกลายเป็นแหล่งข้อมูลที่ไม่เคยเห็น (unseen source) (@tab-unseen, @fig-gap) สำหรับ OCTDL, PAIMA และ Duke ส่วนต่างของ macro-F1 อยู่ที่ #span(("octdl", "paima", "duke").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) จุดเปอร์เซ็นต์ ส่วน Kermany มีส่วนต่างอยู่ที่ #dl(k("gap_test", "kermany"), "loso-fill - fused-fill")
+ทุกแหล่งข้อมูลมีประสิทธิภาพลดลงอย่างมีนัยสำคัญเหนือสัญญาณรบกวนเมื่อกลายเป็นแหล่งข้อมูลที่ไม่เคยเห็น (unseen source) (@tab-unseen, @fig-gap) โดยสำหรับชุดข้อมูล OCTDL, PAIMA และ Duke ส่วนต่างของค่า Macro-F1 อยู่ที่ #span(("octdl", "paima", "duke").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) จุดเปอร์เซ็นต์ ขณะที่ชุดข้อมูล Kermany มีส่วนต่างอยู่ที่ #dl(k("gap_test", "kermany"), "loso-fill - fused-fill")
 
-สำหรับแหล่งข้อมูลแบบ 3 คลาส ส่วนต่างของ AUROC มีค่าน้อยกว่าส่วนต่างของ macro-F1 อย่างชัดเจน (#dl(k("gap_test", "kermany"), "loso-fill - fused-fill", name: "macro_auroc") สำหรับ Kermany, #dl(k("gap_test", "octdl"), "loso-fill - fused-fill", name: "macro_auroc") สำหรับ OCTDL และ #dl(k("gap_test", "duke"), "loso-fill - fused-fill", name: "macro_auroc") สำหรับ Duke)
+สำหรับแหล่งข้อมูลประเภท 3 คลาส ส่วนต่างของค่า AUROC มีค่าน้อยกว่าส่วนต่างของค่า Macro-F1 อย่างชัดเจน (#dl(k("gap_test", "kermany"), "loso-fill - fused-fill", name: "macro_auroc") สำหรับชุดข้อมูล Kermany, #dl(k("gap_test", "octdl"), "loso-fill - fused-fill", name: "macro_auroc") สำหรับชุดข้อมูล OCTDL และ #dl(k("gap_test", "duke"), "loso-fill - fused-fill", name: "macro_auroc") สำหรับชุดข้อมูล Duke) ซึ่งชี้ให้เห็นว่าโมเดลยังคงจัดอันดับคลาสที่ถูกต้องไว้ในลำดับต้น ๆ ได้ดีในภาพส่วนใหญ่ แต่คะแนนการทำนายมักตกไปอยู่อีกฝั่งของจุดตัดการตัดสินใจ (cutoff threshold)
 
-ชี้ให้เห็นว่าโมเดลยังคงจัดอันดับคลาสที่ถูกต้องไว้ในลำดับต้น ๆ ได้ดีในภาพส่วนใหญ่ แต่คะแนนทำนายมักตกไปอยู่อีกฝั่งของจุดตัดการตัดสินใจ (cutoff threshold)
+ชุดข้อมูล PAIMA เป็นข้อยกเว้นเพียงหนึ่งเดียว โดยมีส่วนต่างของค่า AUROC อยู่ที่ #dl(k("gap_test", "paima"), "loso-fill - fused-fill", name: "macro_auroc") เมื่อเปรียบเทียบกับส่วนต่างของค่า Macro-F1 ที่ #dp(k("gap_test", "paima"), "loso-fill - fused-fill") ซึ่งสะท้อนถึงการเปลี่ยนแปลงในความสามารถด้านการจัดอันดับ (ranking) มิใช่เพียงแค่การคลาดเคลื่อนของจุดตัดการตัดสินใจเท่านั้น
 
-PAIMA เป็นข้อยกเว้นเพียงหนึ่งเดียว โดยมีส่วนต่าง AUROC อยู่ที่ #dl(k("gap_test", "paima"), "loso-fill - fused-fill", name: "macro_auroc") เมื่อเทียบกับส่วนต่าง macro-F1 ที่ #dp(k("gap_test", "paima"), "loso-fill - fused-fill") ซึ่งสะท้อนถึงการเปลี่ยนแปลงในความสามารถของการจัดอันดับ (ranking) ไม่ใช่เพียงแค่การคลาดเคลื่อนของจุดตัดเท่านั้น
+ชุดข้อมูลทดสอบ (test set) ของ Kermany มิได้เป็นตัวแทนที่ดีของชุดข้อมูลโดยรวม กล่าวคือ มีภาพจำนวนถึง #DS.kermany.test_sizes.at("1024x496") ภาพจากทั้งหมด #num(DS.kermany.n_test) ภาพที่มีขนาด 1024×496 พิกเซล ซึ่งเป็นขนาดที่มีสัดส่วนเพียงร้อยละ #pct1(size-share("kermany", "1024x496") * 100) ในชุดข้อมูล Kermany ทั้งหมด
 
-ชุด test ของ Kermany ไม่ได้เป็นตัวแทนที่ดีของชุดข้อมูลโดยรวม: ภาพถึง #DS.kermany.test_sizes.at("1024x496") ภาพจากทั้งหมด #num(DS.kermany.n_test) ภาพ มีขนาด 1024×496 ซึ่งเป็นขนาดที่มีสัดส่วนเพียง #pct1(size-share("kermany", "1024x496") * 100)% ใน Kermany ทั้งหมด
-
-เมื่อประเมินบนภาพทั้งหมด #num(R.at("loso_full|kermany|all").n_images) ภาพ คะแนนของ Kermany แบบ held-out ได้เพียง #pt("loso_full|kermany|all", "loso-fill") ซึ่งต่ำกว่าคะแนน #pt("gap_test|kermany|all", "loso-fill") บน test split อย่างมาก เราจึงใช้คะแนนแบบ full-source เป็นเกณฑ์หลักในการอ้างอิงข้อสรุปเกี่ยวกับ Kermany ในฐานะ unseen source โดยในหัวข้อถัดไปจะแสดงให้เห็นว่าเหตุใดขนาดของภาพจึงส่งผลอย่างยิ่งยวด
+เมื่อประเมินบนภาพทั้งหมดจำนวน #num(R.at("loso_full|kermany|all").n_images) ภาพ คะแนนของชุดข้อมูล Kermany ในกรณีที่เป็นแหล่งข้อมูลที่ถูกแยกไว้ (held-out) ทำได้เพียง #pt("loso_full|kermany|all", "loso-fill") ซึ่งต่ำกว่าคะแนน #pt("gap_test|kermany|all", "loso-fill") บนชุดข้อมูลทดสอบ (test split) อย่างมาก งานวิจัยนี้จึงใช้คะแนนแบบรวมทั้งแหล่งข้อมูล (full-source score) เป็นเกณฑ์หลักในการอ้างอิงข้อสรุปเกี่ยวกับชุดข้อมูล Kermany ในฐานะแหล่งข้อมูลที่ไม่เคยเห็น โดยในหัวข้อถัดไปจะแสดงให้เห็นว่าเหตุใดขนาดของภาพจึงส่งผลกระทบอย่างยิ่งยวด
 
 == ทางลัดจากขนาดภาพ (The image-size shortcut) <sec-shortcut>
 
