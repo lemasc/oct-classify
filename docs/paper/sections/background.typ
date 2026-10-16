@@ -65,8 +65,9 @@ problems @abdi2025.
 
 Two features of this literature matter here. First, models are nearly always scored on test data from the
 dataset they were trained on. Rasti et al. and Fang et al. each use two datasets but train and test within each
-one @rasti2018 @fang2019.#footnote[Both use a 148-eye dataset from Noor Eye Hospital, Tehran, which they call NEH.
-  It is not PAIMA, which comes from the same hospital @sotoudehpaima2022.] Second, how a dataset is split matters
+one @rasti2018 @fang2019.#footnote[Both use a 148-eye dataset from Noor Eye Hospital, Tehran, which they call NEH,
+  as do Zhang et al. @zhang2025 and MIRAGE @morano2025mirage. It is not PAIMA, which comes from the same hospital
+  @sotoudehpaima2022 and is also called NEH by Chutani and Yalavarthy @chutani2026.] Second, how a dataset is split matters
 as much as the model. Tampu et al. showed that splitting OCT data by image instead of by patient inflates test
 accuracy by 5–30% across three datasets, and that the train and test sets of Kermany version 2 share
 patients and images @tampu2022. For version 3, which we use, the supplied split scored only 0.04 MCC above a split by patient @tampu2022. We split
@@ -74,19 +75,39 @@ every source by patient and remove near-duplicates (@sec-data).
 
 == Generalization across datasets and devices <sec-prior-shift>
 
-Few OCT studies test on a source that was not used in training. De Fauw et al. trained a segmentation network and
-a separate classifier, and showed that the tissue segmentations act as a device-independent representation:
-referral accuracy is kept when the segmentations come from a different type of device @defauw2018. The RETOUCH
-challenge was built to measure how fluid segmentation varies across vendors @bogunovic2019retouch. For
-classification across datasets, the closest work is OCT-SelfNet @jannat2025selfnet and its multi-class successor
-@jannat2026multiselfnet, which pretrain a transformer without labels on images from several datasets. In their
-experiments a supervised ResNet-50 trained on Duke reaches only 0.59 AUROC on a test set from another dataset,
-against 0.90 for their pretrained model @jannat2026multiselfnet. Their pretraining includes images from the target
-datasets and their Kermany split is by image @jannat2025selfnet, so their numbers are not comparable with ours. We
-do not pretrain: we study their baseline, an ImageNet-pretrained ResNet-50, and ask where its gap comes from.
-Foundation models such as RETFound, pretrained by masked autoencoding on 904,170 fundus photographs (one model) and
-736,442 OCT B-scans (another) @zhou2023retfound, are a further option. On one OCT task, RETFound beat an ImageNet
-ResNet-50 clearly only with 100 or fewer labelled scans; with 500 or more the two were similar @kuo2025retfound.
+Most OCT models "have been trained and tested on OCT images obtained from a single commercial device in a single
+center, with a lack of external data sets to test generalizability" @tang2021. External tests that do exist mostly
+come from clinical groups working with whole volumes. Tang et al. trained a DME classifier on Cirrus, Spectralis and
+Triton scans from one centre and kept an AUROC above 0.906 on seven external datasets @tang2021. Zhang et al.
+trained on private Spectralis volumes and tested on OCTDL and NEH, and every method they compared lost accuracy on
+OCTDL @zhang2025. De Fauw et al. showed that tissue segmentations can act as a device-independent representation:
+referral accuracy is kept when the segmentations come from a different type of device @defauw2018. For B-scan
+classifiers trained on the public datasets, tests on another dataset are rare. Chutani and Yalavarthy trained on
+Kermany and tested on PAIMA, two Spectralis datasets that differ in protocol, site and labelling, and a ResNet-18
+reached 77.8% accuracy on normal, drusen and CNV @chutani2026. An independent benchmark found ImageNet-pretrained
+compact models as accurate as RETFound for OCT classification, but within single datasets, and names external
+validation as missing @isztl2026.
+
+Methods that adapt a model or its inputs to a new device have mostly been developed for segmentation. Image
+translation with cycle-consistent networks makes one vendor's scans look like another's @romobucheli2020 @chen2023.
+Transferring the target device's noise pattern during training raised the Dice score of a Spectralis-trained model
+on Topcon scans from 0.42 to 0.71 @koch2022svdna, and Chutani and Yalavarthy build speckle noise into the network
+itself @chutani2026. Test-time adaptation instead updates the model on unlabelled scans from the new device: from
+Cirrus to Spectralis, adapting the batch-normalization parameters (TENT) raised Dice from 39.1 to 50.5, against 61.6
+for a supervised upper bound @hucke2026. We found no study that re-estimates batch-normalization statistics on the
+new source (AdaBN @li2016adabn) for OCT classification; @sec-posthoc tests it.
+
+Pretraining on unlabelled OCT is a third route. OCT-SelfNet @jannat2025selfnet and its multi-class successor
+@jannat2026multiselfnet pretrain a transformer on images from several datasets. In their experiments a supervised
+ResNet-50 trained on Duke reaches only 0.59 AUROC on a test set from another dataset, against 0.90 for their
+pretrained model @jannat2026multiselfnet. Their pretraining includes images from the target datasets and their
+Kermany split is by image @jannat2025selfnet, so their numbers are not comparable with ours. RETFound is pretrained
+by masked autoencoding on 904,170 fundus photographs (one model) and 736,442 OCT B-scans (another)
+@zhou2023retfound; on one OCT task it beat an ImageNet ResNet-50 clearly only with 100 or fewer labelled scans,
+and with 500 or more the two were similar @kuo2025retfound. MIRAGE, pretrained on 261,184 Cirrus and Spectralis
+scans, beat a supervised ImageNet transformer by 2.26 AUROC points on an external test set that includes Duke
+@morano2025mirage. We do not pretrain: we study the common baseline, an ImageNet-pretrained ResNet-50, and ask
+where its gap on an unseen source comes from.
 
 Our design follows domain generalization practice: each source is held out in turn, and checkpoints are chosen on
 validation data from the training sources only. Under this model selection, plain training on the pooled data
