@@ -68,8 +68,9 @@ splitting and of bootstrap resampling, so its intervals reflect #DS.duke.n_group
 
 *Deduplication and splits.* Exact duplicates and perceptual-hash (distance zero) near-duplicates across patients are
 removed or linked into one split unit, which removes #num(DS.kermany.dedup.same_label_copies_removed) same-label copies from Kermany alone. Splits are made at
-the patient (or eye/volume) level so that no patient appears in more than one split. Kermany keeps its supplied test
-split and divides the rest 85/15 into train and validation; OCTDL and PAIMA are split 70/15/15 into train, validation and test; Duke, with only #DS.duke.n_groups eyes, uses five-fold
+the patient (or eye/volume) level so that no patient appears in more than one split; splitting OCT data by image
+instead inflates test accuracy by 5–30% @tampu2022. Kermany keeps its supplied test split, which for version 3
+scores only 0.04 MCC above a split by patient @tampu2022, and divides the rest 85/15 into train and validation; OCTDL and PAIMA are split 70/15/15 into train, validation and test; Duke, with only #DS.duke.n_groups eyes, uses five-fold
 cross-validation (#DS.duke.test_eyes_per_fold.first() test eyes per fold, #DS.duke.test_eyes_per_class_per_fold.first() per class).
 
 *Image geometry.* The sources differ in image size (@fig-size-class). PAIMA is all 768×496; Kermany has five main
@@ -78,7 +79,7 @@ sizes, mostly around 880×320. Duke has three sizes, and two of them carry a sin
 is DME and every 1024×496 image is AMD. The link comes from scan settings on the same device, not from the
 disease: in Duke's acquisition protocol @srinivasan2014, all #duke-eyes("normal", size: "512x496") normal volumes have 512 A-scans per B-scan, #duke-eyes("amd", size: "1024x496") of the
 #duke-eyes("amd") AMD volumes have 1,024 and #duke-eyes("dme", size: "768x496") of the #duke-eyes("dme") DME volumes have 768. A model trained on Duke can therefore learn image
-size as a label cue; @sec-shortcut shows that it does.
+size as a label cue; @sec-shortcut tests whether it does.
 
 #figure(
   kind: image,
