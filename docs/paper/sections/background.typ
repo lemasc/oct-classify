@@ -32,9 +32,8 @@ acquisition, not of the eye.
 
 == AMD and DME on OCT <sec-diseases>
 
-*Age-related macular degeneration (AMD)* was projected to affect 196 million people in 2020 and 288 million by 2040
-@wong2014amd. Its hallmark is _drusen_, deposits of extracellular material between the
-retinal pigment epithelium (RPE) and Bruch's membrane @sotoudehpaima2022, which appear on a B-scan as bumps under
+The hallmark of *age-related macular degeneration (AMD)* is _drusen_, deposits of extracellular material between
+the retinal pigment epithelium (RPE) and Bruch's membrane @sotoudehpaima2022, which appear on a B-scan as bumps under
 the retina (@fig-examples). The clinical classification grades AMD by drusen size and late lesions: medium drusen
 (63–125 µm) mark early AMD, large drusen, or pigment changes with medium drusen, intermediate AMD, and neovascular AMD or geographic
 atrophy late AMD @ferris2013. In neovascular ("wet") AMD, new vessels grow from the choroid, a process called
@@ -45,10 +44,8 @@ drusen, not atrophy.
 
 *Diabetic macular edema (DME)* is a complication of diabetes in which fluid builds up in the central retina
 @kermany2018. On a B-scan the retina is thickened and holds dark, fluid-filled spaces (@fig-examples)
-@kermany2018. A meta-analysis of OCT-based studies puts its prevalence at 5.47% of people with diabetes
-@im2022dme. Fluid also appears in wet AMD @kermany2018, so the presence of fluid alone does not separate the two
-diseases. AMD and diabetic retinopathy, of which DME is a form, are leading causes of blindness in older and
-working-age Americans respectively @srinivasan2014.
+@kermany2018. Fluid also appears in wet AMD @kermany2018, so the presence of fluid alone does not separate the two
+diseases.
 
 == Classifying OCT scans <sec-prior-classification>
 
