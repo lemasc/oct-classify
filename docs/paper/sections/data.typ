@@ -4,7 +4,7 @@
 = Data <sec-data>
 
 We use four public retinal OCT datasets and treat each as one _source_. The sources differ in clinical site,
-population, acquisition protocol and labelling, but mostly not in device. Kermany @kermany2018 (version 3 of the public release @kermany2018data; five centres in
+population, acquisition protocol and labelling, but mostly not in device. Kermany @kermany2018 (five centres in
 the United States and China), Duke @srinivasan2014 (three centres in the United States) and PAIMA
 @sotoudehpaima2022 (one hospital in Iran) were all acquired with Heidelberg Engineering spectral-domain OCT (Spectralis for Kermany and Duke; the PAIMA
 paper names only the manufacturer); only
@@ -30,17 +30,23 @@ unseen dataset and, only for OCTDL, also an unseen device. @fig-examples shows o
         [dry], [wet],
         table.hline(),
       ),
-      ..srcs.map(s => {
-        let d = DS.at(s)
-        let stage(st) = if stage-share(s, st) == none [--] else if s == "duke" [*100%*] else [#stage-share(s, st)%]
-        (
-          [#source-name.at(s)], [#num(d.n_images)],
-          [#num(d.n_groups) #if d.label_unit == "eye" [eyes] else [patients]],
-          [#num(d.classes.normal)], [#num(d.classes.amd)], stage("dry"),
-          if s == "octdl" [#stage-share(s, "wet")%#super[a]] else { stage("wet") },
-          if d.classes.dme == 0 [--] else [#num(d.classes.dme)], [#split-name.at(s)],
-        )
-      }).flatten(),
+      ..srcs
+        .map(s => {
+          let d = DS.at(s)
+          let stage(st) = if stage-share(s, st) == none [--] else if s == "duke" [*100%*] else [#stage-share(s, st)%]
+          (
+            [#source-name.at(s)],
+            [#num(d.n_images)],
+            [#num(d.n_groups) #if d.label_unit == "eye" [eyes] else [patients]],
+            [#num(d.classes.normal)],
+            [#num(d.classes.amd)],
+            stage("dry"),
+            if s == "octdl" [#stage-share(s, "wet")%#super[a]] else { stage("wet") },
+            if d.classes.dme == 0 [--] else [#num(d.classes.dme)],
+            [#split-name.at(s)],
+          )
+        })
+        .flatten(),
       table.hline(),
     )
   },
@@ -69,8 +75,7 @@ splitting and of bootstrap resampling, so its intervals reflect #DS.duke.n_group
 *Deduplication and splits.* Exact duplicates and perceptual-hash (distance zero) near-duplicates across patients are
 removed or linked into one split unit, which removes #num(DS.kermany.dedup.same_label_copies_removed) same-label copies from Kermany alone. Splits are made at
 the patient (or eye/volume) level so that no patient appears in more than one split; splitting OCT data by image
-instead inflates test accuracy by 5–30% @tampu2022. Kermany keeps its supplied test split, which for version 3
-scores only 0.04 MCC above a split by patient @tampu2022, and divides the rest 85/15 into train and validation; OCTDL and PAIMA are split 70/15/15 into train, validation and test; Duke, with only #DS.duke.n_groups eyes, uses five-fold
+instead inflates test accuracy by 5–30% @tampu2022. Kermany keeps its supplied test split and divides the rest 85/15 into train and validation; OCTDL and PAIMA are split 70/15/15 into train, validation and test; Duke, with only #DS.duke.n_groups eyes, uses five-fold
 cross-validation (#DS.duke.test_eyes_per_fold.first() test eyes per fold, #DS.duke.test_eyes_per_class_per_fold.first() per class).
 
 *Image geometry.* The sources differ in image size (@fig-size-class). PAIMA is all 768×496; Kermany has five main
