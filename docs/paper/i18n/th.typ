@@ -4,8 +4,6 @@
 #let translated = ("introduction", "background", "data", "method", "results", "discussion")
 
 #let title = [การวางนัยทั่วไปข้ามชุดข้อมูลของตัวจำแนกภาพ OCT จอประสาทตาด้วย CNN]
-#let abstract-title = [บทคัดย่อ]
-#let abstract = none // none: keep the English abstract
 
 // Names shown in tables. Keys match `source-name` / `split-name` in lib.typ and sections/data.typ.
 #let source-name = (kermany: "Kermany", octdl: "OCTDL", paima: "PAIMA", duke: "Duke")
