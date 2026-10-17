@@ -14,8 +14,6 @@ the centre of the retina (@fig-scan c). On a B-scan the retina is a band of brig
 choroid, with a dip at the _fovea_, the centre of sharp vision.
 
 #figure(
-  scope: "parent",
-  placement: top,
   kind: image,
   fig("scan"),
   caption: [How an OCT volume is built, from one Duke normal eye @srinivasan2014. (a) One A-scan. (b) A B-scan

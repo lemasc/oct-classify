@@ -12,16 +12,12 @@ OCTDL @kulyabin2024octdl comes from another vendor (Optovue Avanti RTVue XR). An
 unseen dataset and, only for OCTDL, also an unseen device. @fig-examples shows one scan per source and class.
 
 #figure(
-  scope: "parent",
-  placement: top,
   image("../figures/examples.png", width: 100%),
   caption: [One B-scan per source and class, drawn at the same pixel scale (not the same physical scale)
     and labelled with its size in pixels.],
 ) <fig-examples>
 
 #figure(
-  scope: "parent",
-  placement: top,
   {
     set text(size: (9.5 / 11) * 1em)
     table(
@@ -89,8 +85,6 @@ disease: in Duke's acquisition protocol @srinivasan2014, all #duke-eyes("normal"
 size as a label cue; @sec-shortcut tests whether it does.
 
 #figure(
-  scope: "parent",
-  placement: top,
   kind: image,
   fig("size-class"),
   caption: [Class mix at each image size. OCTDL images are cropped to many different sizes and are shown as one

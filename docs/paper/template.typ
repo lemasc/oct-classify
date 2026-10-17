@@ -1,3 +1,7 @@
+// Labels of the figures and tables that span both columns; every other one stays in its column.
+// One list for all languages, so the English and Thai papers lay out alike. Add a label here to opt a float out of the column.
+#let wide-figures = ("fig-scan", "fig-examples", "tab-data", "fig-size-class", "fig-design", "tab-seen", "tab-recall", "tab-unseen", "fig-gap", "tab-size-test", "fig-gradcam", "fig-kermany-size", "tab-square", "tab-remaining", "tab-recall-unseen", "tab-zero-dme", "tab-posthoc",)
+
 // Page and text setup shared by every language. `lang` picks the hyphenation, the figure/table supplements and the font.
 // Thai uses TH Sarabun PSK (installed on the system), which also covers Latin
 // and runs small, so it is set at 14pt. Typst falls back per glyph to the next font.
@@ -13,8 +17,9 @@
   // Sarabun runs small, so the Thai body is 14pt; the math font does not, and would look large next to it.
   // Scale equations back to the size they have in the English body (11pt).
   show math.equation: set text(size: (11 / 14) * 1em) if lang == "th"
-  // Figures and tables float to the top or bottom of a column; wide ones set `scope: "parent"` to span both.
+  // Figures and tables float to the top or bottom of a column. Those listed in `wide-figures` span both columns.
   set figure(placement: auto)
+  show selector.or(..wide-figures.map(label)): set figure(scope: "parent", placement: top)
   set par(justify: true)
   set heading(numbering: "1.1")
   // Captions and table text (in the sections) are 9.5/11 of the body, so they scale with the language's body size.

@@ -45,8 +45,6 @@ discusses seed variation.
 == Three training variants
 
 #figure(
-  scope: "parent",
-  placement: top,
   kind: image,
   fig("design"),
   caption: [The three training variants and the sources each is tested on.],
