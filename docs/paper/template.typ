@@ -3,7 +3,8 @@
 // and runs small, so it is set at 14pt. Typst falls back per glyph to the next font.
 #let paper(title: none, lang: "en", body) = {
   set document(title: title)
-  set page(paper: "a4", margin: 2.5cm, numbering: "1")
+  set page(paper: "a4", margin: (x: 1.8cm, y: 2.2cm), columns: 2, numbering: "1")
+  set columns(gutter: 0.7cm)
   set text(lang: lang, ..if lang == "th" {
     (size: 14pt, font: ("TH SarabunPSK", "Libertinus Serif"))
   } else {
@@ -21,3 +22,6 @@
   set table.hline(stroke: 0.5pt)
   body
 }
+
+// Title block and abstract span both columns and sit at the top of page 1; the body flows into two columns below.
+#let front(body) = place(top + center, scope: "parent", float: true, clearance: 1em, body)

@@ -1,12 +1,13 @@
 // Presubmission draft (English). Build: typst compile --root ../.. main.typ
 // Thai companion: th/main.typ (same sections, English wherever a Thai section is not written yet).
-#import "template.typ": paper
+#import "template.typ": paper, front
 #import "lib.typ": *
 
 #show: paper.with(
   title: [Cross-dataset classification analysis of optical coherence tomography retinal images using convolutional neural networks],
 )
 
+#front[
 #align(center)[
   #text(
     size: 1.45em,
@@ -29,6 +30,8 @@ when wide scans are fitted to a square input. Training without the size cue rais
 #pt("loso_full|kermany|all", "loso-fill") to #pt("loso_full|kermany|all", "loso-sq") macro-F1 but lowers the other unseen sources. The classes that carry the gap differ by source: DME recall for OCTDL and Duke,
 normal recall for Kermany and AMD recall for PAIMA. Shifting the decision cutoff or using AdaBN leaves most of the gap in place. Comparing scan settings against labels
 before pooling datasets would have exposed the shortcut.
+
+]
 
 #include "sections/introduction.typ"
 #include "sections/background.typ"
