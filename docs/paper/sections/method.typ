@@ -18,7 +18,9 @@ sampled so that every source and every class within it is equally likely. The lo
 cross-entropy _masked_ to the classes a source labels: for PAIMA the DME output is excluded from the softmax, so
 PAIMA images never act as negative DME examples. The checkpoint with the best validation macro-F1, averaged over
 the training sources weighted by their validation size, is kept; a LOSO model never selects on its held-out
-source. Per-dataset models use the same recipe on one source. All runs use one seed (20260913); @sec-limits
+source. Under this model selection, plain training on pooled data (empirical risk minimization) matches dedicated
+domain-generalization methods on standard benchmarks @gulrajani2021domainbed, so we study that baseline rather
+than a new method. Per-dataset models use the same recipe on one source. All runs use one seed (20260913); @sec-limits
 discusses seed variation.
 
 == Three training variants

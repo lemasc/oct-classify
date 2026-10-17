@@ -12,7 +12,10 @@ different device is not needed for the drop: three of the four sources come from
 *Pooling datasets can import their shortcuts.* The largest gap, Kermany's, is partly caused by a property of
 _another_ dataset: in Duke, image size gives the label away, and models trained with Duke apply that rule to
 Kermany. The shortcut is invisible on Duke itself, where it is always right, and the fused model scores well
-on every source. It only shows when the model meets a source where the rule is wrong. The rule is an artifact of
+on every source. It only shows when the model meets a source where the rule is wrong. Chest radiographs show the same pattern: the
+hospital can predict the label @zech2018, and testing COVID-19 models on an external hospital alone did not reveal
+that they read markers and patient position rather than the lungs @degrave2021. Here, too, the cause showed only
+when we changed the inputs (@sec-shortcut). The rule is an artifact of
 acquisition settings on one device (@sec-data), so it would not be caught by matching devices across datasets. A
 simple check would have
 caught it before training: tabulate image size (and other acquisition properties) against the label in each
@@ -76,10 +79,15 @@ about PAIMA's drusen scans is, and our data cannot tell what. A single AMD score
 == Future work
 
 Two directions follow from the remaining gap. Augmentation that mimics other sources' appearance (speckle,
-contrast, resolution) would target the part of the gap that size and DME do not explain. OCT-specific pretraining,
-for example self-supervised pretraining on unlabelled scans from all sources including the unseen one, would change
+contrast, resolution), as noise transfer @koch2022svdna and built-in speckle noise @chutani2026 do, would target the part of the gap that size and DME do not explain. OCT-specific pretraining
+@jannat2025selfnet @zhou2023retfound @morano2025mirage, for example self-supervised pretraining on unlabelled scans from all sources including the unseen one, would change
 the features themselves, which our diagnostics point to as the limiting factor.
 
 = Conclusion
 
-#todo[3–4 sentences once results are final]
+A ResNet-50 that scores #span(("kermany", "octdl", "paima", "duke").map(s => metric(k("seen", s), "per-dataset").point)) macro-F1 on OCT datasets it has seen loses
+#span(("octdl", "paima", "duke", "kermany").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) points on one it has not, although three of the four come from the same manufacturer.
+Part of that loss comes from the training data rather than the new dataset: pooling let a label-predicting image
+size in Duke become a rule that fails on Kermany. Removing the cue recovers much of Kermany's gap but is not a
+general fix, and most of what remains is DME, the class seen from the fewest sources. Before pooling OCT datasets,
+compare scan settings against labels, and test on a held-out source, not only a held-out split.

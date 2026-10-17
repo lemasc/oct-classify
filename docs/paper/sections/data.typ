@@ -4,8 +4,8 @@
 = Data <sec-data>
 
 We use four public retinal OCT datasets and treat each as one _source_. The sources differ in clinical site,
-population, acquisition protocol and labelling, but mostly not in device. Kermany @kermany2018 (five centres in the
-United States and China), Duke @srinivasan2014 (three centres in the United States) and PAIMA
+population, acquisition protocol and labelling, but mostly not in device. Kermany @kermany2018 (five centres in
+the United States and China), Duke @srinivasan2014 (three centres in the United States) and PAIMA
 @sotoudehpaima2022 (one hospital in Iran) were all acquired with Heidelberg Engineering spectral-domain OCT (Spectralis for Kermany and Duke; the PAIMA
 paper names only the manufacturer); only
 OCTDL @kulyabin2024octdl comes from another vendor (Optovue Avanti RTVue XR). An unseen source is therefore an
@@ -30,17 +30,23 @@ unseen dataset and, only for OCTDL, also an unseen device. @fig-examples shows o
         [dry], [wet],
         table.hline(),
       ),
-      ..srcs.map(s => {
-        let d = DS.at(s)
-        let stage(st) = if stage-share(s, st) == none [--] else if s == "duke" [*100%*] else [#stage-share(s, st)%]
-        (
-          [#source-name.at(s)], [#num(d.n_images)],
-          [#num(d.n_groups) #if d.label_unit == "eye" [eyes] else [patients]],
-          [#num(d.classes.normal)], [#num(d.classes.amd)], stage("dry"),
-          if s == "octdl" [#stage-share(s, "wet")%#super[a]] else { stage("wet") },
-          if d.classes.dme == 0 [--] else [#num(d.classes.dme)], [#split-name.at(s)],
-        )
-      }).flatten(),
+      ..srcs
+        .map(s => {
+          let d = DS.at(s)
+          let stage(st) = if stage-share(s, st) == none [--] else if s == "duke" [*100%*] else [#stage-share(s, st)%]
+          (
+            [#source-name.at(s)],
+            [#num(d.n_images)],
+            [#num(d.n_groups) #if d.label_unit == "eye" [eyes] else [patients]],
+            [#num(d.classes.normal)],
+            [#num(d.classes.amd)],
+            stage("dry"),
+            if s == "octdl" [#stage-share(s, "wet")%#super[a]] else { stage("wet") },
+            if d.classes.dme == 0 [--] else [#num(d.classes.dme)],
+            [#split-name.at(s)],
+          )
+        })
+        .flatten(),
       table.hline(),
     )
   },
@@ -51,8 +57,8 @@ unseen dataset and, only for OCTDL, also an unseen device. @fig-examples shows o
 ) <tab-data>
 
 *Taxonomy.* We merge the source labels into three classes: _normal_; _AMD_ (age-related macular degeneration);
-and _DME_ (diabetic macular edema). AMD merges two stages that look different on a B-scan (@fig-examples): dry AMD,
-with drusen under the retina, and wet AMD, with choroidal neovascularization (CNV, called MNV in OCTDL). The
+and _DME_ (diabetic macular edema). AMD merges two stages that look different on a B-scan (@sec-diseases, @fig-examples):
+dry AMD, with drusen under the retina, and wet AMD, with choroidal neovascularization (CNV, called MNV in OCTDL). The
 sources mix the two stages very differently (@tab-data): dry AMD is a fifth of Kermany's and OCTDL's AMD images,
 #stage-share("paima", "dry")% of PAIMA's and all of Duke's, whose AMD eyes are dry only @srinivasan2014. PAIMA contains only normal and AMD
 scans. Its lack of DME is structural, not a negative label: PAIMA images never contribute to the DME output during
@@ -68,8 +74,8 @@ splitting and of bootstrap resampling, so its intervals reflect #DS.duke.n_group
 
 *Deduplication and splits.* Exact duplicates and perceptual-hash (distance zero) near-duplicates across patients are
 removed or linked into one split unit, which removes #num(DS.kermany.dedup.same_label_copies_removed) same-label copies from Kermany alone. Splits are made at
-the patient (or eye/volume) level so that no patient appears in more than one split. Kermany keeps its supplied test
-split and divides the rest 85/15 into train and validation; OCTDL and PAIMA are split 70/15/15 into train, validation and test; Duke, with only #DS.duke.n_groups eyes, uses five-fold
+the patient (or eye/volume) level so that no patient appears in more than one split; splitting OCT data by image
+instead inflates test accuracy by 5–30% @tampu2022. Kermany keeps its supplied test split and divides the rest 85/15 into train and validation; OCTDL and PAIMA are split 70/15/15 into train, validation and test; Duke, with only #DS.duke.n_groups eyes, uses five-fold
 cross-validation (#DS.duke.test_eyes_per_fold.first() test eyes per fold, #DS.duke.test_eyes_per_class_per_fold.first() per class).
 
 *Image geometry.* The sources differ in image size (@fig-size-class). PAIMA is all 768×496; Kermany has five main
@@ -78,7 +84,7 @@ sizes, mostly around 880×320. Duke has three sizes, and two of them carry a sin
 is DME and every 1024×496 image is AMD. The link comes from scan settings on the same device, not from the
 disease: in Duke's acquisition protocol @srinivasan2014, all #duke-eyes("normal", size: "512x496") normal volumes have 512 A-scans per B-scan, #duke-eyes("amd", size: "1024x496") of the
 #duke-eyes("amd") AMD volumes have 1,024 and #duke-eyes("dme", size: "768x496") of the #duke-eyes("dme") DME volumes have 768. A model trained on Duke can therefore learn image
-size as a label cue; @sec-shortcut shows that it does.
+size as a label cue; @sec-shortcut tests whether it does.
 
 #figure(
   kind: image,

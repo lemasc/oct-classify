@@ -1,78 +1,66 @@
-"""Serve a word-level redline of the Typst paper between two Git revisions, like latexdiff.
+"""Serve the Typst paper (English and Thai) with an optional word-level redline between two Git revisions.
 
-    uv run python scripts/paper/paper_diff.py [--port 8731]
+    uv run --group paper python scripts/paper/paper_diff.py [--port 8731]
     http://localhost:8731/main..HEAD       compare two revisions (branch, tag or SHA)
     http://localhost:8731/HEAD~3..         compare against the working tree (uncommitted edits)
     http://localhost:8731/4b9df74          view one revision without any diff
+    http://localhost:8731/th/main..HEAD    the same three forms for the Thai paper (docs/paper/th/)
 
 Each revision is extracted with `git archive` and compiled with `typst --features html`; the
-built HTML is cached per commit under artifacts/paper-diff/. The two HTML bodies are tokenised
-and diffed with difflib. Tables are diffed as whole blocks (old table dimmed above the new one,
-changed cells shaded green in the new table, removed cells red in the old), since a per-cell diff breaks when columns move. Images get the same
-treatment: each is identified by its Git blob id (the id `git ls-tree` reports for the figure file,
-recovered from the data URI Typst embeds), and a changed blob shows old dimmed above new.
-Standard library only.
+built HTML is cached per commit and variant under artifacts/paper-diff/. The two HTML bodies are
+tokenised and diffed with difflib (Thai runs are segmented into words with pythainlp first).
+Tables are diffed as whole blocks (old table dimmed above the new one, changed cells shaded green
+in the new table, removed cells red in the old), since a per-cell diff breaks when columns move.
+Images get the same treatment: each is identified by its Git blob id (the id `git ls-tree` reports
+for the figure file, recovered from the data URI Typst embeds), and a changed blob shows old dimmed
+above new. The page chrome (contents with per-section change counts, language switch, copy tools)
+lives in viewer/templates (Jinja2) and viewer/static; dependencies are in the `paper` group.
 """
 
 import argparse
 import base64
 import hashlib
 import html
+import mimetypes
 import re
 import subprocess
 import tempfile
 import threading
 from difflib import SequenceMatcher
+from functools import cache
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import NamedTuple
 from urllib.parse import parse_qs, unquote
+
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 REPO = Path(__file__).resolve().parents[2]
 PAPER = "docs/paper"
 DATA_DIRS = ("data/paper", "data/analysis")  # result files the paper loads via json()
 CACHE = REPO / "artifacts/paper-diff"
+VIEWER = Path(__file__).resolve().parent / "viewer"
 WORKTREE = "WORKTREE"
+LANGS = ("en", "th")
+ENTRY = {"en": "main.typ", "th": "th/main.typ"}  # relative to PAPER
 MIN_ANCHOR = 4  # equal runs shorter than this between two edits are folded into the edit
+HISTORY = 150  # commits scanned for the revision picker
 BUILD_LOCK = threading.Lock()
-
-CSS = """
-:root{color-scheme:light dark;--ins:#d6f5d6;--insfg:#064;--del:#fcd9d9;--delfg:#900;--chg:#b9ecb9}
-@media(prefers-color-scheme:dark){:root{--ins:#1d4a28;--insfg:#9fe6b0;--del:#5a2323;--delfg:#f3a0a0;--chg:#2c6b3c}}
-body{font:16px/1.6 Georgia,serif;max-width:46rem;margin:0 auto;padding:0 1rem 4rem}
-h1{text-align:center;font-size:1.6rem;margin:2rem 0 1rem}
-h2{margin-top:2.2rem;border-bottom:1px solid #8884}
-figure{margin:1.5rem 0;text-align:center}
-figure img{max-width:100%;height:auto}
-figcaption{font-size:.9rem;opacity:.85;text-align:left}
-.tbl{overflow-x:auto}
-table{border-collapse:collapse;margin:0 auto;font-size:.85rem}
-td,th{border-bottom:1px solid #8886;padding:.2rem .5rem}
-ins.ins{background:var(--ins);color:var(--insfg);text-decoration:none}
-del.del{background:var(--del);color:var(--delfg)}
-.tbl-ins,.tbl-del{padding:.4rem;margin:.5rem 0;border-radius:4px}
-.tbl-ins{outline:2px solid #6c6}
-.tbl-del{outline:2px dashed #c66;opacity:.7}
-.tbl-ins::before,.tbl-del::before{font:12px sans-serif}
-.tbl-ins::before{content:'new / changed table or figure';color:var(--insfg)}
-.tbl-del::before{content:'removed table or figure';color:var(--delfg)}
-.tbl-ins img,.tbl-del img{max-width:100%;height:auto}
-td.chg,th.chg{background:var(--chg)}
-td.gone,th.gone{background:var(--del)}
-.legend{position:sticky;top:0;background:Canvas;font:13px sans-serif;padding:.4rem 0;
- border-bottom:1px solid #8884;z-index:1}
-.legend code{font-size:12px}
-.legend details{max-height:60vh;overflow:auto}
-.history{font:13px sans-serif}
-.history table{margin:.5rem 0;width:100%}
-.history td{border:0;padding:.1rem .4rem}
-.history td:first-child,.history td:nth-child(2){text-align:center;width:2rem}
-.history tr:has(:checked){background:#8882}
-.history button{font:inherit;padding:.2rem .8rem}
-"""
+TEMPLATES = Environment(
+    loader=FileSystemLoader(VIEWER / "templates"),
+    autoescape=select_autoescape(["html"]),
+    trim_blocks=True,
+    lstrip_blocks=True,
+)
 
 BLOCKS = {"p", "h1", "h2", "h3", "h4", "li", "ul", "ol", "figure", "figcaption", "tr", "div"}
 TOKEN = re.compile(r"<[^>]+>|[^<\s]+|\s+")
 DATA_URI = re.compile(r'src="data:[^;"]*;base64,([^"]*)"')
+THAI = re.compile(r"[\u0e00-\u0e7f]")
+ENTITY = re.compile(r"(&#?\w+;)")
+FIGURE = re.compile(r'<figure\s+id="((?:fig|tab)-[^"]*)"[^>]*>(.*?)</figure>', re.DOTALL)
+CAPTION = re.compile(r"<figcaption[^>]*>(.*?)</figcaption>", re.DOTALL)
+HEADING = re.compile(r"<h([23])((?:\s[^>]*)?)>(.*?)</h\1>", re.DOTALL)
 TABLE = re.compile(r"<table.*?</table>", re.DOTALL)
 ROW = re.compile(r"<tr>(.*?)</tr>", re.DOTALL)
 CELL = re.compile(r"<(t[dh])([^>]*)>(.*?)</\1>", re.DOTALL)
@@ -101,24 +89,26 @@ def resolve(rev: str) -> str:
     return done.stdout.strip()
 
 
-def typst(workdir: Path, out: Path) -> None:
+def typst(workdir: Path, out: Path, lang: str) -> None:
+    if not (workdir / ENTRY[lang]).exists():
+        raise Error(404, f"no {lang} paper ({PAPER}/{ENTRY[lang]}) in this revision")
     done = subprocess.run(
         ["typst", "compile", "--root", "../..", "--features", "html", "--format", "html",
-         "main.typ", str(out)],
+         ENTRY[lang], str(out)],
         cwd=workdir, capture_output=True, text=True, check=False,
     )  # fmt: skip
     if done.returncode:
         raise Error(500, f"typst failed in {workdir}:\n{done.stderr}")
 
 
-def build(sha: str) -> str:
-    """Return the HTML of the paper at `sha` (or the working tree), compiling on a cache miss."""
+def build(sha: str, lang: str) -> str:
+    """Return the HTML of the `lang` paper at `sha` (or the working tree), compiling on a cache miss."""
     if sha == WORKTREE:
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / "main.html"
-            typst(REPO / PAPER, out)
+            typst(REPO / PAPER, out, lang)
             return out.read_text()
-    cached = CACHE / f"{sha}.html"
+    cached = CACHE / (f"{sha}.html" if lang == "en" else f"{sha}.{lang}.html")
     with BUILD_LOCK:
         if not cached.exists():
             with tempfile.TemporaryDirectory() as tmp:
@@ -131,7 +121,7 @@ def build(sha: str) -> str:
                     subprocess.run(["tar", "-x", "-C", tmp], input=archive.stdout, check=True)
                 CACHE.mkdir(parents=True, exist_ok=True)
                 partial = cached.with_suffix(".tmp")
-                typst(Path(tmp) / PAPER, partial)
+                typst(Path(tmp) / PAPER, partial, lang)
                 partial.replace(cached)
     return cached.read_text()
 
@@ -198,6 +188,34 @@ def blob_id(img_tag: str) -> str:
     return hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
 
 
+@cache
+def segment(word: str) -> tuple[str, ...]:
+    """Split a whitespace-free run into diffable pieces; Thai has no spaces, so use a dictionary."""
+    if not THAI.search(word):
+        return (word,)
+    try:
+        from pythainlp.tokenize import word_tokenize
+    except ImportError:
+        raise Error(
+            500, "diffing Thai needs pythainlp: run with `uv run --group paper ...`"
+        ) from None
+    pieces: list[str] = []
+    for part in ENTITY.split(word):  # keep &amp; and friends whole
+        if ENTITY.fullmatch(part) or not THAI.search(part):
+            pieces.append(part)
+        else:
+            pieces += word_tokenize(part, engine="newmm", keep_whitespace=False)
+    return tuple(p for p in pieces if p) or (word,)
+
+
+def count_words(text: str) -> int:
+    return sum(
+        any(c.isalnum() for c in piece)
+        for word in html.unescape(text).split()
+        for piece in segment(word)
+    )
+
+
 def tokenize(body: str) -> list[tuple]:
     """Tokens are (kind, raw, key); keys ignore id/href so renumbered references still match."""
     tokens, space, pos = [], "", 0
@@ -225,8 +243,9 @@ def tokenize(body: str) -> list[tuple]:
                     tokens.append(("tag", space + text, ("/" if text[1] == "/" else "") + name))
                 space = ""
             else:
-                tokens.append(("text", space + text, text))
-                space = ""
+                for piece in segment(text):
+                    tokens.append(("text", space + piece, piece))
+                    space = ""
     return tokens
 
 
@@ -268,8 +287,8 @@ def opcodes(old: list, new: list) -> list[tuple]:
     return [piece for op in ops for piece in pair_tables(*op)]
 
 
-def redline(old_page: str | None, new_page: str, label: str, picker: str = "") -> str:
-    """Diff `old_page` against `new_page`; with no `old_page`, just render `new_page` styled."""
+def redline(old_page: str | None, new_page: str) -> str:
+    """Body HTML of `new_page`, with the edits since `old_page` marked up (none if it is None)."""
     new = tokenize(body_of(new_page))
     old = new if old_page is None else tokenize(body_of(old_page))
     out: list[str] = []
@@ -313,11 +332,11 @@ def redline(old_page: str | None, new_page: str, label: str, picker: str = "") -
             and a1 - a0 == b1 - b0 == 1
         ):
             if old[a0][0] == "img":
-                out.append(f'<div class="tbl-del">{old[a0][1]}</div>')
+                out.append(f'<div class="tbl-del" data-pair>{old[a0][1]}</div>')
                 out.append(f'<div class="tbl-ins">{new[b0][1]}</div>')
             else:
                 out.append(
-                    f'<div class="tbl-del"><div class="tbl">'
+                    f'<div class="tbl-del" data-pair><div class="tbl">'
                     f'{mark_table(new[b0][1], old[a0][1], "gone")}</div></div>'
                 )
                 out.append(
@@ -326,60 +345,153 @@ def redline(old_page: str | None, new_page: str, label: str, picker: str = "") -
         else:
             wrap(old[a0:a1], "del", keep_tags=False)
             wrap(new[b0:b1], "ins", keep_tags=True)
-
-    title = html.escape(title_of(new_page))
-    key = ' <ins class="ins">added</ins> <del class="del">removed</del>' if old_page else ""
-    legend = (
-        f'<div class="legend">{label}{key}'
-        f"<details><summary>change range</summary>{picker}</details></div>"
-    )
-    return (
-        '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
-        '<meta name="viewport" content="width=device-width, initial-scale=1">'
-        f"<title>{title} (diff)</title><style>{CSS}</style></head>"
-        f"<body>{legend}<h1>{title}</h1>{''.join(out)}</body></html>"
-    )
+    return "".join(out)
 
 
-# --- server ---------------------------------------------------------------------------------
+# --- contents -------------------------------------------------------------------------------
 
 
-def history() -> list[tuple[str, str, str]]:
-    """Newest-first (sha, date, subject) of commits touching the paper, preceded by the working tree."""
-    log = git(
-        "log", "-60", "--format=%H\t%ad\t%s", "--date=format:%m-%d %H:%M", "--", PAPER, text=True
-    )
-    rows = [tuple(line.split("\t", 2)) for line in log.stdout.splitlines()]
-    return [(WORKTREE, "", "working tree (uncommitted edits)"), *rows]
+def plain(fragment: str) -> str:
+    """Heading text for the contents: removed words dropped, tags stripped."""
+    fragment = re.sub(r"<del\b.*?</del>", "", fragment, flags=re.DOTALL)
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", fragment))).strip()
 
 
-def picker(rows: list[tuple[str, str, str]], old: str, new: str) -> str:
-    """Wikipedia-style history form: pick one 'from' and one 'to' radio, then Compare."""
-    body = ""
-    for sha, when, subject in rows:
-        never = " disabled data-never" if sha == WORKTREE else ""  # cannot diff *from* the tree
-        from_on = " checked" if sha == old else ""
-        to_on = " checked" if sha == new else ""
-        name = "working tree" if sha == WORKTREE else sha[:7]
-        body += (
-            f'<tr><td><input type="radio" name="from" value="{sha}"{from_on}{never}></td>'
-            f'<td><input type="radio" name="to" value="{sha}"{to_on}></td>'
-            f'<td><code>{name}</code> <a href="/{sha if sha == WORKTREE else sha[:7]}">view</a></td>'
-            f"<td>{when}</td><td>{html.escape(subject)}</td></tr>"
+def edit_counts(part: str) -> dict:
+    """Words added/removed and tables or figures changed within a stretch of redlined HTML."""
+
+    def words(tag: str) -> int:
+        runs = re.findall(rf'<{tag} class="{tag}">(.*?)</{tag}>', part, re.DOTALL)
+        return sum(count_words(run) for run in runs)
+
+    return {
+        "add": words("ins"),
+        "rem": words("del"),
+        "blocks": part.count('class="tbl-ins"') + part.count('class="tbl-del">'),
+    }
+
+
+def listing(body: str) -> dict[str, list[dict]]:
+    """Figures and tables in order, each with its label, caption and edit counts."""
+    found: dict[str, list[dict]] = {"fig": [], "tab": []}
+    for m in FIGURE.finditer(body):
+        ident, part = m.groups()
+        caption = CAPTION.search(part)
+        text = plain(caption.group(1)) if caption else ""
+        label, _, name = text.partition(":")
+        if not name or len(label) > 30:
+            label, name = ident, text
+        found[ident[:3]].append(
+            {"id": ident, "label": label.strip(), "text": name.strip()[:120], **edit_counts(part)}
         )
-    return (
-        '<form class="history" action="/" method="get">'
-        f'<table>{body}</table><button type="submit">Compare selected</button>'
-        "<script>"
-        "const f=document.currentScript.parentElement,"
-        "r=n=>[...f.querySelectorAll(`input[name=${n}]`)],"
-        "at=n=>r(n).findIndex(x=>x.checked),"
-        "sync=()=>{const a=at('from'),b=at('to');"
-        "r('from').forEach((x,i)=>x.disabled=x.hasAttribute('data-never')||(b>=0&&i<=b));"
-        "r('to').forEach((x,i)=>x.disabled=a>=0&&i>=a)};"
-        "f.addEventListener('change',sync);sync()"
-        "</script></form>"
-    )
+    return found
+
+
+def outline(body: str) -> tuple[str, list[dict]]:
+    """Give every h2/h3 an id and return (body, contents) where each entry counts its edits.
+
+    h3 entries count their own text; an h2 entry counts everything up to the next h2.
+    """
+    heads = list(HEADING.finditer(body))
+    out, entries, last = [], [], 0
+    for n, m in enumerate(heads):
+        level, attrs, inner = m.groups()
+        found = re.search(r'\sid="([^"]*)"', attrs)
+        ident = found.group(1) if found else f"s-{n}"
+        if not found:
+            attrs += f' id="{ident}"'
+        end = heads[n + 1].start() if n + 1 < len(heads) else len(body)
+        part = body[m.end() : end]
+        entries.append(
+            {"level": int(level), "id": ident, "text": plain(inner), **edit_counts(part)}
+        )
+        out += [body[last : m.start()], f"<h{level}{attrs}>{inner}</h{level}>"]
+        last = m.end()
+    out.append(body[last:])
+
+    toc: list[dict] = []
+    for entry in entries:
+        if entry["level"] == 2 or not toc:
+            toc.append({**entry, "children": []})
+        else:
+            toc[-1]["children"].append(entry)
+    for h2 in toc:  # an h2 summarises its subsection too
+        for key in ("add", "rem", "blocks"):
+            h2[key] += sum(c[key] for c in h2["children"])
+    return "".join(out), toc
+
+
+# --- revision history -----------------------------------------------------------------------
+
+
+class Commit(NamedTuple):
+    sha: str
+    when: str
+    subject: str
+    variants: frozenset  # which paper variants the commit can change: subset of LANGS
+    shared: bool  # touches a file both variants build from (lib.typ, figures, ...)
+
+
+def variants_of(files: list[str]) -> tuple[frozenset, bool]:
+    """Classify a commit by the paper files it touches. Only th/ and i18n/ are Thai-only, only
+    main.typ and sections/ are English-only; other source files feed both papers."""
+    found, shared = set(), False
+    for path in files:
+        rel = path.removeprefix(PAPER + "/") if path.startswith(PAPER + "/") else None
+        if rel is None:
+            found |= set(LANGS)  # a data file the paper loads
+            shared = True
+        elif rel.startswith(("th/", "i18n/")):
+            if not rel.endswith(".pdf"):
+                found.add("th")
+        elif rel == "main.typ" or rel.startswith("sections/"):
+            found.add("en")
+        elif rel.endswith((".typ", ".bib")) or rel.startswith("figures/"):
+            found |= set(LANGS)
+            shared = True
+    return frozenset(found), shared
+
+
+def history() -> list[Commit]:
+    """Newest-first commits touching what the paper builds from, preceded by the working tree."""
+    log = git(
+        "log", f"-{HISTORY}", "--format=%x01%H\t%ad\t%s", "--date=format:%m-%d %H:%M", "--name-only",
+        "--", PAPER, *DATA_DIRS, text=True,
+    )  # fmt: skip
+    rows = [Commit(WORKTREE, "", "working tree (uncommitted edits)", frozenset(LANGS), False)]
+    for chunk in log.stdout.split("\x01")[1:]:
+        header, *files = chunk.splitlines()
+        sha, when, subject = header.split("\t", 2)
+        variants, shared = variants_of([f for f in files if f])
+        if variants:
+            rows.append(Commit(sha, when, subject, variants, shared))
+    return rows
+
+
+def short(sha: str) -> str:
+    return sha if sha == WORKTREE else sha[:7]
+
+
+def prefix(lang: str) -> str:
+    return "" if lang == "en" else f"/{lang}"
+
+
+def picker_rows(old: str, new: str) -> list[dict]:
+    """Rows for history.html: every commit, tagged with the variants it touches."""
+    commits = []
+    for c in history():
+        commits.append(
+            {
+                "sha": c.sha, "ref": short(c.sha), "name": "working tree" if c.sha == WORKTREE else c.sha[:7],
+                "when": c.when, "subject": c.subject, "variants": c.variants, "shared": c.shared,
+                "never": c.sha == WORKTREE,  # cannot diff *from* the tree
+                "from_on": c.sha == old, "to_on": c.sha == new,
+            }
+        )  # fmt: skip
+    return commits
+
+
+# --- pages ----------------------------------------------------------------------------------
 
 
 def describe(rev: str, sha: str) -> str:
@@ -388,72 +500,105 @@ def describe(rev: str, sha: str) -> str:
     return f"<code>{html.escape(rev)}</code> ({sha[:7]})"
 
 
-def diff_page(base: str, head: str) -> str:
+def page(lang: str, rest: str, *, label: str, old: str, new: str, body: str, title: str,
+         diffing: bool) -> str:  # fmt: skip
+    body, toc = outline(body)
+    lists = listing(body)
+    return TEMPLATES.get_template("page.html").render(
+        lang=lang, lang_prefix=prefix(lang), label=label, title=title, body=body, toc=toc,
+        figures=lists["fig"], tables=lists["tab"], diffing=diffing, commits=picker_rows(old, new),
+        switch={code: f"{prefix(code)}/{rest}" for code in LANGS},
+    )  # fmt: skip
+
+
+def diff_page(lang: str, base: str, head: str) -> str:
     old_sha, new_sha = resolve(base), resolve(head or WORKTREE)
     label = f"{describe(base, old_sha)} → {describe(head or WORKTREE, new_sha)}"
-    return redline(build(old_sha), build(new_sha), label, picker(history(), old_sha, new_sha))
+    new_page = build(new_sha, lang)
+    return page(
+        lang, f"{base}..{head}", label=label, old=old_sha, new=new_sha, diffing=True,
+        body=redline(build(old_sha, lang), new_page), title=title_of(new_page),
+    )  # fmt: skip
 
 
-def view_page(rev: str) -> str:
+def view_page(lang: str, rev: str) -> str:
     """One revision, styled like the diff pages but with nothing marked."""
     sha = resolve(rev)
-    return redline(None, build(sha), f"viewing {describe(rev, sha)}", picker(history(), "", sha))
+    new_page = build(sha, lang)
+    return page(
+        lang, rev, label=f"viewing {describe(rev, sha)}", old="", new=sha, diffing=False,
+        body=redline(None, new_page), title=title_of(new_page),
+    )  # fmt: skip
 
 
-def index_page() -> str:
-    rows = history()
-    latest, previous = rows[1][0], rows[2][0]  # the working tree row is not a default
-    return (
-        "<!DOCTYPE html><meta charset=utf-8><meta name=viewport content='width=device-width'>"
-        f"<style>{CSS}</style><body><h1>Paper diff</h1>"
-        "<p>Pick a range below, or open <code>/&lt;base&gt;..&lt;head&gt;</code> directly, e.g. "
-        "<code>/main..HEAD</code>; an empty head means the working tree. "
-        "<code>/&lt;rev&gt;</code> alone views that revision with no diff.</p>"
-        f"{picker(rows, previous, latest)}</body>"
-    )
+def index_page(lang: str) -> str:
+    rows = [c for c in history() if lang in c.variants and c.sha != WORKTREE]  # the tree is no default
+    latest, previous = rows[0].sha, rows[min(1, len(rows) - 1)].sha
+    return TEMPLATES.get_template("index.html").render(
+        lang=lang, lang_prefix=prefix(lang), commits=picker_rows(previous, latest),
+        switch={code: f"{prefix(code)}/" for code in LANGS},
+    )  # fmt: skip
 
 
-def compare_redirect(query: dict[str, list[str]]) -> str | None:
+def compare_redirect(lang: str, query: dict[str, list[str]]) -> str | None:
     """Turn the picker's ?from=&to= into /<from>..<to>, swapping them if given newest-first."""
     if "to" not in query:
         return None
     new = query["to"][0]
     if "from" not in query:
-        return f"/{'WORKTREE' if new == WORKTREE else new[:7]}"
+        return f"{prefix(lang)}/{short(new)}"
     old = query["from"][0]
-    order = [sha for sha, _, _ in history()]
+    order = [c.sha for c in history()]
     if old in order and new in order and order.index(old) < order.index(new):
         old, new = new, old
-    return f"/{old[:7]}..{'' if new == WORKTREE else new[:7]}"
+    return f"{prefix(lang)}/{short(old)}..{'' if new == WORKTREE else short(new)}"
+
+
+# --- server ---------------------------------------------------------------------------------
+
+
+def split_lang(path: str) -> tuple[str, str]:
+    """`th/main..HEAD` -> ("th", "main..HEAD"). Unprefixed paths are English, as they always were."""
+    head, _, rest = path.partition("/")
+    return (head, rest) if head in LANGS else ("en", path)
 
 
 class Handler(BaseHTTPRequestHandler):
+    def respond(self, status: int, payload: bytes, kind: str) -> None:
+        self.send_response(status)
+        self.send_header("Content-Type", kind)
+        self.send_header("Content-Length", str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
+
     def do_GET(self) -> None:
         raw_path, _, query = self.path.partition("?")
         path = unquote(raw_path).strip("/")
+        if path.startswith("_static/"):
+            asset = VIEWER / "static" / Path(path).name  # name only: no traversal
+            if not asset.is_file():
+                return self.respond(404, b"not found", "text/plain")
+            kind = mimetypes.guess_type(asset.name)[0] or "application/octet-stream"
+            return self.respond(200, asset.read_bytes(), f"{kind}; charset=utf-8")
+        lang, path = split_lang(path)
         try:
-            if path == "" and (target := compare_redirect(parse_qs(query))):
+            if path == "" and (target := compare_redirect(lang, parse_qs(query))):
                 self.send_response(303)
                 self.send_header("Location", target)
                 self.end_headers()
                 return
             if path == "":
-                body, status = index_page(), 200
+                body, status = index_page(lang), 200
             elif path == "favicon.ico":
                 raise Error(404, "no favicon")
             elif ".." in path:
                 base, head = path.split("..", 1)
-                body, status = diff_page(base, head), 200
+                body, status = diff_page(lang, base, head), 200
             else:
-                body, status = view_page(path), 200
+                body, status = view_page(lang, path), 200
         except Error as error:
             body, status = f"<pre>{html.escape(str(error))}</pre>", error.status
-        payload = body.encode()
-        self.send_response(status)
-        self.send_header("Content-Type", "text/html; charset=utf-8")
-        self.send_header("Content-Length", str(len(payload)))
-        self.end_headers()
-        self.wfile.write(payload)
+        self.respond(status, body.encode(), "text/html; charset=utf-8")
 
 
 def main() -> None:
@@ -461,7 +606,7 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=8731)
     parser.add_argument("--host", default="127.0.0.1")
     args = parser.parse_args()
-    print(f"serving on http://{args.host}:{args.port}/  (try /main..HEAD)")
+    print(f"serving on http://{args.host}:{args.port}/  (try /main..HEAD or /th/main..HEAD)")
     ThreadingHTTPServer((args.host, args.port), Handler).serve_forever()
 
 
