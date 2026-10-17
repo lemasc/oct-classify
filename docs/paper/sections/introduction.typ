@@ -29,14 +29,6 @@ leaving one source out, on a source it never saw; splits are made by patient and
 intervals. We ask three questions:
 
 / RQ1: _How much accuracy does a classifier lose on a source it has not seen, and does the loss require a change
-  of device?_ Every source loses accuracy beyond noise: #span(("octdl", "paima", "duke").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) macro-F1 points for OCTDL, PAIMA and Duke and
-  about #whole(delta(k("gap_test", "kermany"), "loso-fill - fused-fill").point) for Kermany, although three of the four sources come from one manufacturer (@sec-unseen).
-/ RQ2: _Where does the loss come from?_ Partly from a shortcut imported from another dataset. In Duke, image size
-  gives the label away; models trained with Duke learn it through the padding bands added when wide scans are
-  fitted to a square input, and apply it to Kermany. Changing only the size or the bands of test images moves
-  predictions (@sec-shortcut). Most of what remains is DME recall: removing Kermany's DME from an otherwise
-  identical fused model costs about #zd-share()% as much as holding Kermany out (@sec-remaining).
-/ RQ3: _Can the gap be closed without new labelled data?_ Not with one fix for every source. Training without the
-  size cue raises held-out Kermany from #pt("loso_full|kermany|all", "loso-fill") to #pt("loso_full|kermany|all", "loso-sq") macro-F1 but costs the other unseen sources
-  (@sec-shortcut), and two standard post-hoc fixes, shifting the decision cutoff and re-estimating BatchNorm
-  statistics (AdaBN), leave most of the gap in place (@sec-posthoc).
+  of device?_
+/ RQ2: _Where does the loss come from?_
+/ RQ3: _Can the gap be closed without new labelled data?_
