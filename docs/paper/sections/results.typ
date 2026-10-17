@@ -24,11 +24,12 @@
 ) <tab-seen>
 
 On the source it was trained on, a ResNet-50 reaches #pt(k("seen", "paima"), "per-dataset")–#pt(k("seen", "kermany"),
-"per-dataset") macro-F1 (@tab-seen). Training one model on all four sources costs little: against the
-per-dataset models the fused model is within noise on OCTDL (#dl(k("seen", "octdl"), "fused-fill - per-dataset")),
-PAIMA (#dl(k("seen", "paima"), "fused-fill - per-dataset")) and Duke (#dl(k("seen", "duke"), "fused-fill - per-dataset")), and is slightly but measurably lower on Kermany
-(#dl(k("seen", "kermany"), "fused-fill - per-dataset")). Square crop, which hides the image size (@sec-square), also costs nothing on seen sources: no source loses
-beyond noise against the fused model, and PAIMA gains #dl(k("seen", "paima"), "fused-sq - fused-fill").
+"per-dataset") macro-F1 (@tab-seen). Training one model on all four sources costs little: on any source the fused model gives up at most
+#whole(calc.min(..srcs.map(s => delta(k("seen", s), "fused-fill - per-dataset").lo))) points against the
+per-dataset model (lower end of the paired 95% interval), and the loss is measurable only on Kermany
+(#dl(k("seen", "kermany"), "fused-fill - per-dataset")). Square crop, which hides the image size (@sec-square), also
+costs nothing on seen sources: no source loses beyond noise against the fused model, and PAIMA gains
+#dl(k("seen", "paima"), "fused-sq - fused-fill").
 
 #let rc(m, c) = if ("recall_" + c) in m { fmt(m.at("recall_" + c).point) } else [--]
 #let stage-rc(src, arm, st, m) = {
@@ -171,55 +172,45 @@ calls DME, and normal and AMD images it gets right. We then change only the band
 from the darker half of the scan itself, and rescore (@tab-bands). In models 1, 2 and 4 at most #{
   let xs = (1, 2, 4).map(f => ("768 normal → DME", "768 AMD → DME").map(g => ("black", "speckle").map(b => gc-at(f, g, b)))).flatten()
   pct0(calc.max(..xs))
-}% of the errors survive either band change. In models 3 and 5, #pct0(gc-at(3, "768 AMD → DME", "speckle"))% and
-#pct0(gc-at(5, "768 AMD → DME", "speckle"))% of the AMD errors and #pct0(gc-at(3, "768 normal → DME", "speckle"))%
-and #pct0(gc-at(5, "768 normal → DME", "speckle"))% of the normal errors survive speckle bands, so the bands are the
-main but not the only route. #{
+}% of the errors survive either band change; in models 3 and 5 up to #{
+  let xs = (3, 5).map(f => ("768 normal → DME", "768 AMD → DME").map(g => gc-at(f, g, "speckle"))).flatten()
+  pct0(calc.max(..xs))
+}% survive speckle bands, so the bands are the main but not the only route. #{
   let rows = GC.intervention_by_fold.filter(r => r.group in ("768 normal → normal", "768 AMD → AMD") and r.at("band fill") != "trained")
   let total = rows.map(r => r.n).sum()
-  let changed = rows.map(r => calc.round(r.n * (1 - r.at("called true class")))).sum()
   let to-dme = rows.map(r => calc.round(r.n * r.at("called DME"))).sum()
-  [Correct calls barely move: of #total such cases (two band changes, five models), #to-dme become DME, and the
-  predicted class changes for #changed.]
+  [Correct calls barely move: of #total such cases (two band changes, five models), #to-dme become DME.]
 }
 
 #figure(
   {
     set text(size: (9.5 / 11) * 1em)
     table(
-      columns: 7,
-      align: (left, right, right, right, right, right, right),
+      columns: 5,
+      align: (left, right, right, right, right),
       table.header(
         table.cell(rowspan: 2)[Model], table.cell(colspan: 2, align: center)[Normal called DME],
         table.cell(colspan: 2, align: center)[AMD called DME],
-        table.cell(colspan: 2, align: center)[Grad-CAM band share],
-        [black], [speckle], [black], [speckle], [errors], [correct],
+        [black], [speckle], [black], [speckle],
         table.hline(),
       ),
       ..range(1, 6).map(f => (
         [#f],
         pct0(gc-at(f, "768 normal → DME", "black")), pct0(gc-at(f, "768 normal → DME", "speckle")),
         pct0(gc-at(f, "768 AMD → DME", "black")), pct0(gc-at(f, "768 AMD → DME", "speckle")),
-        pct0(gc-band("768 normal → DME", f)), pct0(gc-band("768 normal → normal", f)),
       )).flatten(),
       table.hline(),
     )
   },
   caption: [Held-out Kermany 768×496 images that a LOSO-Kermany model wrongly calls DME: share (%) still called
-    DME after the letterbox bands are replaced by black or by speckle. _Grad-CAM band share_: share (%) of the map on
-    the bands, for normal images called DME (_errors_) and called normal (_correct_).],
+    DME after the letterbox bands are replaced by black or by speckle.],
 ) <tab-bands>
 
-Grad-CAM illustrates the same mechanism (@fig-gradcam), with a caveat. The share of the map on the bands is
-#pct0(calc.min(..range(1, 6).map(f => gc-band("768 normal → normal", f))))–#pct0(calc.max(..range(1, 6).map(f => gc-band("768 normal → normal", f))))%
-for correct calls in every model, but for errors it ranges from
-#pct0(calc.min(..range(1, 6).map(f => gc-band("768 normal → DME", f))))% to
-#pct0(calc.max(..range(1, 6).map(f => gc-band("768 normal → DME", f))))% and does not follow the intervention:
-model 4 puts only #pct0(gc-band("768 normal → DME", 4))% of the map on the bands, yet only
-#pct0(gc-at(4, "768 normal → DME", "speckle"))% of its normal errors survive speckle bands (@tab-bands). The maps reflect what the model learned, not image structure: after the top of the network is
-re-initialised they no longer correlate with the trained maps (median Spearman
-#calc.round(GC.randomization_fold1_768_normal_to_dme.spearman_median, digits: 2), model 1). We therefore use the band
-intervention as the evidence and Grad-CAM as an illustration.
+Grad-CAM maps illustrate the same mechanism (@fig-gradcam). After the top of the network is re-initialised they no
+longer correlate with the trained maps (median Spearman
+#calc.round(GC.randomization_fold1_768_normal_to_dme.spearman_median, digits: 2), model 1), so they reflect what the
+model learned. Attribution maps can still disagree with what an intervention changes @arun2021saliency
+@hooker2019roar, so we use the band intervention as the evidence and Grad-CAM as an illustration.
 
 #figure(
   image("../figures/gradcam.png", width: 100%),
@@ -230,14 +221,12 @@ intervention as the evidence and Grad-CAM as an illustration.
 
 *Training without the cue.* Square-crop models never see the image width. With Kermany held out, they score
 #pt("loso_full|kermany|all", "loso-sq") on the full source against #pt("loso_full|kermany|all", "loso-fill")
-(#dl("loso_full|kermany|all", "loso-sq - loso-fill")). On the test split, each arm measured against the fused
-model of the same arm, the gap narrows from #dl("gap_test|kermany|all", "loso-fill - fused-fill") to
-#dl("gap_test|kermany|all", "loso-sq - fused-sq"), about #calc.round((1 - delta("gap_test|kermany|all", "loso-sq - fused-sq").point / delta("gap_test|kermany|all", "loso-fill - fused-fill").point) * 100)%. The gain is largest exactly where the cue was
+(#dl("loso_full|kermany|all", "loso-sq - loso-fill")). On the test split, measured against the fused model of the
+same arm, the gap narrows by about #calc.round((1 - delta("gap_test|kermany|all", "loso-sq - fused-sq").point / delta("gap_test|kermany|all", "loso-fill - fused-fill").point) * 100)%,
+from #dl("gap_test|kermany|all", "loso-fill - fused-fill"). The gain is largest exactly where the cue was
 (@fig-kermany-size): for 768×496 normal images, recall rises from
 #pt("size_loso:768x496|kermany|all", "fill", name: "recall_normal") to
-#pt("size_loso:768x496|kermany|all", "sq", name: "recall_normal"), and the share called DME falls from
-#share("size_loso:768x496|kermany|all", "fill", "normal", "dme")% to
-#share("size_loso:768x496|kermany|all", "sq", "normal", "dme")%.
+#pt("size_loso:768x496|kermany|all", "sq", name: "recall_normal").
 
 #figure(
   kind: image,
