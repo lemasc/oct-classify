@@ -13,6 +13,8 @@
   // Sarabun runs small, so the Thai body is 14pt; the math font does not, and would look large next to it.
   // Scale equations back to the size they have in the English body (11pt).
   show math.equation: set text(size: (11 / 14) * 1em) if lang == "th"
+  // Figures and tables float to the top or bottom of a column; wide ones set `scope: "parent"` to span both.
+  set figure(placement: auto)
   set par(justify: true)
   set heading(numbering: "1.1")
   // Captions and table text (in the sections) are 9.5/11 of the body, so they scale with the language's body size.
