@@ -247,28 +247,22 @@ model of the same arm, the gap narrows from #dl("gap_test|kermany|all", "loso-fi
     DME only in Duke, and costs DME recall there.],
 ) <fig-kermany-size>
 
-*But removing the cue does not help everywhere.* On the other held-out sources square crop is no better and
-sometimes worse (@tab-square). On OCTDL, normal recall changes by
-#dl("loso_full|octdl|all", "loso-sq - loso-fill", name: "recall_normal") as the share of normal images called DME
-goes from #share("loso_full|octdl|all", "loso-fill", "normal", "dme")% to
-#share("loso_full|octdl|all", "loso-sq", "normal", "dme")%; on Duke, DME recall changes by
-#dl("loso_full|duke|all", "loso-sq - loso-fill", name: "recall_dme"). In the Normal/AMD view, which removes the DME
-class, both losses disappear (#dl("loso_full|octdl|normal_amd", "loso-sq - loso-fill") and
-#dl("loso_full|duke|normal_amd", "loso-sq - loso-fill")), so square crop's cost on these sources involves DME: too
-many DME calls on OCTDL, too few on Duke. PAIMA changes by #dl("loso_full|paima|normal_amd", "loso-sq - loso-fill")
-in macro-F1 and #dl("loso_full|paima|normal_amd", "loso-sq - loso-fill", name: "macro_auroc") in AUROC, a loss in
-ranking that varies strongly with the seed (@sec-limits).
+*But removing the cue does not help everywhere.* On the other held-out sources square crop loses accuracy beyond
+noise (@tab-square): #span(("octdl", "duke", "paima").map(s => delta(k("loso_full", s), "loso-sq - loso-fill").point))
+macro-F1 points for OCTDL, Duke and PAIMA. PAIMA also loses
+#dl("loso_full|paima|normal_amd", "loso-sq - loso-fill", name: "macro_auroc") in AUROC, a loss in ranking that varies
+strongly with the seed (@sec-limits).
 
 #figure(
   {
     set text(size: (9.5 / 11) * 1em)
     table(
-      columns: 8,
-      align: (left, right, right, right, right, right, right, right),
+      columns: 6,
+      align: (left, right, right, right, right, right),
       table.header(
         table.cell(rowspan: 2)[Held out], table.cell(colspan: 3, align: center)[Macro-F1],
-        table.cell(colspan: 2, align: center)[AUROC], table.cell(colspan: 2, align: center)[Normal/AMD macro-F1],
-        [Letterbox], [Square], [Difference], [Letterbox], [Square], [Letterbox], [Square],
+        table.cell(colspan: 2, align: center)[AUROC],
+        [Letterbox], [Square], [Difference], [Letterbox], [Square],
         table.hline(),
       ),
       ..srcs.map(s => (
@@ -278,17 +272,50 @@ ranking that varies strongly with the seed (@sec-limits).
         dl(k("loso_full", s), "loso-sq - loso-fill"),
         pt(k("loso_full", s), "loso-fill", name: "macro_auroc"),
         pt(k("loso_full", s), "loso-sq", name: "macro_auroc"),
-        ..if s == "paima" { ([--], [--]) } else {
-          (pt("loso_full|" + s + "|normal_amd", "loso-fill"), pt("loso_full|" + s + "|normal_amd", "loso-sq"))
-        },
       )).flatten(),
       table.hline(),
     )
   },
   caption: [LOSO models on the full held-out source, with (letterbox) and without (square crop) the image-size cue
-    (%). _Difference_ is paired, with its 95% interval. PAIMA is scored on normal vs AMD only, so its Normal/AMD
-    view is its main score.],
+    (%). _Difference_ is paired, with its 95% interval. PAIMA is scored on normal vs AMD only.],
 ) <tab-square>
+
+For OCTDL and Duke the cost involves DME (@tab-square-dme). On OCTDL, normal recall changes by
+#dl("loso_full|octdl|all", "loso-sq - loso-fill", name: "recall_normal") as the share of normal images called DME
+goes from #share("loso_full|octdl|all", "loso-fill", "normal", "dme")% to
+#share("loso_full|octdl|all", "loso-sq", "normal", "dme")%; on Duke, DME recall changes by
+#dl("loso_full|duke|all", "loso-sq - loso-fill", name: "recall_dme"). In the Normal/AMD view, which removes the DME
+class, both losses disappear: too many DME calls on OCTDL, too few on Duke.
+
+#figure(
+  {
+    set text(size: (9.5 / 11) * 1em)
+    table(
+      columns: 5,
+      align: (left, left, right, right, right),
+      table.header([Held out], [Measure], [Letterbox], [Square], [Difference], table.hline()),
+      ..("octdl", "duke").map(s => {
+        let key = "loso_full|" + s + "|"
+        (
+          table.cell(rowspan: 3)[#source-name.at(s)],
+          [Normal/AMD macro-F1],
+          pt(key + "normal_amd", "loso-fill"), pt(key + "normal_amd", "loso-sq"),
+          dl(key + "normal_amd", "loso-sq - loso-fill"),
+          [Normal recall],
+          pt(key + "all", "loso-fill", name: "recall_normal"), pt(key + "all", "loso-sq", name: "recall_normal"),
+          dl(key + "all", "loso-sq - loso-fill", name: "recall_normal"),
+          [DME recall],
+          pt(key + "all", "loso-fill", name: "recall_dme"), pt(key + "all", "loso-sq", name: "recall_dme"),
+          dl(key + "all", "loso-sq - loso-fill", name: "recall_dme"),
+          table.hline(stroke: 0.3pt + gray),
+        )
+      }).flatten(),
+      table.hline(),
+    )
+  },
+  caption: [OCTDL and Duke held out, full source, letterbox and square crop (%). _Difference_ is paired, with its 95%
+    interval. The Normal/AMD view drops the DME images and the DME output.],
+) <tab-square-dme>
 
 We therefore keep letterbox models as the main result and treat square crop as an ablation. It confirms that
 the size shortcut is real and explains a large part of Kermany's gap, but it is not a general fix. We fixed this
