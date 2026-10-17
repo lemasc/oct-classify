@@ -32,12 +32,13 @@ def rows() -> list[tuple[str, str, Counter]]:
 def main() -> None:
     style.apply()
     data = rows()
-    fig, ax = plt.subplots(figsize=(style.TEXT_WIDTH_IN, 3.6))
+    fig, ax = plt.subplots(figsize=(style.COL_WIDTH_IN, 3.0))
+    fig.subplots_adjust(left=0.33, right=0.84, top=0.9, bottom=0.14)
     y_positions, y = [], 0.0
     previous = None
     for source, _, _ in data:
         if previous is not None and source != previous:
-            y += 0.6  # gap between sources
+            y += 0.5  # gap between sources
         y_positions.append(y)
         y += 1
         previous = source
@@ -50,22 +51,23 @@ def main() -> None:
                 continue
             ax.barh(y, share, left=left, height=0.72, color=style.CLASS_COLOR[cls], edgecolor="white", linewidth=1.0)
             if share == 1:
-                text = f"{style.CLASS_NAME[cls]} only (single label)"
+                text = f"{style.CLASS_NAME[cls]} only"
             else:
                 text = f"{share:.0%}" if share >= 0.07 else ""
             ink = style.INK if cls == "dme" else "white"  # aqua is too light for white text
-            ax.text(left + share / 2, y, text, ha="center", va="center", fontsize=6.8, color=ink,
+            ax.text(left + share / 2, y, text, ha="center", va="center", fontsize=6, color=ink,
                     fontweight="bold" if share == 1 else "normal")
             left += share
-        ax.text(1.015, y, f"n = {total:,}", va="center", fontsize=7, color=style.INK_2)
-    ax.set_yticks(y_positions, [f"{style.SOURCE_NAME[s]}  {size}" for s, size, _ in data])
+        ax.text(1.02, y, f"{total:,}", va="center", fontsize=6.5, color=style.INK_2)
+    ax.set_yticks(y_positions, [f"{style.SOURCE_NAME[s]} {size}" for s, size, _ in data], fontsize=6.5)
     ax.invert_yaxis()
     ax.set_xlim(0, 1)
-    ax.set_xticks([0, 0.25, 0.5, 0.75, 1], ["0%", "25%", "50%", "75%", "100%"])
-    ax.set_xlabel("Share of images by class")
+    ax.set_xticks([0, 0.5, 1], ["0%", "50%", "100%"], fontsize=6.5)
+    ax.text(1.02, -0.9, "n", fontsize=6.5, color=style.INK_2, va="center")
+    ax.set_xlabel("Share of images by class", fontsize=7)
     handles = [plt.Rectangle((0, 0), 1, 1, color=style.CLASS_COLOR[c]) for c in ["normal", "amd", "dme"]]
     ax.legend(handles, [style.CLASS_NAME[c] for c in ["normal", "amd", "dme"]], ncol=3, loc="lower left",
-              bbox_to_anchor=(0, 1.0), handlelength=1.0, columnspacing=1.2)
+              bbox_to_anchor=(0, 1.0), handlelength=1.0, columnspacing=1.2, fontsize=7)
     ax.spines["left"].set_visible(False)
     style.save(fig, "size-class")
 
