@@ -134,8 +134,7 @@ image size matters so much.
 
 == The image-size shortcut <sec-shortcut>
 
-In Duke, image size identifies the label for #calc.round((int(duke-eyes("amd", size: "1024x496")) + int(duke-eyes("dme", size: "768x496"))) / DS.duke.n_groups * 100)% of the eyes: every 768×496 scan is DME and every 1024×496
-scan is AMD (@fig-size-class). Models that train on Duke can learn "768 wide means DME" as a rule, which is
+In Duke, image size identifies the label for #calc.round((int(duke-eyes("amd", size: "1024x496")) + int(duke-eyes("dme", size: "768x496"))) / DS.duke.n_groups * 100)% of the eyes (@sec-data). Models that train on Duke can learn "768 wide means DME" as a rule, which is
 correct within Duke and wrong elsewhere. Three tests show that they do.
 
 *Changing only the size of test images.* We take the held-out Kermany models and rescore Kermany images after

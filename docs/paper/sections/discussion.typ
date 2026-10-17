@@ -2,19 +2,17 @@
 
 = Discussion <sec-discussion>
 
-*Accuracy on a seen source overstates accuracy on a new one.* All four sources score #span(("kermany", "octdl", "paima", "duke").map(s => metric(k("seen", s), "per-dataset").point)) macro-F1 when the model
-has seen them, and every one of them loses accuracy beyond noise when it has not: #span(("octdl", "paima", "duke").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) points for OCTDL,
-PAIMA and Duke, and about #whole(delta(k("gap_test", "kermany"), "loso-fill - fused-fill").point) for Kermany on its test split. A single-dataset benchmark, the most common way OCT
-classifiers are evaluated, cannot show this. A
+*Accuracy on a seen source overstates accuracy on a new one.* Every source loses accuracy beyond noise when the
+model has not seen it (@tab-unseen). A single-dataset benchmark, the most common way OCT classifiers are evaluated,
+cannot show this. A
 different device is not needed for the drop: three of the four sources come from the same manufacturer
 (Heidelberg), and OCTDL, the only other vendor, does not have a larger gap than they do. Site, population, protocol and labelling are enough.
 
 *Pooling datasets can import their shortcuts.* The largest gap, Kermany's, is partly caused by a property of
 _another_ dataset: in Duke, image size gives the label away, and models trained with Duke apply that rule to
 Kermany. The shortcut is invisible on Duke itself, where it is always right, and the fused model scores well
-on every source. It only shows when the model meets a source where the rule is wrong. Chest radiographs show the same pattern: the
-hospital can predict the label @zech2018, and testing COVID-19 models on an external hospital alone did not reveal
-that they read markers and patient position rather than the lungs @degrave2021. Here, too, the cause showed only
+on every source. It only shows when the model meets a source where the rule is wrong. Chest radiographs show the same pattern (@sec-prior-shortcut): testing COVID-19 models on an external hospital
+alone did not reveal that they read markers and patient position rather than the lungs @degrave2021. Here, too, the cause showed only
 when we changed the inputs (@sec-shortcut). The rule is an artifact of
 acquisition settings on one device (@sec-data), so it would not be caught by matching devices across datasets. A
 simple check would have
@@ -28,9 +26,7 @@ costs the other unseen sources in different ways: OCTDL loses normal recall (nor
 DME recall, and PAIMA loses ranking quality. One possible cause for OCTDL and Duke is lost tissue: the square window keeps nearly the whole width of a
 512×496 scan, but only about two thirds of a 768×496 scan and about a third of a typical 880×320 OCTDL scan, and
 almost every OCTDL scan is that elongated. About #whole(size-share("kermany", "512x496"))% of Kermany is 512×496, where little tissue is lost. We have not
-tested this for OCTDL or Duke. It does not explain PAIMA: averaging predictions over several square windows that
-together cover the whole PAIMA scan moves its AUROC only from #fmt(MW.paima.all.mean.auroc.at(0) / 100) to
-#fmt(MW.paima.all.mean.auroc.at(1) / 100). We found no single preprocessing that is best
+tested this for OCTDL or Duke. It does not explain PAIMA, whose loss stays unexplained (@sec-limits). We found no single preprocessing that is best
 on every unseen source.
 
 *DME is the weak point, but not the whole story.* Once the size cue is accounted for, most of the remaining gap is DME
@@ -58,9 +54,11 @@ about PAIMA's drusen scans is, and our data cannot tell what. A single AMD score
   #span1(seed-vals("paima", "loso-fill", name: "macro_auroc"))), so the loss is real but its size is unstable.
 - *Small Duke.* Duke has 45 eyes, and Duke held out is a single LOSO model. Its intervals are wide, and we use it
   only to support directions seen on the other sources.
-- *Unexplained PAIMA loss under square crop.* Shrinking the test tissue toward the scale seen in training lowers
-  PAIMA's AUROC instead of recovering it, so tissue scale does not explain the loss (enlarging was not tested).
-  Nor does AMD stage: with seed 20260913 the AUROC loss is mostly in separating normal from dry AMD, but with
+- *Unexplained PAIMA loss under square crop.* Tissue scale does not explain it: shrinking the test tissue toward the scale seen in training lowers PAIMA's
+  AUROC instead of recovering it (enlarging was not tested), and averaging predictions over several square windows
+  that together cover the whole scan moves its AUROC only from #fmt(MW.paima.all.mean.auroc.at(0) / 100) to
+  #fmt(MW.paima.all.mean.auroc.at(1) / 100).
+  AMD stage does not explain it either: with seed 20260913 the AUROC loss is mostly in separating normal from dry AMD, but with
   the other two seeds both stages lose about equally.
 - *Hardware and batch size.* The fused letterbox models were trained on a different GPU from every other model,
   and no seed noise floor exists for the fused models. Every comparison with them therefore also crosses hardware:
@@ -77,10 +75,11 @@ about PAIMA's drusen scans is, and our data cannot tell what. A single AMD score
 
 == Future work
 
-Two directions follow from the remaining gap. Augmentation that mimics other sources' appearance (speckle,
-contrast, resolution), as noise transfer @koch2022svdna and built-in speckle noise @chutani2026 do, would target the part of the gap that size and DME do not explain. OCT-specific pretraining
-@jannat2025selfnet @zhou2023retfound @morano2025mirage, for example self-supervised pretraining on unlabelled scans from all sources including the unseen one, would change
-the features themselves, which our diagnostics point to as the limiting factor.
+Two directions follow from the remaining gap (both surveyed in @sec-prior-shift). Augmentation that mimics other
+sources' appearance (speckle, contrast, resolution), as built-in speckle noise does @chutani2026, would target the part
+of the gap that size and DME do not explain. OCT-specific pretraining, for example self-supervised pretraining on
+unlabelled scans from all sources including the unseen one, would change the features themselves, which our
+diagnostics point to as the limiting factor.
 
 = Conclusion
 

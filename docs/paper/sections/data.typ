@@ -61,8 +61,8 @@ and _DME_ (diabetic macular edema). AMD merges two stages that look different on
 dry AMD, with drusen under the retina, and wet AMD, with choroidal neovascularization (CNV, called MNV in OCTDL). The
 sources mix the two stages very differently (@tab-data): dry AMD is a fifth of Kermany's and OCTDL's AMD images,
 #stage-share("paima", "dry")% of PAIMA's and all of Duke's, whose AMD eyes are dry only @srinivasan2014. PAIMA contains only normal and AMD
-scans. Its lack of DME is structural, not a negative label: PAIMA images never contribute to the DME output during
-training (masked loss, @sec-method), and PAIMA is scored on normal vs AMD only.
+scans; its lack of DME is structural, not a negative label (masked loss, @sec-method), and it is scored on normal
+vs AMD only.
 
 *Label unit.* Duke labels a whole eye (volume) and propagates the diagnosis to every B-scan; the other sources label
 individual B-scans. For comparability we score every source per B-scan, but Duke's #DS.duke.n_groups eyes are the unit of
@@ -89,7 +89,6 @@ size as a label cue; @sec-shortcut tests whether it does.
 #figure(
   kind: image,
   fig("size-class"),
-  caption: [Class mix at each image size. In Duke, every 768×496 image is DME and every 1024×496 image is AMD;
-    in Kermany, every 512×512 image is DME. OCTDL images are cropped to many different sizes and are shown as one
+  caption: [Class mix at each image size. OCTDL images are cropped to many different sizes and are shown as one
     row; #kermany-rare Kermany images of rare sizes are omitted.],
 ) <fig-size-class>
