@@ -68,8 +68,7 @@ about PAIMA's drusen scans is, and our data cannot tell what. A single AMD score
   12 instead of 16, so the gap compares models that differ in batch size as well as in training data. Kermany's
   gap is far larger than such effects; differences of a few points against the fused models are less certain.
 - *Zero-DME control.* The fused model without Kermany DME is one seed trained on a different GPU from the fused
-  reference, and removing Kermany's DME also changes Kermany's share of each training batch. Its Duke result rests on
-  45 eyes.
+  reference, and removing Kermany's DME also changes Kermany's share of each training batch.
 - *Source is not device.* Three of the four sources share one manufacturer, so our gaps measure a shift between datasets
   (site, population, acquisition protocol, labelling and label unit; Duke labels whole eyes, the others single
   B-scans), not a shift between devices. Only OCTDL adds a vendor change, and a single source cannot separate it

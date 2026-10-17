@@ -389,35 +389,29 @@ without its DME, so the comparison with the fused model isolates the missing DME
   [_#label _], zd-dl(key, pair), zd-dl(key, pair, name: "recall_normal"), zd-dl(key, pair, name: "recall_amd"),
   if "recall_dme" in ZD.at(key).deltas.at(pair) { zd-dl(key, pair, name: "recall_dme") } else [--],
 )
-#let zd-block(s, rows) = (
-  table.cell(rowspan: rows.len())[#source-name.at(s)], ..rows.flatten(), table.hline(stroke: 0.3pt + gray),
-)
-#let zd-key(s) = s + "|" + view3(s)
+#let zd-key = "kermany|all"
 #figure(
   {
     set text(size: (9.5 / 11) * 1em)
     table(
-      columns: 6,
-      align: (left, left, right, right, right, right),
+      columns: 5,
+      align: (left, right, right, right, right),
       table.header(
-        [Source], [Model], [Macro-F1], [Normal], [AMD], [DME],
+        [Model], [Macro-F1], [Normal], [AMD], [DME],
         table.hline(),
       ),
-      ..zd-block("kermany", (
-        zd-level("Fused", zd-key("kermany"), "fused-fill"),
-        zd-level("No Kermany DME", zd-key("kermany"), "zero-dme"),
-        zd-level("LOSO (held out)", zd-key("kermany"), "loso-fill"),
-        zd-diff("no DME − fused", zd-key("kermany"), "zero-dme - fused-fill"),
-        zd-diff("LOSO − no DME", zd-key("kermany"), "loso-fill - zero-dme"),
-      )),
-      ..("duke", "octdl", "paima").map(s => zd-block(s, (zd-diff("no DME − fused", zd-key(s), "zero-dme - fused-fill"),))).flatten(),
+      ..zd-level("Fused", zd-key, "fused-fill"),
+      ..zd-level("No Kermany DME", zd-key, "zero-dme"),
+      ..zd-level("LOSO (held out)", zd-key, "loso-fill"),
+      table.hline(stroke: 0.3pt + gray),
+      ..zd-diff("no DME − fused", zd-key, "zero-dme - fused-fill"),
+      ..zd-diff("LOSO − no DME", zd-key, "loso-fill - zero-dme"),
       table.hline(),
     )
   },
-  caption: [Fused model trained without Kermany's DME images (_no Kermany DME_) against the fused model with them,
-    on each source's test split (%; PAIMA on Normal/AMD, which has no DME). Columns after Macro-F1 are per-class recall.
-    The Kermany LOSO model is added for reference. Italic rows are paired differences with 95% intervals; for Duke,
-    OCTDL and PAIMA only the difference is shown.],
+  caption: [Kermany's test split under three models (%): the fused model, the fused model trained without Kermany's
+    DME images (_no Kermany DME_), and the LOSO model. Columns after Macro-F1 are per-class recall. Italic rows are
+    paired differences with 95% intervals.],
 ) <tab-zero-dme>
 
 @tab-zero-dme gives per-class recall for the three Kermany models. Removing Kermany's DME changes Kermany by
@@ -430,11 +424,7 @@ differently, so the gap does not split into these shares. Missing in-device DME 
 than the LOSO model loses (DME recall, LOSO minus no-DME #zd-dl("kermany|all", "loso-fill - zero-dme", name: "recall_dme")), so
 it can account for the LOSO model's DME errors. The LOSO model's other loss is normal recall
 (#zd-dl("kermany|all", "loso-fill - zero-dme", name: "recall_normal") against the model without Kermany DME), which
-comes from the source being unseen and matches the size cue. Missing DME is therefore a real but partial cause. The
-effect is not confined to the source that lost its DME: Duke's DME recall also changes
-(#zd-dl("duke|all", "zero-dme - fused-fill", name: "recall_dme")), which suggests that Kermany's DME helps the model
-recognise Duke's; this change rests on 45 eyes, so we take it as supporting evidence. OCTDL and PAIMA are within
-noise in macro-F1.
+comes from the source being unseen and matches the size cue. Missing DME is therefore a real but partial cause.
 
 == Post-hoc fixes <sec-posthoc>
 
