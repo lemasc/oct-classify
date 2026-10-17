@@ -26,20 +26,20 @@ as long as the test data share the quirk (@sec-prior-shortcut).
 We study this with four public OCT datasets (Kermany, OCTDL, PAIMA and Duke), three classes (normal, AMD and DME)
 and the common baseline, an ImageNet-pretrained ResNet-50. Each model is scored on sources it trained on and, by
 leaving one source out, on a source it never saw; splits are made by patient and differences carry paired bootstrap
-intervals. We find:
+intervals. We ask three questions:
 
-- Every source loses accuracy when unseen: #span(("octdl", "paima", "duke").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) macro-F1 points for OCTDL, PAIMA and Duke and about
-  #whole(delta(k("gap_test", "kermany"), "loso-fill - fused-fill").point) for Kermany (@sec-unseen). Three of the four sources come from one manufacturer, so a change of
-  device is not needed for the drop.
-- Kermany's large gap is partly a shortcut imported from another dataset. In Duke, image size gives the label
-  away; models trained with Duke learn it through the padding bands added when wide scans are fitted to a square
-  input, and apply it to Kermany. Changing only the size or the bands of test images moves predictions, and
-  training without the size cue raises held-out Kermany from #pt("loso_full|kermany|all", "loso-fill") to #pt("loso_full|kermany|all", "loso-sq") macro-F1, but costs the
-  other unseen sources (@sec-shortcut).
-- Most of what remains is DME recall. Removing Kermany's DME from an otherwise identical fused model costs about
-  #zd-share()% as much as holding Kermany out (@sec-remaining).
-- Two standard post-hoc fixes, shifting the decision cutoff and re-estimating BatchNorm statistics (AdaBN), leave
-  most of the gap in place (@sec-posthoc).
+/ RQ1: _How much accuracy does a classifier lose on a source it has not seen, and does the loss require a change
+  of device?_ Every source loses accuracy beyond noise: #span(("octdl", "paima", "duke").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) macro-F1 points for OCTDL, PAIMA and Duke and
+  about #whole(delta(k("gap_test", "kermany"), "loso-fill - fused-fill").point) for Kermany, although three of the four sources come from one manufacturer (@sec-unseen).
+/ RQ2: _Where does the loss come from?_ Partly from a shortcut imported from another dataset. In Duke, image size
+  gives the label away; models trained with Duke learn it through the padding bands added when wide scans are
+  fitted to a square input, and apply it to Kermany. Changing only the size or the bands of test images moves
+  predictions (@sec-shortcut). Most of what remains is DME recall: removing Kermany's DME from an otherwise
+  identical fused model costs about #zd-share()% as much as holding Kermany out (@sec-remaining).
+/ RQ3: _Can the gap be closed without new labelled data?_ Not with one fix for every source. Training without the
+  size cue raises held-out Kermany from #pt("loso_full|kermany|all", "loso-fill") to #pt("loso_full|kermany|all", "loso-sq") macro-F1 but costs the other unseen sources
+  (@sec-shortcut), and two standard post-hoc fixes, shifting the decision cutoff and re-estimating BatchNorm
+  statistics (AdaBN), leave most of the gap in place (@sec-posthoc).
 
 The practical lesson is cheap: comparing image size and other scan settings against the label in each dataset
 would have revealed the shortcut before any training.
