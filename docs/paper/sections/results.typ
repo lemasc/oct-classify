@@ -90,14 +90,13 @@ of cases by both models.
   {
     set text(size: (9.5 / 11) * 1em)
     table(
-      columns: 7,
-      align: (left, right, right, right, right, right, right),
+      columns: 5,
+      align: (left, right, right, right, right),
       table.header(
         table.cell(rowspan: 2)[Held out],
         table.cell(colspan: 3, align: center)[Macro-F1, test split],
-        table.cell(colspan: 2, align: center)[AUROC, test split],
         table.cell(rowspan: 2)[Macro-F1, \ full source],
-        [Seen], [Unseen], [Gap], [Seen], [Unseen],
+        [Seen], [Unseen], [Gap],
         table.hline(),
       ),
       ..srcs.map(s => (
@@ -105,27 +104,49 @@ of cases by both models.
         pt(k("gap_test", s), "fused-fill"),
         pt(k("gap_test", s), "loso-fill"),
         dl(k("gap_test", s), "loso-fill - fused-fill"),
-        pt(k("gap_test", s), "fused-fill", name: "macro_auroc"),
-        pt(k("gap_test", s), "loso-fill", name: "macro_auroc"),
         ci(k("loso_full", s), "loso-fill"),
       )).flatten(),
       table.hline(),
     )
   },
-  caption: [Seen (fused) vs unseen (LOSO) sources, letterbox models. _Gap_ is the paired difference between the
+  caption: [Macro-F1 (%) of seen (fused) vs unseen (LOSO) sources, letterbox models. _Gap_ is the paired difference between the
     LOSO model and the fused model on the same test images, with its 95% interval. _Full source_ scores the LOSO
     model on every image of the held-out source. Duke held out is one model on 45 eyes.],
 ) <tab-unseen>
 
 Every source loses accuracy when it is unseen, beyond noise (@tab-unseen). For OCTDL, PAIMA and
 Duke the gap is #span(("octdl", "paima", "duke").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) macro-F1 points; for Kermany it is #dl(k("gap_test", "kermany"), "loso-fill - fused-fill").
-For the three-class sources the AUROC gap is much smaller than the macro-F1 gap
-(#dl(k("gap_test", "kermany"), "loso-fill - fused-fill", name: "macro_auroc") for Kermany,
-#dl(k("gap_test", "octdl"), "loso-fill - fused-fill", name: "macro_auroc") for OCTDL and
-#dl(k("gap_test", "duke"), "loso-fill - fused-fill", name: "macro_auroc") for Duke), so the models still rank the
-right class highly for most images but the decision falls on the wrong side of the cutoff more often. PAIMA is the
+
+For the three-class sources the AUROC gap is much smaller than the macro-F1 gap (@tab-auroc; for Kermany
+#dl(k("gap_test", "kermany"), "loso-fill - fused-fill", name: "macro_auroc")), so the models still rank the right
+class highly for most images but the decision falls on the wrong side of the cutoff more often. PAIMA is the
 exception: its AUROC gap is #dl(k("gap_test", "paima"), "loso-fill - fused-fill", name: "macro_auroc") against
 #dp(k("gap_test", "paima"), "loso-fill - fused-fill") in macro-F1, a change in ranking, not only in the cutoff.
+
+#figure(
+  {
+    set text(size: (9.5 / 11) * 1em)
+    table(
+      columns: 4,
+      align: (left, right, right, right),
+      table.header(
+        table.cell(rowspan: 2)[Held out], table.cell(colspan: 3, align: center)[AUROC, test split],
+        [Seen], [Unseen], [Gap],
+        table.hline(),
+      ),
+      ..srcs.map(s => (
+        [#source-name.at(s)],
+        pt(k("gap_test", s), "fused-fill", name: "macro_auroc"),
+        pt(k("gap_test", s), "loso-fill", name: "macro_auroc"),
+        dl(k("gap_test", s), "loso-fill - fused-fill", name: "macro_auroc"),
+      )).flatten(),
+      table.hline(),
+    )
+  },
+  caption: [Macro-AUROC (%, one-vs-rest) of seen (fused) vs unseen (LOSO) sources, letterbox models, test split. _Gap_
+    is paired, with its 95% interval. PAIMA is scored on normal vs AMD.],
+) <tab-auroc>
+
 
 Kermany's test split is not representative of the source: #DS.kermany.test_sizes.at("1024x496") of its #num(DS.kermany.n_test) images are 1024×496, a size that
 makes up #pct1(size-share("kermany", "1024x496") * 100)% of Kermany overall. On all #num(R.at("loso_full|kermany|all").n_images) images the held-out Kermany
