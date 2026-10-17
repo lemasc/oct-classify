@@ -21,7 +21,8 @@ ARM_COLOR = {"fill": "#6250d6", "sq": "#008300"}
 ARM_NAME = {"fill": "Letterbox", "sq": "Square crop"}
 SOURCE_NAME = {"kermany": "Kermany", "octdl": "OCTDL", "paima": "PAIMA", "duke": "Duke"}
 
-TEXT_WIDTH_IN = 6.3  # A4 with 2.5 cm margins
+TEXT_WIDTH_IN = 6.3  # full width, used by the figures that span both columns
+COL_WIDTH_IN = 3.29  # one column of the two-column page (template.typ: A4, 1.8 cm side margins, 0.7 cm gutter)
 
 
 def apply() -> None:

@@ -1,6 +1,6 @@
 // Labels of the figures and tables that span both columns; every other one stays in its column.
 // One list for all languages, so the English and Thai papers lay out alike. Add a label here to opt a float out of the column.
-#let wide-figures = ("fig-scan", "fig-examples", "tab-data", "fig-size-class", "fig-design", "tab-seen", "tab-recall", "tab-unseen", "fig-gap", "tab-size-test", "fig-gradcam", "fig-kermany-size", "tab-square", "tab-remaining", "tab-recall-unseen", "tab-zero-dme", "tab-posthoc",)
+#let wide-figures = ("fig-examples", "tab-data", "fig-size-class", "fig-design", "tab-seen", "tab-recall", "tab-unseen", "fig-gap", "tab-size-test", "fig-gradcam", "fig-kermany-size", "tab-square", "tab-remaining", "tab-recall-unseen", "tab-zero-dme", "tab-posthoc",)
 
 // Page and text setup shared by every language. `lang` picks the hyphenation, the figure/table supplements and the font.
 // Thai uses TH Sarabun PSK (installed on the system), which also covers Latin
