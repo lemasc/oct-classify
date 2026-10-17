@@ -34,7 +34,7 @@ Rules:
 - Figures in `figures/` are shared. Their text is English and baked in (the SVGs have outlined glyphs, so it cannot be edited in Typst); the Thai captions describe them. To localise one, add a language option to its `scripts/paper/fig_*.py` and point the Thai section at it.
 - The bibliography is shared (`refs.bib`).
 - Fonts: TH Sarabun PSK, at 14pt, with Libertinus Serif as the Latin fallback, chosen in `template.typ`. It must be installed on the machine (`typst fonts` lists it); otherwise Typst silently falls back.
-- When the English text changes, update the matching Thai section by hand; `scripts/paper/paper_diff.py` shows what changed in the English one.
+- When the English text changes, update the matching Thai section by hand; `scripts/paper/paper_diff.py` shows what changed in the English one (and in the Thai one under `/th`).
 
 Figures (run from the repository root; matplotlib is not a project dependency):
 
@@ -48,5 +48,5 @@ for f in examples design size_class gap kermany_size; do uv run --with matplotli
 Review changes between two revisions (redline, like latexdiff; standard library only, needs `typst`):
 
 ```bash
-uv run python scripts/paper/paper_diff.py   # then open http://localhost:8731/main..HEAD  (`<base>..` = vs. working tree; `/<rev>` = view without diff)
+uv run --group paper python scripts/paper/paper_diff.py   # then open http://localhost:8731/main..HEAD  (`<base>..` = vs. working tree; `/<rev>` = view without diff; prefix `/th` for the Thai paper)
 ```

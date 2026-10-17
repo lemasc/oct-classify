@@ -1,0 +1,60 @@
+{% macro entry(h, id, text) -%}
+<a href="#{{ id }}" title="{{ text }}"><span class="t">{{ text }}</span>
+  {%- if diffing and (h.add or h.rem or h.blocks) %}<span class="n">
+    {%- if h.add %}<span class="add" title="words added">+{{ h.add }}</span> {% endif -%}
+    {%- if h.rem %}<span class="rem" title="words removed">−{{ h.rem }}</span> {% endif -%}
+    {%- if h.blocks %}<span class="blk" title="tables or figures changed">▦{{ h.blocks }}</span>{% endif -%}
+  </span>{% endif %}</a>
+{%- endmacro %}
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}{{ ' (diff)' if diffing }}</title>
+<link rel="stylesheet" href="/_static/app.css">
+</head>
+<body>
+<div class="legend">
+  <div class="bar">
+    <span class="label">{{ label|safe }}
+      {%- if diffing %} <ins class="ins">added</ins> <del class="del">removed</del>{% endif %}</span>
+    <span class="lang" role="group" aria-label="language">
+      {%- for code, name in (('en', 'EN'), ('th', 'ไทย')) %}
+      <a href="{{ switch[code] }}"{{ ' aria-current=page' if code == lang }}>{{ name }}</a>
+      {%- endfor %}
+    </span>
+    <button type="button" id="print" title="Print, or save as PDF from the print dialog">Print / PDF</button>
+  </div>
+  <details><summary>change range</summary>{% include "history.html" %}</details>
+</div>
+<div class="layout">
+  <nav class="side">
+    {%- if toc %}
+    <details class="toc contents"><summary>Contents</summary>
+      <ol>
+      {%- for h2 in toc %}
+        <li>{{ entry(h2, h2.id, h2.text) }}
+          {%- if h2.children %}
+          <ol>{% for h3 in h2.children %}<li>{{ entry(h3, h3.id, h3.text) }}</li>{% endfor %}</ol>
+          {%- endif %}
+        </li>
+      {%- endfor %}
+      </ol>
+    </details>
+    {%- endif %}
+    {%- for name, items in (('Figures', figures), ('Tables', tables)) if items %}
+    <details class="toc"><summary>{{ name }}</summary>
+      <ol>
+      {%- for f in items %}
+        <li>{{ entry(f, f.id, f.label ~ (': ' ~ f.text if f.text)) }}</li>
+      {%- endfor %}
+      </ol>
+    </details>
+    {%- endfor %}
+  </nav>
+  <main><h1>{{ title }}</h1>{{ body|safe }}</main>
+</div>
+<script src="/_static/app.js"></script>
+</body>
+</html>

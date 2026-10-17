@@ -1,0 +1,16 @@
+{# Wikipedia-style history: pick one 'from' and one 'to' radio, then Compare. #}
+<form class="history" action="{{ lang_prefix }}/" method="get">
+  <table>
+    {%- for c in commits %}
+    <tr>
+      <td><input type="radio" name="from" value="{{ c.sha }}"{{ ' checked' if c.from_on }}{{ ' disabled data-never' if c.never }}></td>
+      <td><input type="radio" name="to" value="{{ c.sha }}"{{ ' checked' if c.to_on }}></td>
+      <td><code>{{ c.name }}</code> <a href="{{ lang_prefix }}/{{ c.ref }}">view</a></td>
+      <td>{% for v in ('en', 'th') %}<span class="chip{{ ' on' if v in c.variants }}" title="{{ 'touches ' ~ v|upper ~ (' (shared file)' if c.shared and v in c.variants) }}">{{ v|upper }}</span>{% endfor %}</td>
+      <td>{{ c.when }}</td>
+      <td>{{ c.subject }}</td>
+    </tr>
+    {%- endfor %}
+  </table>
+  <button type="submit">Compare selected</button>
+</form>
