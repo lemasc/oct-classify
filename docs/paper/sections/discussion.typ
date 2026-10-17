@@ -31,11 +31,10 @@ on every unseen source.
 
 *DME is the weak point, but not the whole story.* Once the size cue is accounted for, most of the remaining gap is DME
 recall. DME is also the class with the fewest training examples from the fewest sources: PAIMA has none, so a model
-with Kermany held out learns DME from only two sources, one per vendor. A fused model trained
-without Kermany's DME separates "unseen source" from "unseen DME". On Kermany's test split, missing in-device DME
-alone costs about #zd-share()% as much as the held-out gap, all through DME recall, and at least as much DME recall
-as the held-out model loses. The held-out model's other loss, normal recall, comes from the source being unseen, as
-the size cue predicts. Whether DME from more sources would close the DME part is still untested.
+with Kermany held out learns DME from only two sources, one per vendor. Removing Kermany's DME from a fused
+model (@tab-zero-dme) reproduces about #zd-share()% of Kermany's held-out gap, so missing DME is a real but partial
+cause; the rest, a loss in normal recall, comes from the source being unseen, as the size cue predicts. Whether DME
+from more sources would close the DME part is still untested.
 
 *Dry AMD is hard on some sources, not all.* AMD merges a dry and a wet stage, and the sources mix them very
 differently (@tab-data). PAIMA, where most AMD is dry, misses its drusen scans far more often than its wet ones,
