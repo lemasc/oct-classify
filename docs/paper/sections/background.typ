@@ -56,9 +56,7 @@ pretrained on ImageNet then took over @lee2017 @karri2017. Kermany et al. reache
 baselines @kulyabin2024octdl. Reviews of this work @muchuchuti2023 @abdi2025 name dataset bias and model
 generalization among the main open problems @abdi2025. Nearly all of these models are tested on the dataset they
 were trained on; Rasti et al. and Fang et al. each use two datasets but train and test within each one @rasti2018
-@fang2019.#footnote[Both use a 148-eye dataset from Noor Eye Hospital, Tehran (NEH), as do Zhang et al. @zhang2025
-  and MIRAGE @morano2025mirage. It is not PAIMA, which comes from the same hospital @sotoudehpaima2022 and which
-  Chutani and Yalavarthy also call NEH @chutani2026.]
+@fang2019.
 
 == Generalization across datasets and devices <sec-prior-shift>
 
