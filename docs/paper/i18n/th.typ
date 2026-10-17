@@ -3,7 +3,7 @@
 // Sections that are written in Thai. Anything not listed falls back to the English file in ../sections/.
 #let translated = ("introduction", "background", "data", "method", "results", "discussion")
 
-#let title = [การวางนัยทั่วไปข้ามชุดข้อมูลของตัวจำแนกภาพ OCT จอประสาทตาด้วย CNN]
+#let title = [การวิเคราะห์การจำแนกประเภทภาพถ่ายตัดขวางจอตาด้วยคลื่นแสงสะท้อนข้ามชุดข้อมูลด้วยโครงข่ายประสาทแบบคอนโวลูชัน]
 
 // Names shown in tables. Keys match `source-name` / `split-name` in lib.typ and sections/data.typ.
 #let source-name = (kermany: "Kermany", octdl: "OCTDL", paima: "PAIMA", duke: "Duke")

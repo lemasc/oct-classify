@@ -3,10 +3,15 @@
 #import "template.typ": paper
 #import "lib.typ": *
 
-#show: paper.with(title: [Cross-Dataset Generalization of CNN Retinal OCT Classifiers])
+#show: paper.with(
+  title: [Cross-dataset classification analysis of optical coherence tomography retinal images using convolutional neural networks],
+)
 
 #align(center)[
-  #text(size: 1.45em, weight: "bold")[Cross-Dataset Generalization of CNN Retinal OCT Classifiers]
+  #text(
+    size: 1.45em,
+    weight: "bold",
+  )[Cross-dataset classification analysis of optical coherence tomography retinal images using convolutional neural networks]
   #v(0.5em)
   #todo[authors, affiliation]
 ]
