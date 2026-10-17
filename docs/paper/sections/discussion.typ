@@ -85,4 +85,9 @@ the features themselves, which our diagnostics point to as the limiting factor.
 
 = Conclusion
 
-#todo[3–4 sentences once results are final]
+A ResNet-50 that scores #span(("kermany", "octdl", "paima", "duke").map(s => metric(k("seen", s), "per-dataset").point)) macro-F1 on OCT datasets it has seen loses
+#span(("octdl", "paima", "duke", "kermany").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) points on one it has not, although three of the four come from the same manufacturer.
+Part of that loss comes from the training data rather than the new dataset: pooling let a label-predicting image
+size in Duke become a rule that fails on Kermany. Removing the cue recovers much of Kermany's gap but is not a
+general fix, and most of what remains is DME, the class seen from the fewest sources. Before pooling OCT datasets,
+compare scan settings against labels, and test on a held-out source, not only a held-out split.
