@@ -139,10 +139,9 @@ correct within Duke and wrong elsewhere. Three tests show that they do.
 
 *Changing only the size of test images.* We take the held-out Kermany models and rescore Kermany images after
 changing only their width, with no retraining (@tab-size-test). Padding normal 512×496 images to 768 wide (Duke's
-DME-only width) moves the share called DME from #pct1(KS.pad.at("512x496").at("normal->dme").at(0))% to #pct1(KS.pad.at("512x496").at("normal->dme").at(1))%. Cropping 768×496 normal images to 512 wide does
-the reverse, from #pct1(KS.crop.at("768x496").at("normal->dme").at(0))% to #pct1(KS.crop.at("768x496").at("normal->dme").at(1))%. The effect is not limited to Kermany: padding Duke's own 512×496 images by
-16 rows to 512×512, a size that is DME-only in Kermany, sends #calc.round(HS.at("duke/pad512x512").all.at("normal->dme").at(1))% of Duke's normal images to DME in the model that
-held Duke out.
+DME-only width) moves the share called DME from #pct1(KS.pad.at("512x496").at("normal->dme").at(0))% to #pct1(KS.pad.at("512x496").at("normal->dme").at(1))%, and cropping 768×496 normal
+images to 512 wide does the reverse. The effect is not limited to Kermany: padding Duke's own 512×496 images by
+16 rows to 512×512, a size that is DME-only in Kermany, has the same effect in the model that held Duke out.
 
 // One test-time size change: [before, after, change, lo, hi] in % (KS / HS in lib.typ).
 #let size-row(label, e) = (label, pct1(e.at(0)), pct1(e.at(1)),
@@ -326,12 +325,10 @@ neither source lost beyond noise.
 ) <tab-remaining>
 
 Most of what remains is DME (@tab-remaining). On the test split, held-out DME recall falls by #span(("kermany", "octdl", "duke").map(s => delta("gap_test|" + s + "|all", "loso-fill - fused-fill", name: "recall_dme").point)) points for
-Kermany, OCTDL and Duke (@tab-recall-unseen). In the Normal/AMD view, the OCTDL and Duke gaps are within noise of zero
-(#dl("gap_test|octdl|normal_amd", "loso-fill - fused-fill") and #dl("gap_test|duke|normal_amd", "loso-fill - fused-fill")). Kermany keeps a large Normal/AMD gap, through normal images called AMD: held out, its normal recall changes by
+Kermany, OCTDL and Duke (@tab-recall-unseen). In the Normal/AMD view, the OCTDL and Duke gaps are within noise of zero. Kermany keeps a large Normal/AMD gap, through normal images called AMD: held out, its normal recall changes by
 #dl("gap_test|kermany|all", "loso-fill - fused-fill", name: "recall_normal") (@tab-recall-unseen), and most of the missed normal images
 are called AMD. This is consistent with the size cue above (@fig-kermany-size): most of its test split is 1024×496, Duke's AMD-only
-size. PAIMA, which has no DME, keeps a gap of
-#dl("gap_test|paima|normal_amd", "loso-fill - fused-fill"), through AMD recall, and again mostly dry AMD: held-out
+size. PAIMA, which has no DME, keeps its gap through AMD recall, and again mostly dry AMD: held-out
 recall changes by #as-dl("test|paima|normal_amd", "dry", "loso-fill - fused-fill") for drusen scans and by
 #as-dl("test|paima|normal_amd", "wet", "loso-fill - fused-fill") for wet ones.
 
@@ -413,15 +410,11 @@ without its DME, so the comparison with the fused model isolates the missing DME
     paired differences with 95% intervals.],
 ) <tab-zero-dme>
 
-@tab-zero-dme gives per-class recall for the three Kermany models. Removing Kermany's DME changes Kermany by
+@tab-zero-dme puts the three Kermany models side by side. Removing Kermany's DME changes Kermany by
 #zd-dl("kermany|all", "zero-dme - fused-fill"), all of it through DME recall (#zd-dl("kermany|all", "zero-dme - fused-fill", name: "recall_dme")); its normal and AMD recall stay within
-noise (#zd-dl("kermany|all", "zero-dme - fused-fill", name: "recall_normal"),
-#zd-dl("kermany|all", "zero-dme - fused-fill", name: "recall_amd")). On the same test images this is about
-#zd-share()% the size of the held-out gap (LOSO #zd-pt("kermany|all", "loso-fill"), without Kermany DME
-#zd-pt("kermany|all", "zero-dme"), fused #zd-pt("kermany|all", "fused-fill")), but the two models fail
+noise. On the same test images this is about #zd-share()% of the held-out gap, but the two models fail
 differently, so the gap does not split into these shares. Missing in-device DME alone already costs more DME recall
-than the LOSO model loses (DME recall, LOSO minus no-DME #zd-dl("kermany|all", "loso-fill - zero-dme", name: "recall_dme")), so
-it can account for the LOSO model's DME errors. The LOSO model's other loss is normal recall
+than the LOSO model loses, so it can account for the LOSO model's DME errors. The LOSO model's other loss is normal recall
 (#zd-dl("kermany|all", "loso-fill - zero-dme", name: "recall_normal") against the model without Kermany DME), which
 comes from the source being unseen and matches the size cue. Missing DME is therefore a real but partial cause.
 
@@ -429,9 +422,8 @@ comes from the source being unseen and matches the size cue. Missing DME is ther
 
 Two standard post-hoc fixes leave most of the gap in place (@tab-posthoc). Both are fitted on one half of the
 held-out source's patients and scored on the other. The first tests whether the gap is a misplaced decision cutoff
-(@sec-unseen): a per-class shift of the output log-probabilities, fitted on the source's own labels. It changes
-Kermany by #lb-dl("kermany|all", "bias-crossfit") and PAIMA by #lb-dl("paima|normal_amd", "bias-crossfit"), and
-leaves OCTDL (#lb-dl("octdl|all", "bias-crossfit")) and Duke (#lb-dl("duke|all", "bias-crossfit")) within noise.
+(@sec-unseen): a per-class shift of the output log-probabilities, fitted on the source's own labels. It gains
+Kermany #lb-dl("kermany|all", "bias-crossfit") and changes the other sources by little.
 Even the best shift found on all of Kermany's labels, which a deployed model could not do, reaches only
 #fmt(LB.at("kermany|all").grid.best), against #pt("loso_full|kermany|all", "loso-sq") for retraining without the
 size cue; a shift shared by all images cannot undo errors that depend on image size.
@@ -468,7 +460,6 @@ size cue; a shift shared by all images cannot undo errors that depend on image s
 ) <tab-posthoc>
 
 The second fix, AdaBN @li2016adabn, re-estimates the BatchNorm statistics on the unseen source's unlabelled
-images. It changes Kermany by #ab-dl("kermany|all"), less than the cutoff shift, leaves Duke within noise
-(#ab-dl("duke|all")), and changes OCTDL by #ab-dl("octdl|all"), where it pushes images toward DME, and PAIMA by
-#ab-dl("paima|normal_amd"). Neither fix is reliable across sources, and on Kermany neither comes close to
+images. It gains Kermany #ab-dl("kermany|all"), less than the cutoff shift, but lowers OCTDL
+(#ab-dl("octdl|all")), where it pushes images toward DME. Neither fix is reliable across sources, and on Kermany neither comes close to
 retraining without the size cue.
