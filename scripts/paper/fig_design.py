@@ -19,16 +19,16 @@ ROWS = [
     ("Per-dataset", None, [SEEN] * 4, "1 each"),
     ("Fused", None, [SEEN] * 4, "5"),
     *[
-        ("LOSO", f"{style.SOURCE_NAME[h]} held out", [HELD if s == h else TRAIN for s in SOURCES],
+        ("LOSO", style.SOURCE_NAME[h], [HELD if s == h else TRAIN for s in SOURCES],
          "1" if h == "duke" else "5")
         for h in SOURCES
     ],
 ]
 # Data units are inches, so the figure is drawn at its printed size (one column).
-CELL_W, CELL_H, GAP_X, GAP_Y, GROUP_GAP = 0.415, 0.26, 0.04, 0.04, 0.12
+CELL_W, CELL_H, GAP_X, GAP_Y, GROUP_GAP = 0.505, 0.28, 0.04, 0.04, 0.12
 TEST_W = 0.36  # share of a seen cell drawn as its test split
 LABEL_X = -0.06  # right edge of row labels
-GROUP_X = -0.86  # x of the bracket and rotated label of a multi-row group
+GROUP_X = -0.5  # x of the bracket and rotated label of a multi-row group
 NOTE_X = len(SOURCES) * (CELL_W + GAP_X) + 0.06
 ROUND = "round,pad=0,rounding_size=0.03"
 
@@ -38,21 +38,21 @@ def cell(ax, x, y, state):
     if state == HELD:
         ax.add_patch(FancyBboxPatch((x, y), CELL_W, CELL_H, boxstyle=ROUND, facecolor="white",
                                     edgecolor=style.INK, linewidth=1.0))
-        ax.text(x + CELL_W / 2, y + CELL_H * 0.33, "held out", ha="center", va="center", fontsize=5.8,
+        ax.text(x + CELL_W / 2, y + CELL_H * 0.33, "held out", ha="center", va="center", fontsize=6.3,
                 fontweight="bold")
-        ax.text(x + CELL_W / 2, y + CELL_H * 0.72, "all images", ha="center", va="center", fontsize=5.2,
+        ax.text(x + CELL_W / 2, y + CELL_H * 0.72, "all images", ha="center", va="center", fontsize=5.6,
                 color=style.INK_2)
         return
     ax.add_patch(FancyBboxPatch((x, y), CELL_W, CELL_H, boxstyle=ROUND, facecolor=style.GRID, linewidth=0))
     if state == TRAIN:
-        ax.text(x + CELL_W / 2, mid, "train", ha="center", va="center", fontsize=6)
+        ax.text(x + CELL_W / 2, mid, "train", ha="center", va="center", fontsize=6.5)
         return
     # seen: train split on the left, test split as a dark strip on the right
     split = x + CELL_W * (1 - TEST_W)
     ax.add_patch(FancyBboxPatch((split, y), CELL_W * TEST_W, CELL_H, boxstyle=ROUND, facecolor=style.INK_3,
                                 linewidth=0))
-    ax.text((x + split) / 2, mid, "train", ha="center", va="center", fontsize=6)
-    ax.text(split + CELL_W * TEST_W / 2, mid, "test", ha="center", va="center", fontsize=5.2, color="white")
+    ax.text((x + split) / 2, mid, "train", ha="center", va="center", fontsize=6.5)
+    ax.text(split + CELL_W * TEST_W / 2, mid, "test", ha="center", va="center", fontsize=5.6, color="white")
 
 
 def main() -> None:
@@ -69,7 +69,7 @@ def main() -> None:
         if label is None:  # single-row group: the group name is the row label
             ax.text(LABEL_X, mid, group, ha="right", va="center", fontsize=6.5, fontweight="bold")
         else:
-            ax.text(LABEL_X, mid, label, ha="right", va="center", fontsize=5.8, color=style.INK_2)
+            ax.text(LABEL_X, mid, label, ha="right", va="center", fontsize=6.5, color=style.INK_2)
             group_rows.setdefault(group, []).append(y)
         ax.text(NOTE_X, mid, models, ha="left", va="center", fontsize=6, color=style.INK_2)
         previous = group
