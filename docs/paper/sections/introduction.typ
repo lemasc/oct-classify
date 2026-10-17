@@ -40,6 +40,3 @@ intervals. We ask three questions:
   size cue raises held-out Kermany from #pt("loso_full|kermany|all", "loso-fill") to #pt("loso_full|kermany|all", "loso-sq") macro-F1 but costs the other unseen sources
   (@sec-shortcut), and two standard post-hoc fixes, shifting the decision cutoff and re-estimating BatchNorm
   statistics (AdaBN), leave most of the gap in place (@sec-posthoc).
-
-The practical lesson is cheap: comparing image size and other scan settings against the label in each dataset
-would have revealed the shortcut before any training.
