@@ -11,7 +11,7 @@ built HTML is cached per commit and variant under artifacts/paper-diff/. The two
 tokenised and diffed with difflib (Thai runs are segmented into words with pythainlp first).
 Tables are diffed as whole blocks (old table dimmed above the new one, changed cells shaded green
 in the new table, removed cells red in the old), since a per-cell diff breaks when columns move.
-Images get the same treatment: each is identified by its Git blob id (the id `git ls-tree` reports
+Images (and inline SVG drawings, e.g. the fletcher flowchart, hashed as a whole) get the same treatment: each is identified by its Git blob id (the id `git ls-tree` reports
 for the figure file, recovered from the data URI Typst embeds), and a changed blob shows old dimmed
 above new. The page chrome (contents with per-section change counts, language switch, copy tools)
 lives in viewer/templates (Jinja2) and viewer/static; dependencies are in the `paper` group.
@@ -62,6 +62,7 @@ FIGURE = re.compile(r'<figure\s+id="((?:fig|tab)-[^"]*)"[^>]*>(.*?)</figure>', r
 CAPTION = re.compile(r"<figcaption[^>]*>(.*?)</figcaption>", re.DOTALL)
 HEADING = re.compile(r"<h([23])((?:\s[^>]*)?)>(.*?)</h\1>", re.DOTALL)
 TABLE = re.compile(r"<table.*?</table>", re.DOTALL)
+DRAWN = re.compile(r"<table.*?</table>|<svg.*?</svg>", re.DOTALL)  # blocks diffed whole, not per token
 ROW = re.compile(r"<tr>(.*?)</tr>", re.DOTALL)
 CELL = re.compile(r"<(t[dh])([^>]*)>(.*?)</\1>", re.DOTALL)
 SECTION = re.compile(r"<(thead|tbody)>(.*?)</\1>", re.DOTALL)
@@ -220,14 +221,16 @@ def tokenize(body: str) -> list[tuple]:
     """Tokens are (kind, raw, key); keys ignore id/href so renumbered references still match."""
     tokens, space, pos = [], "", 0
     chunks = []
-    for m in TABLE.finditer(body):
-        chunks += [("html", body[pos : m.start()]), ("table", m.group(0))]
+    for m in DRAWN.finditer(body):
+        kind = "table" if m.group(0).startswith("<table") else "svg"
+        chunks += [("html", body[pos : m.start()]), (kind, m.group(0))]
         pos = m.end()
     chunks.append(("html", body[pos:]))
     for kind, chunk in chunks:
-        if kind == "table":
+        if kind in ("table", "svg"):
             digest = hashlib.md5(re.sub(r'\s(id|href)="[^"]*"', "", chunk).encode()).hexdigest()
-            tokens.append(("table", space + chunk, "table:" + digest))
+            # an inline drawing (Typst html.frame) is an image: it gets the old-above-new treatment
+            tokens.append(("table" if kind == "table" else "img", space + chunk, f"{kind}:{digest}"))
             space = ""
             continue
         for m in TOKEN.finditer(chunk):

@@ -9,7 +9,7 @@ main{min-width:0}
 h1{text-align:center;font-size:1.6rem;margin:2rem 0 1rem}
 h2{margin-top:2.2rem;border-bottom:1px solid #8884}
 figure{margin:1.5rem 0;text-align:center}
-figure img{max-width:100%;height:auto}
+figure img,figure svg{max-width:100%;height:auto}
 figcaption{font-size:.9rem;opacity:.85;text-align:left}
 .tbl{overflow-x:auto}
 table{border-collapse:collapse;margin:0 auto;font-size:.85rem}
@@ -22,7 +22,7 @@ del.del{background:var(--del);color:var(--delfg)}
 .tbl-ins::before,.tbl-del::before{font:12px sans-serif}
 .tbl-ins::before{content:'new / changed table or figure';color:var(--insfg)}
 .tbl-del::before{content:'removed table or figure';color:var(--delfg)}
-.tbl-ins img,.tbl-del img{max-width:100%;height:auto}
+.tbl-ins img,.tbl-del img,.tbl-ins svg,.tbl-del svg{max-width:100%;height:auto}
 td.chg,th.chg{background:var(--chg)}
 td.gone,th.gone{background:var(--del)}
 

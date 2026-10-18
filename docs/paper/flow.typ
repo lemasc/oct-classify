@@ -31,7 +31,7 @@
     text(weight: "bold", name), text(fill: ink-2, size: (8.5 / 9.5) * 1em, body),
   )
   let n = labels.stages.len()
-  diagram(
+  let drawing = diagram(
     spacing: (1.5em, 1.2em),
     node-stroke: 0.6pt + ink-3,
     node-corner-radius: 3pt,
@@ -45,4 +45,6 @@
     edge(label("flow-" + str(n - 1)), "r," + "u" * (n - 2) + ",l", "-|>", stroke: 0.7pt + square-color,
       corner-radius: 4pt, label: square(text(size: (8.5 / 9.5) * 1em, labels.loop)), label-side: right),
   )
+  // HTML export has no layout engine for the diagram, so embed it as an inline SVG there.
+  context if target() == "html" { html.frame(drawing) } else { drawing }
 }
