@@ -6,11 +6,19 @@
 
 All models are ResNet-50 networks initialised from ImageNet weights, with a three-way output (normal, AMD, DME).
 Each B-scan is scaled to fit a 224×224 canvas with its aspect ratio kept (letterboxing), and the empty bands are
-filled with the median intensity of the scan. Intensities are rescaled to the 1st–99th percentile of the tissue.
+filled with the median intensity of the scan. The bands grow with the width of the scan (@fig-padding): they cover
+about 3% of the canvas for a 512×496 scan, 35% for 768×496 and 52% for 1024×496. Intensities are rescaled to the 1st–99th percentile of the tissue.
 Some sources rotate or crop their scans and fill the exposed corners with white; we exclude this fill from the
 percentiles and redraw it from nearby background (_fill-aware padding_), so that it neither compresses the
 tissue contrast nor marks a source. Training augmentations are horizontal flip, rotation up to 10°, small
 brightness and contrast jitter, and light Gaussian blur.
+
+#figure(
+  kind: image,
+  fig("padding"),
+  caption: [How a B-scan becomes the model input, for Duke's three image sizes: letterbox (the default) and
+    square crop.],
+) <fig-padding>
 
 We train with AdamW (learning rate $10^(-4)$, weight decay $10^(-4)$, batch size 16, or 12 for the LOSO models
 below) for up to 100 epochs of 1,000 batches, with early stopping after 10 epochs without improvement. Batches are
@@ -53,7 +61,7 @@ used in training; we call this the _full-source_ score.
 
 To test whether models use image size as a label cue (@sec-shortcut), we add one arm that hides it. _Square crop_
 trains on a random square window (height × height) of each scan and tests on the centred window. Every input is
-then a square of tissue with no letterbox bands, so the scan's original width cannot be read. We train square-crop
+then a square of tissue with no letterbox bands (@fig-padding, right), so the scan's original width cannot be read. We train square-crop
 versions of the fused and LOSO models with otherwise identical settings, and call the default arm _letterbox_ to
 contrast the two.
 

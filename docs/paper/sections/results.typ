@@ -180,7 +180,8 @@ images to 512 wide does the reverse. The effect is not limited to Kermany: paddi
 ) <tab-size-test>
 
 *Where the cue enters: the letterbox bands.* Width reaches the model through the letterbox. A 768×496 scan
-fitted to the square canvas leaves flat bands above and below the tissue, covering about a third of the canvas, and
+fitted to the square canvas leaves flat bands above and below the tissue, covering about a third of the canvas
+(@fig-padding), and
 Duke's DME-only 768×496 images have the same bands. For each of the five held-out Kermany models we take
 #gc-group-n("768 normal → DME") images of size 768×496 per group, one per patient: normal and AMD images the model wrongly
 calls DME, and normal and AMD images it gets right. We then change only the band pixels, to black or to speckle drawn
