@@ -133,13 +133,11 @@
 
 == สิ่งชี้แนะทางลัดจากขนาดภาพ <sec-shortcut>
 
-ในชุดข้อมูล Duke ขนาดของภาพสามารถระบุคลาสของข้อมูลได้ถึงร้อยละ #calc.round((int(duke-eyes("amd", size: "1024x496")) + int(duke-eyes("dme", size: "768x496"))) / DS.duke.n_groups * 100) ของดวงตาทั้งหมด กล่าวคือ ภาพสแกนขนาด 768×496 พิกเซลทุกภาพเป็นภาวะ DME และภาพสแกนขนาด 1024×496 พิกเซลทุกภาพเป็นโรค AMD (@fig-size-class) โมเดลที่ได้รับการฝึกสอนด้วยชุดข้อมูล Duke จึงสามารถเรียนรู้กฎทางลัดที่ว่า "ความกว้าง 768 พิกเซลหมายถึงภาวะ DME" ซึ่งเป็นกฎที่ถูกต้องภายในชุดข้อมูล Duke แต่เกิดความผิดพลาดเมื่อนำไปประเมินกับชุดข้อมูลอื่น การทดสอบ 3 ประการต่อไปนี้ช่วยยืนยันว่าโมเดลได้เรียนรู้กฎดังกล่าวจริง
+ในชุดข้อมูล Duke ขนาดของภาพสามารถระบุคลาสของข้อมูลได้ถึงร้อยละ #calc.round((int(duke-eyes("amd", size: "1024x496")) + int(duke-eyes("dme", size: "768x496"))) / DS.duke.n_groups * 100) ของดวงตาทั้งหมด (@sec-data) โมเดลที่ได้รับการฝึกสอนด้วยชุดข้อมูล Duke จึงสามารถเรียนรู้กฎทางลัดที่ว่า "ความกว้าง 768 พิกเซลหมายถึงภาวะ DME" ซึ่งเป็นกฎที่ถูกต้องภายในชุดข้อมูล Duke แต่เกิดความผิดพลาดเมื่อนำไปประเมินกับชุดข้อมูลอื่น การทดสอบ 3 ประการต่อไปนี้ช่วยยืนยันว่าโมเดลได้เรียนรู้กฎดังกล่าวจริง
 
 === การปรับเปลี่ยนเฉพาะขนาดของภาพทดสอบ
 
-งานวิจัยนี้ได้นำโมเดลแบบ LOSO ที่แยกชุดข้อมูล Kermany ไว้ มาประเมินภาพถ่ายในชุดข้อมูล Kermany ซ้ำ โดยปรับเปลี่ยนเฉพาะความกว้างของภาพโดยไม่มีการฝึกสอนโมเดลใหม่ (@tab-size-test) การเติมขอบภาพ (padding) ในภาพปกติขนาด 512×496 พิกเซล ให้มีความกว้างเป็น 768 พิกเซล (ซึ่งเป็นความกว้างเฉพาะของภาวะ DME ในชุดข้อมูล Duke) ส่งผลให้สัดส่วนภาพที่ถูกทำนายว่าเป็นภาวะ DME พุ่งสูงขึ้นจากร้อยละ #pct1(KS.pad.at("512x496").at("normal->dme").at(0)) เป็นร้อยละ #pct1(KS.pad.at("512x496").at("normal->dme").at(1)) ในทางตรงกันข้าม การครอบตัด (crop) ภาพปกติขนาด 768×496 พิกเซล ให้เหลือความกว้าง 512 พิกเซล ให้ผลลัพธ์ในทิศทางตรงกันข้าม โดยสัดส่วนภาพที่ถูกทำนายว่าเป็นภาวะ DME ลดลงจากร้อยละ #pct1(KS.crop.at("768x496").at("normal->dme").at(0)) เหลือเพียงร้อยละ #pct1(KS.crop.at("768x496").at("normal->dme").at(1))
-
-ปรากฏการณ์นี้ไม่ได้จำกัดอยู่เพียงแค่ชุดข้อมูล Kermany เท่านั้น โดยการเติมขอบภาพขนาด 512×496 พิกเซลของชุดข้อมูล Duke เพิ่มขึ้นอีก 16 แถว จนกลายเป็นขนาด 512×512 พิกเซล (ซึ่งเป็นขนาดที่พบเฉพาะภาวะ DME ในชุดข้อมูล Kermany) ส่งผลให้ภาพปกติของชุดข้อมูล Duke ถึงร้อยละ #calc.round(HS.at("duke/pad512x512").all.at("normal->dme").at(1)) ถูกทำนายผิดพลาดว่าเป็นภาวะ DME ในโมเดลที่แยกชุดข้อมูล Duke ไว้
+งานวิจัยนี้ได้นำโมเดลแบบ LOSO ที่แยกชุดข้อมูล Kermany ไว้ มาประเมินภาพถ่ายในชุดข้อมูล Kermany ซ้ำ โดยปรับเปลี่ยนเฉพาะความกว้างของภาพโดยไม่มีการฝึกสอนโมเดลใหม่ (@tab-size-test) การเติมขอบภาพ (padding) ในภาพปกติขนาด 512×496 พิกเซล ให้มีความกว้างเป็น 768 พิกเซล (ซึ่งเป็นความกว้างเฉพาะของภาวะ DME ในชุดข้อมูล Duke) ส่งผลให้สัดส่วนภาพที่ถูกทำนายว่าเป็นภาวะ DME เพิ่มขึ้นจากร้อยละ #pct1(KS.pad.at("512x496").at("normal->dme").at(0)) เป็นร้อยละ #pct1(KS.pad.at("512x496").at("normal->dme").at(1)) และการครอบตัด (crop) ภาพปกติขนาด 768×496 พิกเซล ให้เหลือความกว้าง 512 พิกเซล ให้ผลลัพธ์ในทิศทางตรงกันข้าม ปรากฏการณ์นี้ไม่ได้จำกัดอยู่เพียงแค่ชุดข้อมูล Kermany เท่านั้น โดยการเติมขอบภาพขนาด 512×496 พิกเซลของชุดข้อมูล Duke เพิ่มขึ้นอีก 16 แถว จนกลายเป็นขนาด 512×512 พิกเซล (ซึ่งเป็นขนาดที่พบเฉพาะภาวะ DME ใน Kermany) ให้ผลลัพธ์ในลักษณะเดียวกันในโมเดลที่แยกชุดข้อมูล Duke ไว้
 
 #let size-row(label, e) = (
   label,
@@ -160,7 +158,7 @@
       table.hline(),
     )
   },
-  caption: [สัดส่วนของภาพถ่ายปกติ (normal) ที่ถูกทำนายว่าเป็นภาวะ DME ก่อนและหลังการปรับเปลี่ยนเฉพาะขนาดของภาพทดสอบ โดยใช้โมเดลแบบ LOSO ประเมินผลบนแหล่งข้อมูลที่ถูกแยกไว้ (held-out) โดยไม่มีการฝึกสอนใหม่ ทั้งนี้ ผลต่างเป็นค่าแบบจับคู่พร้อมช่วงความเชื่อมั่นร้อยละ 95],
+  caption: [สัดส่วน (%) ของภาพปกติที่ถูกทำนายเป็น DME ก่อนและหลังการปรับเปลี่ยนเฉพาะขนาดของภาพทดสอบ พร้อมผลต่างแบบจับคู่และช่วงความเชื่อมั่นร้อยละ 95],
 ) <tab-size-test>
 
 === ตำแหน่งที่สัญญาณขนาดภาพส่งผล
@@ -170,25 +168,26 @@
 สำหรับโมเดลที่ 1, 2 และ 4 พบว่ามีข้อผิดพลาดหลงเหลืออยู่ไม่เกินร้อยละ #{
   let xs = (1, 2, 4).map(f => ("768 normal → DME", "768 AMD → DME").map(g => ("black", "speckle").map(b => gc-at(f, g, b)))).flatten()
   pct0(calc.max(..xs))
-} หลังจากเปลี่ยนแถบขอบทั้งสองรูปแบบ ขณะที่โมเดลที่ 3 และ 5 พบว่ายังมีข้อผิดพลาดในกลุ่มโรค AMD หลงเหลืออยู่ร้อยละ #pct0(gc-at(3, "768 AMD → DME", "speckle")) และ #pct0(gc-at(5, "768 AMD → DME", "speckle")) และข้อผิดพลาดในกลุ่มภาพปกติหลงเหลืออยู่ร้อยละ #pct0(gc-at(3, "768 normal → DME", "speckle")) และ #pct0(gc-at(5, "768 normal → DME", "speckle")) ตามลำดับ เมื่อใช้แถบขอบแบบสัญญาณรบกวน speckle ซึ่งแสดงให้เห็นว่าแถบขอบภาพเป็นช่องทางหลัก แต่ไม่ใช่ช่องทางเดียวที่สัญญาณนี้ถูกส่งผ่านไปถึงโมเดล ในทางตรงกันข้าม #{
+}% หลังจากเปลี่ยนแถบขอบทั้งสองรูปแบบ ขณะที่โมเดลที่ 3 และ 5 พบว่ามีข้อผิดพลาดหลงเหลืออยู่ไม่เกินร้อยละ #{
+  let xs = (3, 5).map(f => ("768 normal → DME", "768 AMD → DME").map(g => gc-at(f, g, "speckle"))).flatten()
+  pct0(calc.max(..xs))
+}% เมื่อใช้แถบขอบแบบ speckle ซึ่งแสดงให้เห็นว่าแถบขอบภาพเป็นช่องทางหลัก แต่ไม่ใช่ช่องทางเดียวที่สัญญาณนี้ถูกส่งผ่านไปถึงโมเดล ในทางตรงกันข้าม #{
   let rows = GC.intervention_by_fold.filter(r => r.group in ("768 normal → normal", "768 AMD → AMD") and r.at("band fill") != "trained")
   let total = rows.map(r => r.n).sum()
-  let changed = rows.map(r => calc.round(r.n * (1 - r.at("called true class")))).sum()
   let to-dme = rows.map(r => calc.round(r.n * r.at("called DME"))).sum()
-  [ภาพที่เดิมเคยทำนายได้อย่างถูกต้องแทบไม่ได้รับผลกระทบ โดยจากกรณีทดสอบทั้งหมด #total กรณี (การปรับเปลี่ยนแถบขอบ 2 รูปแบบ ในโมเดลทั้ง 5 โมเดล) มีเพียง #to-dme ภาพที่เปลี่ยนผลการทำนายเป็นภาวะ DME และมีเพียง #changed ภาพเท่านั้นที่ผลการทำนายเปลี่ยนไปจากคลาสเดิม]
+  [ภาพที่ทำนายถูกต้องแทบไม่เปลี่ยนแปลง: จากทั้งหมด #total กรณี (การเปลี่ยนแถบขอบ 2 รูปแบบ, 5 โมเดล) มีเพียง #to-dme ภาพที่กลายเป็น DME]
 }
 
 #figure(
   {
     set text(size: (9.5 / 11) * 1em)
     table(
-      columns: 7,
-      align: (left, right, right, right, right, right, right),
+      columns: 5,
+      align: (left, right, right, right, right),
       table.header(
-        table.cell(rowspan: 2)[Model], table.cell(colspan: 2, align: center)[Normal ทำนายเป็น DME],
-        table.cell(colspan: 2, align: center)[AMD ทำนายเป็น DME],
-        table.cell(colspan: 2, align: center)[สัดส่วนบนแถบขอบ Grad-CAM],
-        [black], [speckle], [black], [speckle], [ทำนายผิด], [ทำนายถูก],
+        table.cell(rowspan: 2)[โมเดล], table.cell(colspan: 2, align: center)[ภาพปกติที่ทำนายเป็น DME],
+        table.cell(colspan: 2, align: center)[ภาพ AMD ที่ทำนายเป็น DME],
+        [ดำ], [speckle], [ดำ], [speckle],
         table.hline(),
       ),
       ..range(1, 6)
@@ -198,49 +197,43 @@
           pct0(gc-at(f, "768 normal → DME", "speckle")),
           pct0(gc-at(f, "768 AMD → DME", "black")),
           pct0(gc-at(f, "768 AMD → DME", "speckle")),
-          pct0(gc-band("768 normal → DME", f)),
-          pct0(gc-band("768 normal → normal", f)),
         ))
         .flatten(),
       table.hline(),
     )
   },
-  caption: [ภาพถ่ายขนาด 768×496 พิกเซล จากชุดข้อมูล Kermany ที่ถูกแยกไว้ (held-out) ซึ่งโมเดล LOSO-Kermany ทำนายผิดพลาดเป็นภาวะ DME: สัดส่วน (ร้อยละ) ที่ยังคงถูกทำนายว่าเป็นภาวะ DME หลังจากแทนที่แถบขอบภาพแบบ letterbox ด้วยสีดำหรือสัญญาณรบกวนแบบเกรน (speckle noise) ขณะที่สัดส่วนบนแถบขอบ Grad-CAM แสดงสัดส่วน (ร้อยละ) ของแผนภาพที่ครอบคลุมบริเวณแถบขอบ สำหรับภาพถ่ายปกติ (normal) ที่ถูกทำนายเป็นภาวะ DME (ทำนายผิดพลาด) และที่ถูกทำนายเป็นภาพถ่ายปกติ (ทำนายถูกต้อง)],
+  caption: [ข้อผิดพลาดที่ยังคงอยู่หลังแทนที่แถบขอบภาพ letterbox ด้วยสีดำหรือ speckle: สัดส่วน (%) ของภาพขนาด 768×496 ที่ยังคงทำนายผิดเป็น DME ในแต่ละโมเดลที่แยก Kermany ไว้],
 ) <tab-bands>
 
-แผนภาพ Grad-CAM ช่วยแสดงให้เห็นถึงกลไกนี้เช่นเดียวกัน (@fig-gradcam) อย่างไรก็ดี มีข้อควรระวังว่า สำหรับภาพถ่ายที่ทำนายได้อย่างถูกต้อง ทุกโมเดลจะมีสัดส่วนของแผนภาพที่ครอบคลุมบริเวณแถบขอบอยู่เพียงร้อยละ #pct0(calc.min(..range(1, 6).map(f => gc-band("768 normal → normal", f))))--#pct0(calc.max(..range(1, 6).map(f => gc-band("768 normal → normal", f)))) ทว่าสำหรับภาพถ่ายที่ทำนายผิดพลาด สัดส่วนดังกล่าวกลับมีความผันแปรอยู่ในช่วงกว้างตั้งแต่ร้อยละ #pct0(calc.min(..range(1, 6).map(f => gc-band("768 normal → DME", f)))) ถึง #pct0(calc.max(..range(1, 6).map(f => gc-band("768 normal → DME", f)))) และไม่ได้สอดคล้องกับผลการแทรกแซงข้อมูลโดยตรง ตัวอย่างเช่น โมเดลที่ 4 มีสัดส่วนแผนภาพที่ตกบนแถบขอบเพียงร้อยละ #pct0(gc-band("768 normal → DME", 4)) แต่กลับมีข้อผิดพลาดในกลุ่มภาพปกติ (normal) หลงเหลืออยู่เพียงร้อยละ #pct0(gc-at(4, "768 normal → DME", "speckle")) เมื่อทดแทนด้วยแถบขอบแบบสัญญาณรบกวน speckle (@tab-bands)
-
-แผนภาพเหล่านี้สะท้อนถึงสิ่งที่โมเดลเรียนรู้ ไม่ใช่โครงสร้างทางกายภาพของภาพถ่าย กล่าวคือ เมื่อทำการสุ่มกำหนดค่าน้ำหนักในชั้นบนของโครงข่ายใหม่ (re-initialisation) แผนภาพที่ได้จะไม่สัมพันธ์กับแผนภาพของโมเดลที่ผ่านการฝึกสอนแล้วอีกต่อไป (ค่ามัธยฐานของค่าสหสัมพันธ์แบบสเปียร์แมน [Spearman correlation] เท่ากับ #calc.round(GC.randomization_fold1_768_normal_to_dme.spearman_median, digits: 2) ในโมเดลที่ 1) ดังนั้น งานวิจัยนี้จึงใช้การทดลองแทรกแซงบริเวณแถบขอบเป็นหลักฐานเชิงประจักษ์หลัก และใช้แผนภาพ Grad-CAM เป็นเพียงภาพประกอบเสริมเท่านั้น
+แผนภาพ Grad-CAM (เลเยอร์คอนโวลูชันสุดท้าย สำหรับคลาสที่ทำนาย) ช่วยแสดงให้เห็นกลไกเดียวกันนี้ในรูปแบบภาพตัวอย่าง (@fig-gradcam) โดยเมื่อทำการสุ่มค่าน้ำหนักในชั้นบนสุดของโครงข่ายใหม่ แผนภาพจะไม่สัมพันธ์กับแผนภาพของโมเดลที่ผ่านการฝึกสอนแล้วอีกต่อไป (ค่ามัธยฐานสหสัมพันธ์สเปียร์แมน #calc.round(GC.randomization_fold1_768_normal_to_dme.spearman_median, digits: 2) ในโมเดลที่ 1) จึงสะท้อนถึงสิ่งที่โมเดลเรียนรู้ อย่างไรก็ดี แผนภาพการระบุส่วนสำคัญยังอาจขัดแย้งกับผลลัพธ์ที่เกิดขึ้นจากการแทรกแซงข้อมูลจริงได้ @arun2021saliency @hooker2019roar งานวิจัยนี้จึงใช้การแทรกแซงบริเวณแถบขอบภาพเป็นหลักฐานเชิงประจักษ์ และใช้ Grad-CAM เป็นเพียงภาพประกอบเสริมเท่านั้น
 
 #figure(
   image("../../figures/gradcam.png", width: 100%),
-  caption: [แผนภาพ Grad-CAM (เลเยอร์คอนโวลูชันสุดท้าย สำหรับคลาสที่ทำนาย) บนภาพ normal ขนาด 768×496 จาก Kermany ที่กันไว้ตามมุมมองของโมเดล LOSO-Kermany แบบ letterbox (แถวบน) และ square-crop (แถวล่าง) โดยแสดงคลาสที่ทำนายไว้เหนือแต่ละช่อง สองคอลัมน์สุดท้ายเป็นกลุ่มควบคุมที่ทั้งสองโมเดลทำนายเป็น normal ถูกต้อง],
+  caption: [Grad-CAM บนภาพปกติขนาด 768×496 จากชุดข้อมูล Kermany ที่ถูกแยกไว้ สำหรับโมเดล LOSO แบบ letterbox (บน) และ square-crop (ล่าง) โดยสองคอลัมน์สุดท้ายเป็นกลุ่มควบคุมที่ทั้งสองโมเดลทำนายเป็นปกติ],
 ) <fig-gradcam>
 
 === การฝึกสอนโดยไม่มีสิ่งชี้แนะจากขนาดภาพ
 
-โมเดลแบบครอบตัดภาพเป็นสี่เหลี่ยมจัตุรัส (square crop) จะไม่สามารถรับรู้ความกว้างของภาพสแกนได้เลย ซึ่งเมื่อทำการแยกชุดข้อมูล Kermany ไว้ โมเดลนี้สามารถทำคะแนนรวมทั้งแหล่งข้อมูล (full source) ได้ร้อยละ #pt("loso_full|kermany|all", "loso-sq") เมื่อเปรียบเทียบกับร้อยละ #pt("loso_full|kermany|all", "loso-fill") ของโมเดลแบบ letterbox (เพิ่มขึ้น #dl("loso_full|kermany|all", "loso-sq - loso-fill")) และเมื่อประเมินผลบนชุดข้อมูลทดสอบ (test split) เปรียบเทียบกับโมเดลแบบ fused ในกลุ่มการทดลองเดียวกัน พบว่าส่วนต่างประสิทธิภาพลดลงจาก #dl("gap_test|kermany|all", "loso-fill - fused-fill") เหลือเพียง #dl("gap_test|kermany|all", "loso-sq - fused-sq") หรือแคบลงประมาณร้อยละ #calc.round((1 - delta("gap_test|kermany|all", "loso-sq - fused-sq").point / delta("gap_test|kermany|all", "loso-fill - fused-fill").point) * 100)
-
-ประสิทธิภาพที่ปรับตัวดีขึ้นนี้เกิดขึ้นตรงกับตำแหน่งที่มีสิ่งชี้แนะทางลัดพอดี (@fig-kermany-size) โดยสำหรับภาพถ่ายปกติ (normal) ขนาด 768×496 พิกเซล ค่า recall เพิ่มขึ้นจากร้อยละ #pt("size_loso:768x496|kermany|all", "fill", name: "recall_normal") เป็นร้อยละ #pt("size_loso:768x496|kermany|all", "sq", name: "recall_normal") และสัดส่วนภาพที่ถูกทำนายผิดพลาดว่าเป็นภาวะ DME ลดลงจากร้อยละ #share("size_loso:768x496|kermany|all", "fill", "normal", "dme") เหลือเพียงร้อยละ #share("size_loso:768x496|kermany|all", "sq", "normal", "dme")
+โมเดลแบบ square crop จะไม่เคยเห็นความกว้างของภาพสแกนเลย ซึ่งเมื่อแยกชุดข้อมูล Kermany ไว้ โมเดลนี้ทำคะแนนบนแหล่งข้อมูลทั้งหมดได้ #pt("loso_full|kermany|all", "loso-sq") เมื่อเทียบกับ #pt("loso_full|kermany|all", "loso-fill") (#dl("loso_full|kermany|all", "loso-sq - loso-fill")) และเมื่อประเมินบนชุดข้อมูลทดสอบ เปรียบเทียบกับโมเดลแบบ fused ของกลุ่มการทดลองเดียวกัน พบว่าส่วนต่างแคบลงประมาณร้อยละ #calc.round((1 - delta("gap_test|kermany|all", "loso-sq - fused-sq").point / delta("gap_test|kermany|all", "loso-fill - fused-fill").point) * 100)% จากเดิมที่ #dl("gap_test|kermany|all", "loso-fill - fused-fill") ประสิทธิภาพที่เพิ่มขึ้นเกิดขึ้นตรงกับจุดที่มีสิ่งชี้แนะพอดี (@fig-kermany-size): ที่ขนาด 768×496 ซึ่งเป็นความกว้างที่พบเฉพาะ DME ใน Duke การครอบตัดแบบ square crop ช่วยเพิ่มความแม่นยำได้มากที่สุดสำหรับภาพปกติและ AMD (ค่า recall ของภาพปกติเพิ่มจาก #pt("size_loso:768x496|kermany|all", "fill", name: "recall_normal") เป็น #pt("size_loso:768x496|kermany|all", "sq", name: "recall_normal")) และทำให้ค่า recall ของ DME ลดลง
 
 #figure(
   kind: image,
   fig("kermany-size"),
-  caption: [การประเมินผลบน Kermany ที่กันไว้ (ภาพทั้งหมด) จำแนกตามขนาดภาพและคลาสจริง: Recall ของโมเดล LOSO แบบ letterbox และ square-crop พร้อมช่วงความเชื่อมั่น 95% การตัดภาพแบบ square crop ช่วยเพิ่มความแม่นยำได้มากที่สุดสำหรับภาพ normal และ AMD ขนาด 768×496 ซึ่งเป็นความกว้างที่พบเฉพาะคลาส DME ใน Duke และทำให้ recall ของ DME ลดลงในขนาดดังกล่าว],
+  caption: [Recall ของชุดข้อมูล Kermany ที่ถูกแยกไว้ (ภาพทั้งหมด) จำแนกตามขนาดภาพและคลาสจริง สำหรับโมเดล LOSO แบบ letterbox และ square-crop พร้อมช่วงความเชื่อมั่นร้อยละ 95],
 ) <fig-kermany-size>
 
-อย่างไรก็ตาม การขจัดสิ่งชี้แนะจากขนาดภาพไม่ได้ส่งผลดีในทุกกรณี กล่าวคือ สำหรับแหล่งข้อมูลอื่น ๆ ที่ถูกแยกไว้ (held-out sources) วิธีการครอบตัดภาพเป็นสี่เหลี่ยมจัตุรัส (square crop) ไม่ได้ช่วยให้ผลลัพธ์ปรับตัวดีขึ้น และในบางกรณีกลับมีผลลัพธ์ที่ลดลง (@tab-square) ในชุดข้อมูล OCTDL ค่า recall ของภาพถ่ายปกติ (normal) มีการเปลี่ยนแปลงไป #dl("loso_full|octdl|all", "loso-sq - loso-fill", name: "recall_normal") โดยสัดส่วนภาพถ่ายปกติที่ถูกทำนายว่าเป็นภาวะ DME เปลี่ยนจากร้อยละ #share("loso_full|octdl|all", "loso-fill", "normal", "dme") เป็นร้อยละ #share("loso_full|octdl|all", "loso-sq", "normal", "dme") ขณะที่บนชุดข้อมูล Duke ค่า recall ของภาวะ DME มีการเปลี่ยนแปลงไป #dl("loso_full|duke|all", "loso-sq - loso-fill", name: "recall_dme") เมื่อพิจารณาในมุมมองภาพปกติ/โรค AMD (Normal/AMD view) ซึ่งทำการตัดคลาสภาวะ DME ออก พบว่าการลดลงของประสิทธิภาพทั้งสองจุดดังกล่าวได้หายไป (#dl("loso_full|octdl|normal_amd", "loso-sq - loso-fill") และ #dl("loso_full|duke|normal_amd", "loso-sq - loso-fill")) ชี้ให้เห็นว่าผลกระทบเชิงลบของการครอบตัดภาพเป็นสี่เหลี่ยมจัตุรัสในแหล่งข้อมูลเหล่านี้มีความเกี่ยวข้องกับภาวะ DME โดยตรง กล่าวคือ เกิดการทำนายว่าเป็นภาวะ DME มากเกินไป (over-prediction) ในชุดข้อมูล OCTDL และการทำนายว่าเป็นภาวะ DME น้อยเกินไป (under-prediction) ในชุดข้อมูล Duke สำหรับชุดข้อมูล PAIMA คะแนน macro-F1 มีการเปลี่ยนแปลงไป #dl("loso_full|paima|normal_amd", "loso-sq - loso-fill") และค่า AUROC มีการเปลี่ยนแปลงไป #dl("loso_full|paima|normal_amd", "loso-sq - loso-fill", name: "macro_auroc") ซึ่งเป็นการสูญเสียความสามารถในการจัดอันดับ (ranking capability) ที่มีความผันแปรตามค่าซีด (seed) อย่างมาก (@sec-limits)
+ทว่าการตัดสิ่งชี้แนะออกไม่ได้ช่วยในทุกแหล่งข้อมูล บนแหล่งข้อมูลอื่น ๆ ที่ถูกแยกไว้ การครอบตัดแบบ square crop สูญเสียความแม่นยำเกินระดับสัญญาณรบกวน (@tab-square): ได้แก่ ลดลง #span(("octdl", "duke", "paima").map(s => delta(k("loso_full", s), "loso-sq - loso-fill").point)) จุด Macro-F1 สำหรับ OCTDL, Duke และ PAIMA โดย PAIMA ยังสูญเสียค่า AUROC อีก #dl("loso_full|paima|normal_amd", "loso-sq - loso-fill", name: "macro_auroc") ซึ่งเป็นการสูญเสียความสามารถด้านการจัดอันดับที่ผันแปรตามค่าซีดอย่างมาก (@sec-limits)
 
 #figure(
   {
     set text(size: (9.5 / 11) * 1em)
     table(
-      columns: 8,
-      align: (left, right, right, right, right, right, right, right),
+      columns: 6,
+      align: (left, right, right, right, right, right),
       table.header(
-        table.cell(rowspan: 2)[Held-out Source], table.cell(colspan: 3, align: center)[Macro-F1],
-        table.cell(colspan: 2, align: center)[AUROC], table.cell(colspan: 2, align: center)[Macro-F1 Normal/AMD],
-        [Letterbox], [Square], [ผลต่าง], [Letterbox], [Square], [Letterbox], [Square],
+        table.cell(rowspan: 2)[แหล่งข้อมูลที่กันไว้], table.cell(colspan: 3, align: center)[Macro-F1],
+        table.cell(colspan: 2, align: center)[AUROC],
+        [Letterbox], [Square], [ผลต่าง], [Letterbox], [Square],
         table.hline(),
       ),
       ..srcs
@@ -251,16 +244,44 @@
           dl(k("loso_full", s), "loso-sq - loso-fill"),
           pt(k("loso_full", s), "loso-fill", name: "macro_auroc"),
           pt(k("loso_full", s), "loso-sq", name: "macro_auroc"),
-          ..if s == "paima" { ([--], [--]) } else {
-            (pt("loso_full|" + s + "|normal_amd", "loso-fill"), pt("loso_full|" + s + "|normal_amd", "loso-sq"))
-          },
         ))
         .flatten(),
       table.hline(),
     )
   },
-  caption: [ประเมินโมเดลแบบ LOSO บนแหล่งข้อมูลที่ถูกแยกไว้แบบรวมทั้งแหล่งข้อมูล (full source) โดยเปรียบเทียบระหว่างรูปแบบที่มีสิ่งชี้แนะจากขนาดภาพ (letterbox) และไม่มีสิ่งชี้แนะจากขนาดภาพ (square crop) (ร้อยละ) โดยค่าผลต่างเป็นค่าแบบจับคู่พร้อมช่วงความเชื่อมั่นร้อยละ 95 สำหรับ PAIMA ประเมินผลเฉพาะ normal กับ AMD ดังนั้นมุมมอง Normal/AMD จึงเป็นคะแนนหลักของชุดข้อมูลนี้],
+  caption: [โมเดลแบบ LOSO บนแหล่งข้อมูลที่ถูกแยกไว้ทั้งหมด แบบมี (letterbox) และไม่มี (square crop) สิ่งชี้แนะจากขนาดภาพ (%) โดยผลต่างเป็นผลต่างแบบจับคู่ พร้อมช่วงความเชื่อมั่นร้อยละ 95],
 ) <tab-square>
+
+สำหรับ OCTDL และ Duke ผลเสียที่เกิดขึ้นเกี่ยวข้องกับภาวะ DME (@tab-square-dme) ในชุดข้อมูล OCTDL ค่า recall ของภาพปกติเปลี่ยนไป #dl("loso_full|octdl|all", "loso-sq - loso-fill", name: "recall_normal") เนื่องจากสัดส่วนภาพปกติที่ถูกทำนายเป็น DME เปลี่ยนจากร้อยละ #share("loso_full|octdl|all", "loso-fill", "normal", "dme")% เป็นร้อยละ #share("loso_full|octdl|all", "loso-sq", "normal", "dme")% ในขณะที่บน Duke ค่า recall ของภาวะ DME เปลี่ยนไป #dl("loso_full|duke|all", "loso-sq - loso-fill", name: "recall_dme") แต่ในมุมมอง Normal/AMD ซึ่งตัดภาพ DME และผลลัพธ์ DME ออก ผลเสียทั้งสองจุดหายไป กล่าวคือ เกิดการทำนายเป็น DME มากเกินไปใน OCTDL และทำนายเป็น DME น้อยเกินไปใน Duke
+
+#figure(
+  {
+    set text(size: (9.5 / 11) * 1em)
+    table(
+      columns: 5,
+      align: (left, left, right, right, right),
+      table.header([แหล่งข้อมูลที่กันไว้], [ตัวชี้วัด], [Letterbox], [Square], [ผลต่าง], table.hline()),
+      ..("octdl", "duke").map(s => {
+        let key = "loso_full|" + s + "|"
+        (
+          table.cell(rowspan: 3)[#source-name.at(s)],
+          [Normal/AMD macro-F1],
+          pt(key + "normal_amd", "loso-fill"), pt(key + "normal_amd", "loso-sq"),
+          dl(key + "normal_amd", "loso-sq - loso-fill"),
+          [Normal recall],
+          pt(key + "all", "loso-fill", name: "recall_normal"), pt(key + "all", "loso-sq", name: "recall_normal"),
+          dl(key + "all", "loso-sq - loso-fill", name: "recall_normal"),
+          [DME recall],
+          pt(key + "all", "loso-fill", name: "recall_dme"), pt(key + "all", "loso-sq", name: "recall_dme"),
+          dl(key + "all", "loso-sq - loso-fill", name: "recall_dme"),
+          table.hline(stroke: 0.3pt + gray),
+        )
+      }).flatten(),
+      table.hline(),
+    )
+  },
+  caption: [OCTDL และ Duke ที่ถูกแยกไว้ บนแหล่งข้อมูลทั้งหมด: letterbox เทียบกับ square crop (%) รวมถึงมุมมอง Normal/AMD ที่ตัด DME ออก ผลต่างเป็นผลต่างแบบจับคู่ พร้อมช่วงความเชื่อมั่นร้อยละ 95],
+) <tab-square-dme>
 
 ด้วยเหตุนี้ งานวิจัยนี้จึงกำหนดให้โมเดลแบบ letterbox เป็นการทดลองหลัก และจัดให้การครอบตัดภาพเป็นสี่เหลี่ยมจัตุรัส (square crop) เป็นการทดลองตัดทอนองค์ประกอบ (ablation study) ซึ่งช่วยยืนยันว่าสิ่งชี้แนะทางลัดจากขนาดภาพเกิดขึ้นจริง และสามารถอธิบายส่วนต่างประสิทธิภาพในชุดข้อมูล Kermany ได้เป็นส่วนใหญ่ ทว่าไม่ใช่วิธีการแก้ปัญหาที่สามารถประยุกต์ใช้ได้เป็นการทั่วไป
 
