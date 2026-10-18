@@ -1,7 +1,16 @@
 #import "../../lib.typ": *
-#import "../../i18n/th.typ": source-name, split-name
+#import "../../i18n/th.typ": source-name, split-name, flow-labels
+#import "../../flow.typ": method-flow
 
 = วิธีการดำเนินงานวิจัย <sec-method>
+
+@fig-method แสดงภาพรวมของงานวิจัย งานวิจัยนี้ฝึกสอนโมเดลสามรูปแบบโดยใช้การเตรียมภาพแบบ letterbox ประเมินส่วนต่างระหว่างแหล่งข้อมูลที่เคยเห็นและไม่เคยเห็น จากนั้นจึงวิเคราะห์หาสาเหตุของส่วนต่างดังกล่าว ผลการวิเคราะห์พบสิ่งชี้แนะจากขนาดภาพ (image-size cue) ซึ่งนำไปสู่กลุ่มการทดลองที่สองแบบครอบตัดภาพเป็นสี่เหลี่ยมจัตุรัส (square crop) (@sec-square)
+
+#figure(
+  kind: image,
+  method-flow(labels: flow-labels),
+  caption: [ภาพรวมของงานวิจัย],
+) <fig-method>
 
 == การเตรียมข้อมูลและภาพ
 

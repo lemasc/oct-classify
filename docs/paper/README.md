@@ -6,6 +6,7 @@ Typst project. Build with `typst compile --root ../.. main.typ` (or `typst watch
 - `th/`: Thai companion; see [Thai version](#thai-version).
 - `i18n/th.typ`: Thai strings (title, source and split names, the `translated` list). Thai section files import it after `lib.typ` so these names shadow the English ones.
 - `template.typ`: page and font setup shared by both languages.
+- `flow.typ`: the study overview flowchart (`@fig-method`), drawn in Typst with the `@preview/fletcher` package, which Typst downloads on the first compile. Its labels are content, so the Thai version passes its own (`flow-labels` in `i18n/th.typ`).
 - `figures/`: generated figures. Do not edit by hand; regenerate with the scripts in `scripts/paper/`.
 - Every number in the text comes from tracked outputs under `data/` (`data/final-scoring/`, `data/paper/`).
 

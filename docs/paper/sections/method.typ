@@ -1,6 +1,17 @@
 #import "../lib.typ": *
+#import "../flow.typ": method-flow
 
 = Method <sec-method>
+
+@fig-method outlines the study. We train three variants with letterbox preprocessing, score the gap between seen
+and unseen sources, and then diagnose where the gap comes from. The diagnosis found an image-size cue, which led to
+a second, square-crop arm (@sec-square).
+
+#figure(
+  kind: image,
+  method-flow(),
+  caption: [Overview of the study.],
+) <fig-method>
 
 == Model and training
 
