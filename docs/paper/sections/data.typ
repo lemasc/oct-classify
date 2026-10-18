@@ -13,8 +13,8 @@ unseen dataset and, only for OCTDL, also an unseen device. @fig-examples shows o
 
 #figure(
   image("../figures/examples.png", width: 100%),
-  caption: [One B-scan per source and class, drawn at the same pixel scale (not the same physical scale) and
-    labelled with its size in pixels. Dry and wet AMD are merged into one class for training.],
+  caption: [One B-scan per source and class, drawn at the same pixel scale (not the same physical scale)
+    and labelled with its size in pixels.],
 ) <fig-examples>
 
 #figure(
@@ -50,10 +50,8 @@ unseen dataset and, only for OCTDL, also an unseen device. @fig-examples shows o
       table.hline(),
     )
   },
-  caption: [The four sources after deduplication. Groups are the unit kept within one split and resampled by the
-    bootstrap; Duke labels whole eyes, the others single B-scans. _AMD stage_ is the share of each source's AMD
-    images that are dry (drusen) or wet (CNV/MNV); both are one class in training. #super[a]The other #stage-share("octdl", "intermediate")% of OCTDL's
-    AMD images are intermediate stage with suspected MNV.],
+  caption: [The four sources after deduplication, with class counts, AMD stage mix and split.
+    #super[a]The other #stage-share("octdl", "intermediate")% of OCTDL's AMD images are intermediate stage with suspected MNV.],
 ) <tab-data>
 
 *Taxonomy.* We merge the source labels into three classes: _normal_; _AMD_ (age-related macular degeneration);

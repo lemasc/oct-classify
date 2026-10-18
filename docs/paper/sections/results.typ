@@ -18,13 +18,11 @@
     )).flatten(),
     table.hline(),
   ),
-  caption: [Macro-F1 (%) on each source's test split, with 95% patient-level bootstrap intervals. PAIMA is scored
-    on normal vs AMD. Duke is pooled over its five folds (all #num(DS.duke.n_images) B-scans of its #DS.duke.n_groups eyes, each
-    scored by the model that did not train on it).],
+  caption: [Macro-F1 (%) on each source's test split, with 95% patient-level bootstrap intervals.],
 ) <tab-seen>
 
 On the source it was trained on, a ResNet-50 reaches #pt(k("seen", "paima"), "per-dataset")–#pt(k("seen", "kermany"),
-"per-dataset") macro-F1 (@tab-seen). Training one model on all four sources costs little: on any source the fused model gives up at most
+"per-dataset") macro-F1 (@tab-seen; Duke is pooled over its five folds, each eye scored by the model that did not train on it). Training one model on all four sources costs little: on any source the fused model gives up at most
 #whole(calc.min(..srcs.map(s => delta(k("seen", s), "fused-fill - per-dataset").lo))) points against the
 per-dataset model (lower end of the paired 95% interval), and the loss is measurable only on Kermany
 (#dl(k("seen", "kermany"), "fused-fill - per-dataset")). Square crop, which hides the image size (@sec-square), also
@@ -65,12 +63,11 @@ costs nothing on seen sources: no source loses beyond noise against the fused mo
 
 #figure(
   recall-table(s => (seen-row(s, "Per-dataset", "per-dataset"), seen-row(s, "Fused", "fused-fill"))),
-  caption: [Recall (%) per class on each source's test split, seen letterbox models, mean over models. _Dry_ and
-    _wet_ are recall within AMD; Duke's AMD is all dry, and OCTDL's intermediate stage is not shown. PAIMA has no
-    DME.],
+  caption: [Recall (%) per class on each source's test split, seen letterbox models, mean over models.],
 ) <tab-recall>
 
-Per-class recall (@tab-recall) shows where the errors are. PAIMA is the hardest source even when seen
+Per-class recall (@tab-recall) shows where the errors are. _Dry_ and _wet_ are recall within AMD; Duke's AMD is all
+dry, and OCTDL's intermediate stage is not shown. PAIMA is the hardest source even when seen
 (#pt(k("seen", "paima"), "fused-fill") fused), through its AMD class (recall
 #pt(k("seen", "paima"), "fused-fill", name: "recall_amd")), and within AMD through its dry stage: the fused model
 recognises #as-rec("test|paima|normal_amd", "dry", "fused-fill")% of PAIMA's drusen scans but
@@ -109,13 +106,12 @@ of cases by both models.
       table.hline(),
     )
   },
-  caption: [Macro-F1 (%) of seen (fused) vs unseen (LOSO) sources, letterbox models. _Gap_ is the paired difference between the
-    LOSO model and the fused model on the same test images, with its 95% interval. _Full source_ scores the LOSO
-    model on every image of the held-out source. Duke held out is one model on 45 eyes.],
+  caption: [Macro-F1 (%) of seen (fused) vs unseen (LOSO) sources, letterbox. _Gap_ is the paired difference, LOSO minus fused, on the same test
+    images, with its 95% interval.],
 ) <tab-unseen>
 
-Every source loses accuracy when it is unseen, beyond noise (@tab-unseen). For OCTDL, PAIMA and
-Duke the gap is #span(("octdl", "paima", "duke").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) macro-F1 points; for Kermany it is #dl(k("gap_test", "kermany"), "loso-fill - fused-fill").
+Every source loses accuracy when it is unseen, beyond noise (@tab-unseen). The full-source column scores the LOSO model on
+every image of the held-out source, and Duke held out is one model on #DS.duke.n_groups eyes. For OCTDL, PAIMA and Duke the gap is #span(("octdl", "paima", "duke").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) macro-F1 points; for Kermany it is #dl(k("gap_test", "kermany"), "loso-fill - fused-fill").
 
 For the three-class sources the AUROC gap is much smaller than the macro-F1 gap (@tab-auroc; for Kermany
 #dl(k("gap_test", "kermany"), "loso-fill - fused-fill", name: "macro_auroc")), so the models still rank the right
@@ -143,8 +139,7 @@ exception: its AUROC gap is #dl(k("gap_test", "paima"), "loso-fill - fused-fill"
       table.hline(),
     )
   },
-  caption: [Macro-AUROC (%, one-vs-rest) of seen (fused) vs unseen (LOSO) sources, letterbox models, test split. _Gap_
-    is paired, with its 95% interval. PAIMA is scored on normal vs AMD.],
+  caption: [Macro-AUROC (%) of seen (fused) vs unseen (LOSO) sources, letterbox models, test split; gaps are paired, with 95% intervals.],
 ) <tab-auroc>
 
 
@@ -181,8 +176,7 @@ images to 512 wide does the reverse. The effect is not limited to Kermany: paddi
       table.hline(),
     )
   },
-  caption: [Share (%) of normal images called DME before and after changing only the test image size, LOSO models
-    on their held-out source, no retraining. _Change_ is paired, with its 95% interval.],
+  caption: [Share (%) of normal images called DME before and after changing only the test image size, with the paired change and its 95% interval.],
 ) <tab-size-test>
 
 *Where the cue enters: the letterbox bands.* Width reaches the model through the letterbox. A 768×496 scan
@@ -223,11 +217,11 @@ from the darker half of the scan itself, and rescore (@tab-bands). In models 1, 
       table.hline(),
     )
   },
-  caption: [Held-out Kermany 768×496 images that a LOSO-Kermany model wrongly calls DME: share (%) still called
-    DME after the letterbox bands are replaced by black or by speckle.],
+  caption: [Errors that survive replacing the letterbox bands with black or speckle: share (%) of 768×496 images still wrongly
+    called DME, per held-out Kermany model.],
 ) <tab-bands>
 
-Grad-CAM maps illustrate the same mechanism (@fig-gradcam). After the top of the network is re-initialised they no
+Grad-CAM maps (last convolutional stage, for the predicted class) illustrate the same mechanism (@fig-gradcam). After the top of the network is re-initialised they no
 longer correlate with the trained maps (median Spearman
 #calc.round(GC.randomization_fold1_768_normal_to_dme.spearman_median, digits: 2), model 1), so they reflect what the
 model learned. Attribution maps can still disagree with what an intervention changes @arun2021saliency
@@ -235,9 +229,8 @@ model learned. Attribution maps can still disagree with what an intervention cha
 
 #figure(
   image("../figures/gradcam.png", width: 100%),
-  caption: [Grad-CAM (last convolutional stage, predicted class) on held-out Kermany 768×496 normal images, as the
-    letterbox (top) and square-crop (bottom) LOSO-Kermany model see them; predicted class above each panel. The
-    last two columns are controls that both models call normal.],
+  caption: [Grad-CAM on held-out Kermany 768×496 normal images for the letterbox (top) and square-crop (bottom) LOSO
+    model; the last two columns are controls that both models call normal.],
 ) <fig-gradcam>
 
 *Training without the cue.* Square-crop models never see the image width. With Kermany held out, they score
@@ -245,16 +238,15 @@ model learned. Attribution maps can still disagree with what an intervention cha
 (#dl("loso_full|kermany|all", "loso-sq - loso-fill")). On the test split, measured against the fused model of the
 same arm, the gap narrows by about #calc.round((1 - delta("gap_test|kermany|all", "loso-sq - fused-sq").point / delta("gap_test|kermany|all", "loso-fill - fused-fill").point) * 100)%,
 from #dl("gap_test|kermany|all", "loso-fill - fused-fill"). The gain is largest exactly where the cue was
-(@fig-kermany-size): for 768×496 normal images, recall rises from
-#pt("size_loso:768x496|kermany|all", "fill", name: "recall_normal") to
-#pt("size_loso:768x496|kermany|all", "sq", name: "recall_normal").
+(@fig-kermany-size): at 768×496, the width that is DME only in Duke, square crop helps most for normal and AMD images
+(normal recall rises from #pt("size_loso:768x496|kermany|all", "fill", name: "recall_normal") to
+#pt("size_loso:768x496|kermany|all", "sq", name: "recall_normal")) and costs DME recall.
 
 #figure(
   kind: image,
   fig("kermany-size"),
-  caption: [Held-out Kermany (all images) by image size and true class: recall of letterbox and square-crop
-    LOSO models, with 95% intervals. Square crop helps most for normal and AMD images at 768×496, the width that is
-    DME only in Duke, and costs DME recall there.],
+  caption: [Recall of the held-out Kermany source (all images) by image size and true class, for letterbox and
+    square-crop LOSO models, with 95% intervals.],
 ) <fig-kermany-size>
 
 *But removing the cue does not help everywhere.* On the other held-out sources square crop loses accuracy beyond
@@ -287,15 +279,15 @@ strongly with the seed (@sec-limits).
     )
   },
   caption: [LOSO models on the full held-out source, with (letterbox) and without (square crop) the image-size cue
-    (%). _Difference_ is paired, with its 95% interval. PAIMA is scored on normal vs AMD only.],
+    (%); the difference is paired, with its 95% interval.],
 ) <tab-square>
 
 For OCTDL and Duke the cost involves DME (@tab-square-dme). On OCTDL, normal recall changes by
 #dl("loso_full|octdl|all", "loso-sq - loso-fill", name: "recall_normal") as the share of normal images called DME
 goes from #share("loso_full|octdl|all", "loso-fill", "normal", "dme")% to
 #share("loso_full|octdl|all", "loso-sq", "normal", "dme")%; on Duke, DME recall changes by
-#dl("loso_full|duke|all", "loso-sq - loso-fill", name: "recall_dme"). In the Normal/AMD view, which removes the DME
-class, both losses disappear: too many DME calls on OCTDL, too few on Duke.
+#dl("loso_full|duke|all", "loso-sq - loso-fill", name: "recall_dme"). In the Normal/AMD view, which drops the DME
+images and the DME output, both losses disappear: too many DME calls on OCTDL, too few on Duke.
 
 #figure(
   {
@@ -323,8 +315,8 @@ class, both losses disappear: too many DME calls on OCTDL, too few on Duke.
       table.hline(),
     )
   },
-  caption: [OCTDL and Duke held out, full source, letterbox and square crop (%). _Difference_ is paired, with its 95%
-    interval. The Normal/AMD view drops the DME images and the DME output.],
+  caption: [OCTDL and Duke held out, full source: letterbox vs square crop (%), including the Normal/AMD view without DME.
+    Differences are paired, with 95% intervals.],
 ) <tab-square-dme>
 
 We therefore keep letterbox models as the main result and treat square crop as an ablation. It confirms that
@@ -356,9 +348,8 @@ neither source lost beyond noise.
       table.hline(),
     )
   },
-  caption: [Where the unseen-source gap comes from (letterbox, test split, LOSO minus fused, percentage points, with
-    paired 95% intervals). The 3-class scores are in @tab-unseen and the per-class recall changes in @tab-recall-unseen. Removing the
-    DME class removes most of the gap for OCTDL and Duke; PAIMA has no DME.],
+  caption: [The unseen-source gap in the 3-class and Normal/AMD views (letterbox, test split, LOSO minus fused, percentage
+    points, with paired 95% intervals).],
 ) <tab-remaining>
 
 Most of what remains is DME (@tab-remaining). On the test split, held-out DME recall falls by #span(("kermany", "octdl", "duke").map(s => delta("gap_test|" + s + "|all", "loso-fill - fused-fill", name: "recall_dme").point)) points for
@@ -402,9 +393,8 @@ recall changes by #as-dl("test|paima|normal_amd", "dry", "loso-fill - fused-fill
       table.hline(),
     )
   },
-  caption: [Change in per-class recall when the source is held out (LOSO minus fused, letterbox models, test split;
-    percentage points, with paired 95% intervals). The fused levels are in @tab-recall. _Dry_ and _wet_ are recall
-    within AMD; Duke's AMD is all dry, and OCTDL's intermediate stage is not shown. PAIMA has no DME.],
+  caption: [Change in per-class recall (percentage points) when the source is held out (LOSO minus fused, letterbox,
+    test split), with paired 95% intervals. Columns as in @tab-recall, which gives the fused levels.],
 ) <tab-recall-unseen>
 
 A likely reason is that each LOSO model sees DME from fewer sources: PAIMA has none, so with Kermany held out the
@@ -442,9 +432,8 @@ without its DME, so the comparison with the fused model isolates the missing DME
       table.hline(),
     )
   },
-  caption: [Kermany's test split under three models (%): the fused model, the fused model trained without Kermany's
-    DME images (_no Kermany DME_), and the LOSO model. Columns after Macro-F1 are per-class recall. Italic rows are
-    paired differences with 95% intervals.],
+  caption: [Kermany's test split under the fused, no-Kermany-DME and LOSO models: macro-F1 and per-class recall (%).
+    Italic rows are paired differences with 95% intervals.],
 ) <tab-zero-dme>
 
 @tab-zero-dme puts the three Kermany models side by side. Removing Kermany's DME changes Kermany by
@@ -461,7 +450,7 @@ Two standard post-hoc fixes leave most of the gap in place (@tab-posthoc). Both 
 held-out source's patients and scored on the other. The first tests whether the gap is a misplaced decision cutoff
 (@sec-unseen): a per-class shift of the output log-probabilities, fitted on the source's own labels. It gains
 Kermany #lb-dl("kermany|all", "bias-crossfit") and changes the other sources by little.
-Even the best shift found on all of Kermany's labels, which a deployed model could not do, reaches only
+Even the best shift found on all of a source's labels (the Ceiling column; #srcs.filter(s => LB.at(s + "|" + view3(s)).grid.subsampled).map(s => source-name.at(s)).join(", ") on a random subsample), which a deployed model could not do, reaches only
 #fmt(LB.at("kermany|all").grid.best), against #pt("loso_full|kermany|all", "loso-sq") for retraining without the
 size cue; a shift shared by all images cannot undo errors that depend on image size.
 
@@ -490,10 +479,8 @@ size cue; a shift shared by all images cannot undo errors that depend on image s
       table.hline(),
     )
   },
-  caption: [Post-hoc fixes on the full held-out source (macro-F1 %, letterbox LOSO models; PAIMA on normal vs AMD).
-    _Cross-fit_ shift, AdaBN and square crop are paired differences from _LOSO_, with 95% intervals. _Ceiling_ is the best shift
-    on all labels (#srcs.filter(s => LB.at(lbk(s)).grid.subsampled).map(s => source-name.at(s)).join(", ") on a
-    random subsample).],
+  caption: [Post-hoc fixes on the full held-out source (macro-F1 %, letterbox LOSO models); fix columns are paired
+    differences from LOSO, with 95% intervals.],
 ) <tab-posthoc>
 
 The second fix, AdaBN @li2016adabn, re-estimates the BatchNorm statistics on the unseen source's unlabelled

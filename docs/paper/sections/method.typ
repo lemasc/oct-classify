@@ -28,8 +28,7 @@ discusses seed variation.
 #figure(
   kind: image,
   fig("design"),
-  caption: [The three training variants. Per-dataset and fused models are tested on sources they trained on;
-    leave-one-source-out (LOSO) models are tested on a source they never saw.],
+  caption: [The three training variants and the sources each is tested on.],
 ) <fig-design>
 
 We train three variants (@fig-design), all scored on each source's test split:
