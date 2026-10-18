@@ -287,29 +287,24 @@
 
 ทั้งนี้ งานวิจัยนี้ได้กำหนดเกณฑ์การตีความดังกล่าวไว้ล่วงหน้าก่อนทราบผลการครอบตัดภาพเป็นสี่เหลี่ยมจัตุรัสของชุดข้อมูล OCTDL และ Duke ว่า วิธีการครอบตัดภาพเป็นสี่เหลี่ยมจัตุรัสจะถูกนำมาใช้เป็นรูปแบบหลักก็ต่อเมื่อไม่มีแหล่งข้อมูลใดสูญเสียประสิทธิภาพเกินระดับสัญญาณรบกวนเท่านั้น
 
-== ส่วนต่างความแม่นยำที่ยังคงหลงเหลือ <sec-remaining>
+== จุดที่เกิดส่วนต่างประสิทธิภาพ <sec-remaining>
 
 #figure(
   {
     set text(size: (9.5 / 11) * 1em)
     table(
-      columns: 6,
-      align: (left, right, right, right, right, right),
+      columns: 5,
+      align: (left, right, right, right, right),
       table.header(
-        table.cell(rowspan: 2)[Held-out Source], table.cell(rowspan: 2)[ส่วนต่าง 3 คลาส],
-        table.cell(rowspan: 2)[DME recall], table.cell(colspan: 3, align: center)[Macro-F1 Normal/AMD],
-        [Seen], [Unseen], [Gap],
+        table.cell(rowspan: 2)[แหล่งข้อมูลที่กันไว้], table.cell(rowspan: 2)[ส่วนต่าง 3 คลาส],
+        table.cell(colspan: 3, align: center)[Macro-F1 (มุมมอง Normal/AMD)],
+        [เคยเห็น], [ไม่เคยเห็น], [ส่วนต่าง],
         table.hline(),
       ),
       ..srcs
         .map(s => (
           [#source-name.at(s)],
-          ..if s == "paima" { ([--], [--]) } else {
-            (
-              dl("gap_test|" + s + "|all", "loso-fill - fused-fill"),
-              dl("gap_test|" + s + "|all", "loso-fill - fused-fill", name: "recall_dme"),
-            )
-          },
+          if s == "paima" [--] else { dl("gap_test|" + s + "|all", "loso-fill - fused-fill") },
           pt("gap_test|" + s + "|normal_amd", "fused-fill"),
           pt("gap_test|" + s + "|normal_amd", "loso-fill"),
           dl("gap_test|" + s + "|normal_amd", "loso-fill - fused-fill"),
@@ -318,34 +313,27 @@
       table.hline(),
     )
   },
-  caption: [ที่มาของส่วนต่างจากแหล่งข้อมูลที่ไม่เคยเห็น (unseen-source gap) (ประเมินโมเดลแบบ letterbox บนชุดข้อมูลทดสอบ (test split) คำนวณจากผลลัพธ์ของโมเดลแบบ LOSO ลบด้วยโมเดลแบบ fused มีหน่วยเป็นจุดเปอร์เซ็นต์ (percentage points) พร้อมช่วงความเชื่อมั่นแบบจับคู่ร้อยละ 95) ทั้งนี้ ชุดข้อมูล PAIMA ได้รับการประเมินผลเฉพาะการจำแนกระหว่างภาพปกติ (normal) กับโรค AMD ดังนั้น คะแนนในมุมมองภาพปกติ/โรค AMD (Normal/AMD view) จึงถือเป็นคะแนนหลักของชุดข้อมูลนี้ โดยคะแนนแบบ 3 คลาสแสดงไว้ใน @tab-unseen และค่า recall ของภาวะ DME แสดงไว้ใน @tab-recall-unseen ทั้งนี้ การตัดคลาสภาวะ DME ออก ช่วยลดส่วนต่างดังกล่าวลงได้เกือบทั้งหมดสำหรับชุดข้อมูล OCTDL และ Duke ส่วนชุดข้อมูล PAIMA ไม่มีข้อมูลในคลาส DME],
+  caption: [ส่วนต่างประสิทธิภาพบนแหล่งข้อมูลที่ไม่เคยเห็นในมุมมอง 3 คลาสและมุมมอง Normal/AMD (letterbox, ชุดทดสอบ, LOSO ลบด้วย fused หน่วยจุดเปอร์เซ็นต์ พร้อมช่วงความเชื่อมั่นแบบจับคู่ร้อยละ 95)],
 ) <tab-remaining>
 
-ส่วนต่างประสิทธิภาพที่ยังคงหลงเหลืออยู่เกือบทั้งหมดมีความเกี่ยวข้องกับภาวะ DME (@tab-remaining) โดยบนชุดข้อมูลทดสอบ (test split) ค่า recall ของภาวะ DME เมื่อประเมินในฐานะแหล่งข้อมูลที่ถูกแยกไว้ (held-out) ปรับตัวลดลงถึง #span(("kermany", "octdl", "duke").map(s => delta("gap_test|" + s + "|all", "loso-fill - fused-fill", name: "recall_dme").point)) จุดเปอร์เซ็นต์ สำหรับชุดข้อมูล Kermany, OCTDL และ Duke
+คลาสที่เป็นสาเหตุของส่วนต่างแตกต่างกันไปตามแหล่งข้อมูล (@tab-remaining) โดยบนชุดข้อมูลทดสอบ ค่า recall ของภาวะ DME เมื่อเป็นแหล่งข้อมูลที่ถูกแยกไว้ ลดลง #span(("kermany", "octdl", "duke").map(s => delta("gap_test|" + s + "|all", "loso-fill - fused-fill", name: "recall_dme").point)) จุดสำหรับ Kermany, OCTDL และ Duke (@tab-recall-unseen) แม้ว่าช่วงความเชื่อมั่นของ OCTDL และ Duke จะค่อนข้างกว้าง ในมุมมอง Normal/AMD ส่วนต่างของ OCTDL และ Duke แยกไม่ออกจากศูนย์ ซึ่งชี้ว่าภาวะ DME เป็นสาเหตุหลักสำหรับสองแหล่งข้อมูลนี้ แต่ช่วงความเชื่อมั่นยังกว้างเกินกว่าจะระบุว่า DME อธิบายส่วนต่างทั้งหมดได้ Kermany ยังคงมีส่วนต่างขนาดใหญ่ในมุมมอง Normal/AMD จากภาพปกติที่ถูกทำนายเป็น AMD: เมื่อถูกแยกไว้ ค่า recall ของภาพปกติเปลี่ยนไป #dl("gap_test|kermany|all", "loso-fill - fused-fill", name: "recall_normal") (@tab-recall-unseen) และภาพปกติส่วนใหญ่ที่ทำนายผิดถูกระบุว่าเป็น AMD ซึ่งสอดคล้องกับสิ่งชี้แนะจากขนาดภาพข้างต้น (@fig-kermany-size) เนื่องจากชุดทดสอบส่วนใหญ่เป็นขนาด 1024×496 ซึ่งเป็นขนาดที่มีเฉพาะ AMD ใน Duke สำหรับ PAIMA ซึ่งไม่มีภาวะ DME ยังคงมีส่วนต่างจากการสูญเสีย recall ของ AMD และเป็นชนิด dry AMD เป็นหลักเช่นเดิม: ค่า recall เมื่อถูกแยกไว้เปลี่ยนไป #as-dl("test|paima|normal_amd", "dry", "loso-fill - fused-fill") สำหรับภาพสแกนชนิดดรูเซน และ #as-dl("test|paima|normal_amd", "wet", "loso-fill - fused-fill") สำหรับชนิดเปียก
 
-ในมุมมองภาพปกติ/โรค AMD (Normal/AMD view) ส่วนต่างของชุดข้อมูล OCTDL และ Duke อยู่ในระดับสัญญาณรบกวนซึ่งใกล้เคียงกับศูนย์ (#dl("gap_test|octdl|normal_amd", "loso-fill - fused-fill") และ #dl("gap_test|duke|normal_amd", "loso-fill - fused-fill")) ในขณะที่ชุดข้อมูล Kermany ยังคงมีส่วนต่างในมุมมองภาพปกติ/โรค AMD ขนาดใหญ่ ซึ่งเกิดจากการที่ภาพถ่ายปกติ (normal) ถูกทำนายว่าเป็นโรค AMD กล่าวคือ เมื่อทำการแยกชุดข้อมูล Kermany ไว้ ค่า recall ของภาพถ่ายปกติลดลงจากร้อยละ #pt("gap_test|kermany|all", "fused-fill", name: "recall_normal") เหลือเพียงร้อยละ #pt("gap_test|kermany|all", "loso-fill", name: "recall_normal") (@tab-recall-unseen) และภาพถ่ายปกติที่ถูกทำนายผิดพลาดส่วนใหญ่ถูกระบุว่าเป็นโรค AMD
-
-ซึ่งสอดคล้องกับสิ่งชี้แนะจากขนาดภาพที่ได้กล่าวไว้ข้างต้น (@fig-kermany-size) เนื่องจากภาพในชุดข้อมูลทดสอบส่วนใหญ่ของชุดข้อมูล Kermany มีขนาด 1024×496 พิกเซล ซึ่งเป็นขนาดเฉพาะของโรค AMD ในชุดข้อมูล Duke
-
-สำหรับชุดข้อมูล PAIMA ซึ่งไม่มีข้อมูลในคลาส DME ยังคงมีส่วนต่างอยู่ที่ #dl("gap_test|paima|normal_amd", "loso-fill - fused-fill") โดยมีสาเหตุมาจากค่า recall ของโรค AMD และเป็นโรค AMD ชนิดแห้ง (dry AMD) เป็นหลักเช่นเดิม กล่าวคือ เมื่อทำการแยกชุดข้อมูล PAIMA ไว้ ค่า recall มีการเปลี่ยนแปลงไป #as-dl("test|paima|normal_amd", "dry", "loso-fill - fused-fill") สำหรับภาพสแกนชนิดมีดรูเซน (drusen) และ #as-dl("test|paima|normal_amd", "wet", "loso-fill - fused-fill") สำหรับภาพถ่ายชนิดเปียก (wet AMD)
-
-#figure(
-  recall-table(s => {
-    let rows = (seen-row(s, "Fused (Seen)", "fused-fill"),)
-    if s == "kermany" {
-      rows.push(recall-row(s, "Fused (Unseen)", ZD.at("kermany|all").arms.at("zero-dme").metrics, none))
-    }
-    rows.push(recall-row(s, "LOSO (Held-out)", R.at(k("gap_test", s)).arms.at("loso-fill").metrics, "loso-fill"))
-    rows
-  }),
-  caption: [ค่า recall แยกตามคลาสบนชุดข้อมูลทดสอบ (test split) ของแต่ละแหล่งข้อมูล เมื่อแหล่งข้อมูลนั้นเป็นแบบเคยเห็น (fused) และถูกแยกไว้ (LOSO) สำหรับโมเดลแบบ letterbox โดยรายละเอียดคอลัมน์เป็นไปตาม @tab-recall สำหรับชุดข้อมูล Kermany แสดงผลลัพธ์ของโมเดลแบบ fused ที่ฝึกสอนโดยไม่รวมภาวะ DME ของชุดข้อมูล Kermany ร่วมด้วย (@tab-zero-dme) ทั้งนี้ ค่าผลต่างที่อ้างถึงในเนื้อหามีช่วงความเชื่อมั่นแบบจับคู่ร้อยละ 95],
-) <tab-recall-unseen>
-
-สาเหตุที่เป็นไปได้คือ โมเดลแบบ LOSO แต่ละโมเดลได้รับการฝึกสอนด้วยข้อมูลภาวะ DME จากจำนวนแหล่งข้อมูลที่น้อยลง กล่าวคือ ชุดข้อมูล PAIMA ไม่มีข้อมูลภาวะ DME เลย ดังนั้น เมื่อทำการแยกชุดข้อมูล Kermany ไว้ โมเดลจึงเรียนรู้ลักษณะเฉพาะของภาวะ DME จากชุดข้อมูล OCTDL และ Duke เท่านั้น
-
-งานวิจัยนี้ได้ทดสอบสมมติฐานดังกล่าวสำหรับชุดข้อมูล Kermany ด้วยโมเดลแบบ fused ที่ฝึกสอนบนทั้ง 4 แหล่งข้อมูล แต่ทำการตัดภาพถ่ายภาวะ DME ของชุดข้อมูล Kermany ออกทั้งหมด (ทั้งในชุดข้อมูลฝึกสอน (training set) และชุดข้อมูลตรวจสอบความถูกต้อง (validation set) โดยคลาสอื่นและแหล่งข้อมูลอื่นยังคงเดิม พร้อมทั้งฝึกสอนแบบ 5 ส่วน (5 folds) ตามชุดข้อมูล Duke ภายใต้ขั้นตอนเดียวกันกับโมเดลแบบ fused ปกติ
-
-เงื่อนไขนี้ส่งผลให้ชุดข้อมูล Kermany กลายเป็นแหล่งข้อมูลที่เคยเห็น แต่ปราศจากข้อมูลภาวะ DME ของตนเอง การเปรียบเทียบกับโมเดลแบบ fused ปกติจึงช่วยแยกผลกระทบจากการขาดหายไปของข้อมูลภาวะ DME ออกมาได้อย่างชัดเจน ขณะเดียวกันการเปรียบเทียบกับโมเดลแบบ LOSO จะช่วยแยกผลกระทบอันเกิดจากการเป็นแหล่งข้อมูลที่ไม่เคยเห็น (unseen source)
+// One source's row of per-class recall changes, LOSO minus fused (paired, with intervals).
+#let recall-change-row(s) = {
+  let g = k("gap_test", s)
+  let pair = "loso-fill - fused-fill"
+  let stage(st) = if s == "duke" { if st == "dry" { dl(g, pair, name: "recall_amd") } else [--] } else {
+    as-dl(k("test", s), st, pair)
+  }
+  (
+    [#source-name.at(s)],
+    dl(g, pair, name: "recall_normal"),
+    dl(g, pair, name: "recall_amd"),
+    stage("dry"),
+    stage("wet"),
+    if s == "paima" [--] else { dl(g, pair, name: "recall_dme") },
+  )
+}
 
 #figure(
   {
@@ -354,48 +342,63 @@
       columns: 6,
       align: (left, right, right, right, right, right),
       table.header(
-        table.cell(rowspan: 2)[Source], table.cell(colspan: 3, align: center)[Macro-F1],
-        table.cell(colspan: 2, align: center)[DME recall],
-        [Held-out], [Fused], [ผลต่าง], [Held-out], [Fused],
+        table.cell(rowspan: 2)[แหล่งข้อมูลที่กันไว้], table.cell(rowspan: 2)[ปกติ], table.cell(rowspan: 2)[AMD],
+        table.cell(colspan: 2, align: center)[ระยะของ AMD], table.cell(rowspan: 2)[DME],
+        [dry], [wet],
         table.hline(),
       ),
-      ..srcs
-        .map(s => {
-          let key = s + "|" + view3(s)
-          (
-            [#source-name.at(s)],
-            zd-pt(key, "zero-dme"),
-            zd-pt(key, "fused-fill"),
-            zd-dl(key, "zero-dme - fused-fill"),
-            ..if s == "paima" { ([--], [--]) } else {
-              (zd-pt(key, "zero-dme", name: "recall_dme"), zd-pt(key, "fused-fill", name: "recall_dme"))
-            },
-          )
-        })
-        .flatten(),
+      ..srcs.map(recall-change-row).flatten(),
       table.hline(),
     )
   },
-  caption: [ผลลัพธ์ของโมเดลแบบ fused ที่ฝึกสอนโดยตัดภาพถ่ายภาวะ DME ของชุดข้อมูล Kermany ออก (Held-out) และแบบปกติ (Fused) บนชุดข้อมูลทดสอบ (test split) ของแต่ละแหล่งข้อมูล ทั้งนี้ ค่าผลต่างเป็นค่าแบบจับคู่พร้อมช่วงความเชื่อมั่นร้อยละ 95 ในระดับผู้ป่วย],
+  caption: [การเปลี่ยนแปลงของค่า recall รายคลาส (จุดเปอร์เซ็นต์) เมื่อแหล่งข้อมูลถูกแยกไว้ (LOSO ลบด้วย fused, letterbox, ชุดทดสอบ) พร้อมช่วงความเชื่อมั่นแบบจับคู่ร้อยละ 95 คอลัมน์เหมือนใน @tab-recall ซึ่งแสดงระดับของโมเดล fused],
+) <tab-recall-unseen>
+
+สาเหตุที่เป็นไปได้คือ โมเดลแบบ LOSO แต่ละโมเดลได้รับการฝึกสอนด้วยข้อมูลภาวะ DME จากจำนวนแหล่งข้อมูลที่น้อยลง กล่าวคือ ชุดข้อมูล PAIMA ไม่มีข้อมูลภาวะ DME เลย ดังนั้น เมื่อทำการแยกชุดข้อมูล Kermany ไว้ โมเดลจึงเรียนรู้ลักษณะเฉพาะของภาวะ DME จากชุดข้อมูล OCTDL และ Duke เท่านั้น
+
+งานวิจัยนี้ได้ทดสอบสมมติฐานดังกล่าวสำหรับชุดข้อมูล Kermany ด้วยโมเดลแบบ fused ที่ฝึกสอนบนทั้ง 4 แหล่งข้อมูล แต่ทำการตัดภาพถ่ายภาวะ DME ของชุดข้อมูล Kermany ออกทั้งหมด (ทั้งในชุดข้อมูลฝึกสอน (training set) และชุดข้อมูลตรวจสอบความถูกต้อง (validation set) โดยคลาสอื่นและแหล่งข้อมูลอื่นยังคงเดิม พร้อมทั้งฝึกสอนแบบ 5 ส่วน (5 folds) ตามชุดข้อมูล Duke ภายใต้ขั้นตอนเดียวกันกับโมเดลแบบ fused ปกติ
+
+เงื่อนไขนี้ส่งผลให้ชุดข้อมูล Kermany กลายเป็นแหล่งข้อมูลที่เคยเห็น แต่ปราศจากข้อมูลภาวะ DME ของตนเอง การเปรียบเทียบกับโมเดลแบบ fused ปกติจึงช่วยแยกผลกระทบจากการขาดหายไปของข้อมูลภาวะ DME ออกมาได้อย่างชัดเจน ขณะเดียวกันการเปรียบเทียบกับโมเดลแบบ LOSO จะช่วยแยกผลกระทบอันเกิดจากการเป็นแหล่งข้อมูลที่ไม่เคยเห็น (unseen source)
+
+// Rows of the zero-DME control: per-arm levels, and paired differences between arms (italic).
+#let zd-level(label, key, arm) = (
+  [#label], zd-pt(key, arm), zd-pt(key, arm, name: "recall_normal"), zd-pt(key, arm, name: "recall_amd"),
+  if "recall_dme" in ZD.at(key).arms.at(arm).metrics { zd-pt(key, arm, name: "recall_dme") } else [--],
+)
+#let zd-diff(label, key, pair) = (
+  [_#label _], zd-dl(key, pair), zd-dl(key, pair, name: "recall_normal"), zd-dl(key, pair, name: "recall_amd"),
+  if "recall_dme" in ZD.at(key).deltas.at(pair) { zd-dl(key, pair, name: "recall_dme") } else [--],
+)
+#let zd-key = "kermany|all"
+#figure(
+  {
+    set text(size: (9.5 / 11) * 1em)
+    table(
+      columns: 5,
+      align: (left, right, right, right, right),
+      table.header(
+        [โมเดล], [Macro-F1], [ปกติ], [AMD], [DME],
+        table.hline(),
+      ),
+      ..zd-level("โมเดลแบบ fused", zd-key, "fused-fill"),
+      ..zd-level("ไม่รวม DME ของ Kermany", zd-key, "zero-dme"),
+      ..zd-level("LOSO (แยกไว้)", zd-key, "loso-fill"),
+      table.hline(stroke: 0.3pt + gray),
+      ..zd-diff("ไม่รวม DME − fused", zd-key, "zero-dme - fused-fill"),
+      ..zd-diff("LOSO − ไม่รวม DME", zd-key, "loso-fill - zero-dme"),
+      table.hline(),
+    )
+  },
+  caption: [ชุดข้อมูลทดสอบของ Kermany ภายใต้โมเดลแบบ fused, โมเดลที่ไม่รวม DME ของ Kermany และโมเดลแบบ LOSO: ค่า Macro-F1 และค่า recall รายคลาส (%) แถวตัวเอียงเป็นผลต่างแบบจับคู่พร้อมช่วงความเชื่อมั่นร้อยละ 95],
 ) <tab-zero-dme>
 
-ค่า recall แยกตามคลาสของโมเดล Kermany ทั้งสามรูปแบบแสดงไว้ใน @tab-recall-unseen การตัดข้อมูลภาวะ DME ของชุดข้อมูล Kermany ออกส่งผลให้คะแนนของชุดข้อมูล Kermany เปลี่ยนแปลงไป #zd-dl("kermany|all", "zero-dme - fused-fill") ซึ่งทั้งหมดเกิดจากค่า recall ของภาวะ DME ที่ลดลง (#zd-dl("kermany|all", "zero-dme - fused-fill", name: "recall_dme")) ขณะที่ค่า recall ของคลาสปกติ (normal) และโรค AMD ยังคงอยู่ในระดับสัญญาณรบกวน (#zd-dl("kermany|all", "zero-dme - fused-fill", name: "recall_normal"), #zd-dl("kermany|all", "zero-dme - fused-fill", name: "recall_amd"))
-
-บนชุดภาพทดสอบเดียวกัน ผลกระทบนี้คิดเป็นสัดส่วนประมาณร้อยละ #zd-share() ของขนาดส่วนต่างเมื่อทำการแยกชุดข้อมูล Kermany ไว้ทั้งหมด (LOSO #zd-pt("kermany|all", "loso-fill"), ไม่รวม Kermany DME #zd-pt("kermany|all", "zero-dme"), fused #zd-pt("kermany|all", "fused-fill")) อย่างไรก็ดี โมเดลทั้งสองรูปแบบเกิดความผิดพลาดในลักษณะที่แตกต่างกัน ส่วนต่างประสิทธิภาพจึงไม่ได้แบ่งแยกตามสัดส่วนนี้โดยตรง
-
-การขาดข้อมูลภาวะ DME จากอุปกรณ์สแกนเดียวกัน (in-device) เพียงอย่างเดียว ทำให้สูญเสียค่า recall ของภาวะ DME มากกว่าที่โมเดลแบบ LOSO สูญเสียเสียด้วยซ้ำ (ผลต่างของค่า recall ภาวะ DME ระหว่าง LOSO ลบด้วยแบบไม่มี DME เท่ากับ #zd-dl("kermany|all", "loso-fill - zero-dme", name: "recall_dme")) จึงสามารถอธิบายข้อผิดพลาดด้านภาวะ DME ของโมเดลแบบ LOSO ได้อย่างเพียงพอ
-
-ความสูญเสียอีกส่วนหนึ่งของโมเดลแบบ LOSO คือค่า recall ของภาพถ่ายปกติ (normal) (#zd-dl("kermany|all", "loso-fill - zero-dme", name: "recall_normal") เมื่อเปรียบเทียบกับโมเดลที่ไม่รวม Kermany DME) ซึ่งเกิดจากการเป็นแหล่งข้อมูลที่ไม่เคยเห็นและสอดคล้องกับสิ่งชี้แนะจากขนาดภาพ การขาดข้อมูลภาวะ DME จึงเป็นสาเหตุที่มีอยู่จริง ทว่าอธิบายผลกระทบได้เพียงบางส่วนเท่านั้น
-
-นอกจากนี้ ผลกระทบยังไม่ได้จำกัดอยู่เพียงแหล่งข้อมูลที่ถูกตัดข้อมูลภาวะ DME ออกไปเท่านั้น กล่าวคือ ค่า recall ของภาวะ DME ในชุดข้อมูล Duke มีการเปลี่ยนแปลงไปด้วยเช่นกัน (#zd-dl("duke|all", "zero-dme - fused-fill", name: "recall_dme")) ชี้ให้เห็นว่าข้อมูลภาวะ DME ของชุดข้อมูล Kermany มีส่วนช่วยให้โมเดลจำแนกภาวะ DME ของชุดข้อมูล Duke ได้ดีขึ้น อย่างไรก็ดี การเปลี่ยนแปลงนี้ประเมินจากข้อมูลเพียง #DS.duke.n_groups ดวงตา งานวิจัยนี้จึงถือเป็นเพียงหลักฐานสนับสนุนเท่านั้น ส่วนชุดข้อมูล OCTDL และ PAIMA อยู่ในระดับสัญญาณรบกวน
+@tab-zero-dme เปรียบเทียบโมเดลของ Kermany ทั้งสามรูปแบบควบคู่กัน การตัดข้อมูลภาวะ DME ของชุดข้อมูล Kermany ออกทำให้ Kermany เปลี่ยนไป #zd-dl("kermany|all", "zero-dme - fused-fill") ซึ่งทั้งหมดเกิดจากค่า recall ของภาวะ DME (#zd-dl("kermany|all", "zero-dme - fused-fill", name: "recall_dme")) ขณะที่ค่า recall ของปกติและ AMD ยังคงอยู่ในระดับสัญญาณรบกวน บนชุดภาพทดสอบเดียวกัน ผลกระทบนี้คิดเป็นประมาณร้อยละ #zd-share() ของส่วนต่างเมื่อแยกแหล่งข้อมูลไว้ แต่ทั้งสองโมเดลล้มเหลวในลักษณะที่ต่างกัน ส่วนต่างจึงไม่แบ่งตามสัดส่วนนี้โดยตรง การขาดหายไปของ DME ในอุปกรณ์เดียวกันเพียงอย่างเดียวทำให้สูญเสียค่า recall ของ DME มากกว่าที่โมเดล LOSO สูญเสีย จึงสามารถอธิบายข้อผิดพลาดของ DME ในโมเดล LOSO ได้ ส่วนการสูญเสียอีกส่วนของโมเดล LOSO คือค่า recall ของภาพปกติ (#zd-dl("kermany|all", "loso-fill - zero-dme", name: "recall_normal") เมื่อเทียบกับโมเดลที่ไม่รวม DME ของ Kermany) ซึ่งมาจากการเป็นแหล่งข้อมูลที่ไม่เคยเห็นและตรงกับสิ่งชี้แนะจากขนาดภาพ การขาดหายไปของ DME จึงเป็นสาเหตุที่มีจริงแต่เป็นเพียงสาเหตุบางส่วน
 
 == วิธีการปรับแก้หลังการฝึกสอน (Post-hoc fixes) <sec-posthoc>
 
 วิธีการปรับแก้หลังการฝึกสอน (post-hoc fixes) แบบมาตรฐาน 2 วิธียังคงมีส่วนต่างประสิทธิภาพหลงเหลืออยู่เกือบทั้งหมด (@tab-posthoc) โดยทั้งสองวิธีทำการปรับจูนพารามิเตอร์บนข้อมูลผู้ป่วยครึ่งหนึ่งของแหล่งข้อมูลที่ถูกแยกไว้ และนำไปประเมินผลบนข้อมูลผู้ป่วยอีกครึ่งหนึ่งที่เหลือ
 
-วิธีแรกเป็นการทดสอบว่าส่วนต่างของประสิทธิภาพเกิดจากจุดตัดการตัดสินใจที่คลาดเคลื่อนหรือไม่ (@sec-unseen) โดยการปรับเลื่อนค่าเอนเอียง (bias) ของค่าความน่าจะเป็นเชิงลอการิทึม (log-probability) ในส่วนเอาต์พุตแยกตามแต่ละคลาส (cutoff shift) ซึ่งทำการปรับจูนด้วยป้ายข้อมูลของแหล่งข้อมูลนั้น ๆ เอง วิธีการนี้ส่งผลให้คะแนนของชุดข้อมูล Kermany มีการเปลี่ยนแปลงไป #lb-dl("kermany|all", "bias-crossfit") และชุดข้อมูล PAIMA เปลี่ยนแปลงไป #lb-dl("paima|normal_amd", "bias-crossfit") ขณะที่ชุดข้อมูล OCTDL (#lb-dl("octdl|all", "bias-crossfit")) และ Duke (#lb-dl("duke|all", "bias-crossfit")) ยังคงอยู่ในระดับสัญญาณรบกวน
-
-แม้กระทั่งการปรับเลื่อนจุดตัดที่ดีที่สุดซึ่งคำนวณจากป้ายข้อมูลทั้งหมดของชุดข้อมูล Kermany (ซึ่งไม่สามารถทำได้ในโมเดลที่นำไปประยุกต์ใช้งานจริง) ก็ทำคะแนนได้เพียง #fmt(LB.at("kermany|all").grid.best) เมื่อเทียบกับ #pt("loso_full|kermany|all", "loso-sq") จากการฝึกสอนโมเดลใหม่โดยปราศจากสิ่งชี้แนะจากขนาดภาพ แสดงให้เห็นว่าการปรับจุดตัดแบบคงที่ที่ใช้ร่วมกันในทุกภาพ ไม่สามารถแก้ไขข้อผิดพลาดที่ขึ้นอยู่กับขนาดของภาพได้
+วิธีแรกเป็นการทดสอบว่าส่วนต่างของประสิทธิภาพเกิดจากจุดตัดการตัดสินใจที่คลาดเคลื่อนหรือไม่ (@sec-unseen) โดยการปรับเลื่อนค่าเอนเอียง (bias) ของค่าความน่าจะเป็นเชิงลอการิทึมในส่วนเอาต์พุตแยกตามแต่ละคลาส ซึ่งทำการปรับจูนด้วยป้ายข้อมูลของแหล่งข้อมูลนั้น ๆ เอง วิธีนี้ช่วยเพิ่มคะแนนให้ Kermany #lb-dl("kermany|all", "bias-crossfit") และเปลี่ยนแปลงแหล่งข้อมูลอื่น ๆ เพียงเล็กน้อย แม้กระทั่งการปรับเลื่อนจุดตัดที่ดีที่สุดซึ่งคำนวณจากป้ายข้อมูลทั้งหมดของแหล่งข้อมูล (คอลัมน์ Ceiling; สำหรับ #srcs.filter(s => LB.at(s + "|" + view3(s)).grid.subsampled).map(s => source-name.at(s)).join(", ") คำนวณจากกลุ่มตัวอย่างย่อยแบบสุ่ม) ซึ่งโมเดลที่นำไปใช้งานจริงไม่สามารถทำได้ ก็ทำคะแนนได้เพียง #fmt(LB.at("kermany|all").grid.best) เมื่อเทียบกับ #pt("loso_full|kermany|all", "loso-sq") จากการฝึกสอนโมเดลใหม่โดยปราศจากสิ่งชี้แนะจากขนาดภาพ แสดงให้เห็นว่าการปรับจุดตัดแบบคงที่ที่ใช้ร่วมกันในทุกภาพ ไม่สามารถแก้ไขข้อผิดพลาดที่ขึ้นอยู่กับขนาดของภาพได้
 
 #let lbk(s) = s + "|" + view3(s)
 #figure(
@@ -424,9 +427,7 @@
       table.hline(),
     )
   },
-  caption: [การปรับแก้หลังการฝึกสอน (Post-hoc fixes) บนแหล่งข้อมูลที่ถูกแยกไว้แบบรวมทั้งแหล่งข้อมูล (full source) (ค่า macro-F1, โมเดลแบบ LOSO แบบ letterbox; ชุดข้อมูล PAIMA ประเมินผลเฉพาะการจำแนกระหว่างภาพปกติ (normal) กับโรค AMD) โดยการปรับจุดตัดการตัดสินใจแบบ Cross-fit, เทคนิค AdaBN และการครอบตัดภาพเป็นสี่เหลี่ยมจัตุรัส (square crop) แสดงเป็นค่าผลต่างแบบจับคู่เทียบกับโมเดลแบบ LOSO พร้อมช่วงความเชื่อมั่นร้อยละ 95 ทั้งนี้ ค่าเพดานประสิทธิภาพสูงสุด (Ceiling) คือการปรับจุดตัดการตัดสินใจที่ดีที่สุดบนข้อมูลป้ายข้อมูลทั้งหมด (สำหรับชุดข้อมูล #srcs.filter(s => LB.at(lbk(s)).grid.subsampled).map(s => source-name.at(s)).join(", ") คำนวณจากกลุ่มตัวอย่างย่อยแบบสุ่ม)],
+  caption: [การปรับแก้หลังการฝึกสอนบนแหล่งข้อมูลที่ถูกแยกไว้ทั้งหมด (Macro-F1 %, โมเดลแบบ LOSO แบบ letterbox) โดยคอลัมน์วิธีการแก้ไขเป็นผลต่างแบบจับคู่เทียบกับ LOSO พร้อมช่วงความเชื่อมั่นร้อยละ 95],
 ) <tab-posthoc>
 
-วิธีการที่สองคือเทคนิค AdaBN @li2016adabn ซึ่งทำการประมาณค่าสถิติของชั้นแบตช์นอร์มัลไลเซชัน (BatchNorm) ใหม่จากภาพถ่ายที่ไม่มีป้ายข้อมูลของแหล่งข้อมูลที่ไม่เคยเห็น วิธีการนี้ส่งผลให้คะแนนของชุดข้อมูล Kermany มีการเปลี่ยนแปลงไป #ab-dl("kermany|all") ซึ่งน้อยกว่าการปรับเลื่อนจุดตัดการตัดสินใจ ขณะที่ชุดข้อมูล Duke ยังคงอยู่ในระดับสัญญาณรบกวน (#ab-dl("duke|all")) ทั้งยังทำให้ชุดข้อมูล OCTDL มีการเปลี่ยนแปลงไป #ab-dl("octdl|all") โดยส่งผลให้ภาพถ่ายถูกทำนายว่าเป็นภาวะ DME มากขึ้น และชุดข้อมูล PAIMA มีการเปลี่ยนแปลงไป #ab-dl("paima|normal_amd")
-
-ดังนั้น ทั้งสองวิธีการจึงขาดความน่าเชื่อถือเมื่อนำไปประยุกต์ใช้ข้ามแหล่งข้อมูล และสำหรับชุดข้อมูล Kermany ไม่มีวิธีการใดที่ให้ผลลัพธ์ใกล้เคียงกับการฝึกสอนโมเดลใหม่โดยปราศจากสิ่งชี้แนะจากขนาดภาพเลย
+วิธีการที่สองคือเทคนิค AdaBN @li2016adabn ซึ่งทำการประมาณค่าสถิติของชั้น BatchNorm ใหม่จากภาพที่ไม่มีป้ายข้อมูลของแหล่งข้อมูลที่ไม่เคยเห็น วิธีนี้ช่วยเพิ่มคะแนนให้ Kermany #ab-dl("kermany|all") แต่น้อยกว่าการปรับเลื่อนจุดตัด และลดคะแนนของ OCTDL ลง (#ab-dl("octdl|all")) ซึ่งผลักดันภาพให้ถูกทำนายเป็นภาวะ DME มากขึ้น ทั้งสองวิธีจึงขาดความน่าเชื่อถือข้ามแหล่งข้อมูล และบน Kermany ไม่มีวิธีใดเข้าใกล้การฝึกสอนใหม่โดยปราศจากสิ่งชี้แนะจากขนาดภาพได้เลย
