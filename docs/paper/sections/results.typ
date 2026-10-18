@@ -324,7 +324,7 @@ the size shortcut is real and explains a large part of Kermany's gap, but it is 
 reading before the OCTDL and Duke square-crop results were in: square crop would become the main setup only if
 neither source lost beyond noise.
 
-== What remains of the gap <sec-remaining>
+== Where the gap sits <sec-remaining>
 
 #figure(
   {
@@ -352,8 +352,8 @@ neither source lost beyond noise.
     points, with paired 95% intervals).],
 ) <tab-remaining>
 
-Most of what remains is DME (@tab-remaining). On the test split, held-out DME recall falls by #span(("kermany", "octdl", "duke").map(s => delta("gap_test|" + s + "|all", "loso-fill - fused-fill", name: "recall_dme").point)) points for
-Kermany, OCTDL and Duke (@tab-recall-unseen). In the Normal/AMD view, the OCTDL and Duke gaps are within noise of zero. Kermany keeps a large Normal/AMD gap, through normal images called AMD: held out, its normal recall changes by
+The classes that carry the gap differ by source (@tab-remaining). On the test split, held-out DME recall falls by #span(("kermany", "octdl", "duke").map(s => delta("gap_test|" + s + "|all", "loso-fill - fused-fill", name: "recall_dme").point)) points for
+Kermany, OCTDL and Duke (@tab-recall-unseen), though the OCTDL and Duke intervals are wide. In the Normal/AMD view, the OCTDL and Duke gaps are not distinguishable from zero, which points to DME for these two sources, but the intervals are too wide to show that DME accounts for all of it. Kermany keeps a large Normal/AMD gap, through normal images called AMD: held out, its normal recall changes by
 #dl("gap_test|kermany|all", "loso-fill - fused-fill", name: "recall_normal") (@tab-recall-unseen), and most of the missed normal images
 are called AMD. This is consistent with the size cue above (@fig-kermany-size): most of its test split is 1024×496, Duke's AMD-only
 size. PAIMA, which has no DME, keeps its gap through AMD recall, and again mostly dry AMD: held-out

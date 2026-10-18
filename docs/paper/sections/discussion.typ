@@ -29,8 +29,9 @@ almost every OCTDL scan is that elongated. About #whole(size-share("kermany", "5
 tested this for OCTDL or Duke. It does not explain PAIMA, whose loss stays unexplained (@sec-limits). We found no single preprocessing that is best
 on every unseen source.
 
-*DME is the weak point, but not the whole story.* Once the size cue is accounted for, most of the remaining gap is DME
-recall. DME is also the class with the fewest training examples from the fewest sources: PAIMA has none, so a model
+*DME is the weak point for some sources, not all.* For OCTDL and Duke, DME recall is the largest per-class loss when the
+source is held out (@tab-recall-unseen), though with wide intervals. Kermany's largest loss is normal recall, and PAIMA, which has
+no DME, loses AMD recall. DME is also the class with the fewest training examples from the fewest sources: PAIMA has none, so a model
 with Kermany held out learns DME from only two sources, one per vendor. Removing Kermany's DME from a fused
 model (@tab-zero-dme) reproduces about #zd-share()% of Kermany's held-out gap, so missing DME is a real but partial
 cause; the rest, a loss in normal recall, comes from the source being unseen, as the size cue predicts. Whether DME
@@ -86,5 +87,6 @@ A ResNet-50 that scores #span(("kermany", "octdl", "paima", "duke").map(s => met
 #span(("octdl", "paima", "duke", "kermany").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) points on one it has not, although three of the four come from the same manufacturer.
 Part of that loss comes from the training data rather than the new dataset: pooling let a label-predicting image
 size in Duke become a rule that fails on Kermany. Removing the cue recovers much of Kermany's gap but is not a
-general fix, and most of what remains is DME, the class seen from the fewest sources. Before pooling OCT datasets,
+general fix, and what remains differs by source: DME recall for OCTDL and Duke, normal recall for Kermany and AMD recall
+for PAIMA. Before pooling OCT datasets,
 compare scan settings against labels, and test on a held-out source, not only a held-out split.
