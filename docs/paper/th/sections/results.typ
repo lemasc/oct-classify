@@ -20,10 +20,10 @@
       .flatten(),
     table.hline(),
   ),
-  caption: [ค่า Macro-F1 บนชุดข้อมูลทดสอบของแต่ละแหล่งข้อมูล พร้อมช่วงความเชื่อมั่นร้อยละ 95 จากการสุ่มตัวอย่างซ้ำด้วยวิธีบูตสแตรป ในระดับผู้ป่วย สำหรับชุดข้อมูล PAIMA ได้รับการประเมินผลเฉพาะการจำแนกระหว่างภาพปกติ (normal) กับโรค AMD ส่วนชุดข้อมูล Duke เป็นการรวมผลลัพธ์จากทั้ง 5 ส่วน (5 folds) (รวมภาพ B-scan ทั้งหมด #num(DS.duke.n_images) ภาพ จากดวงตา #DS.duke.n_groups ดวง โดยดวงตาแต่ละดวงได้รับการประเมินด้วยโมเดลที่ไม่เคยใช้ดวงตาดังกล่าวในการฝึกสอน)],
+  caption: [Macro-F1 (%) บนชุดข้อมูลทดสอบของแต่ละแหล่งข้อมูล พร้อมช่วงความเชื่อมั่นระดับผู้ป่วยร้อยละ 95 จากการบูตสแตรป],
 ) <tab-seen>
 
-เมื่อทำการประเมินผลบนแหล่งข้อมูลที่ใช้ในการฝึกสอน โมเดล ResNet-50 สามารถทำค่า Macro-F1 ได้ระหว่างร้อยละ #pt(k("seen", "paima"), "per-dataset") ถึง #pt(k("seen", "kermany"), "per-dataset") (@tab-seen) การฝึกสอนโมเดลเดี่ยวบนทั้ง 4 แหล่งข้อมูลร่วมกัน (โมเดลแบบ fused) แทบไม่สูญเสียประสิทธิภาพ โดยเมื่อเปรียบเทียบกับโมเดลแบบรายชุดข้อมูล (per-dataset) ผลต่างประสิทธิภาพของโมเดลแบบ fused อยู่ในระดับสัญญาณรบกวน (noise level) บนชุดข้อมูล OCTDL (#dl(k("seen", "octdl"), "fused-fill - per-dataset")), PAIMA (#dl(k("seen", "paima"), "fused-fill - per-dataset")) และ Duke (#dl(k("seen", "duke"), "fused-fill - per-dataset")) มีเพียงชุดข้อมูล Kermany เท่านั้นที่มีคะแนนลดลงเล็กน้อยอย่างมีนัยสำคัญ (#dl(k("seen", "kermany"), "fused-fill - per-dataset")) ในทำนองเดียวกัน วิธีการครอบตัดภาพเป็นสี่เหลี่ยมจัตุรัส (square crop) ซึ่งขจัดสิ่งชี้แนะจากขนาดภาพออกไป (@sec-square) ไม่ส่งผลกระทบเชิงลบต่อแหล่งข้อมูลที่เคยเห็นเช่นกัน โดยไม่มีแหล่งข้อมูลใดที่มีคะแนนลดลงเกินระดับสัญญาณรบกวนเมื่อเปรียบเทียบกับโมเดลแบบ fused และสำหรับชุดข้อมูล PAIMA ยังคงมีคะแนนเพิ่มขึ้นอีก #dl(k("seen", "paima"), "fused-sq - fused-fill")
+เมื่อทำการประเมินผลบนแหล่งข้อมูลที่ใช้ในการฝึกสอน โมเดล ResNet-50 สามารถทำค่า Macro-F1 ได้ระหว่าง #pt(k("seen", "paima"), "per-dataset")–#pt(k("seen", "kermany"), "per-dataset") (@tab-seen; สำหรับชุดข้อมูล Duke เป็นการรวมผลลัพธ์จากทั้ง 5 ส่วน โดยแต่ละดวงตาประเมินด้วยโมเดลที่ไม่ได้ฝึกสอนด้วยดวงตานั้น) การฝึกสอนโมเดลเดี่ยวบนทั้ง 4 แหล่งข้อมูลร่วมกัน (โมเดลแบบ fused) แทบไม่สูญเสียประสิทธิภาพ โดยในทุกแหล่งข้อมูล โมเดลแบบ fused สูญเสียคะแนนไม่เกิน #whole(calc.min(..srcs.map(s => delta(k("seen", s), "fused-fill - per-dataset").lo))) จุดเมื่อเทียบกับโมเดลแบบรายชุดข้อมูล (ขอบเขตล่างของช่วงความเชื่อมั่นแบบจับคู่ร้อยละ 95) และการลดลงมีนัยสำคัญที่วัดได้เฉพาะใน Kermany เท่านั้น (#dl(k("seen", "kermany"), "fused-fill - per-dataset")) ในทำนองเดียวกัน วิธีการครอบตัดภาพเป็นสี่เหลี่ยมจัตุรัส (square crop) ซึ่งขจัดสิ่งชี้แนะจากขนาดภาพออกไป (@sec-square) ก็ไม่ส่งผลเสียต่อแหล่งข้อมูลที่เคยเห็นเช่นกัน โดยไม่มีแหล่งข้อมูลใดที่มีคะแนนลดลงเกินระดับสัญญาณรบกวนเมื่อเทียบกับโมเดลแบบ fused และชุดข้อมูล PAIMA ยังคงได้คะแนนเพิ่มขึ้นอีก #dl(k("seen", "paima"), "fused-sq - fused-fill")
 
 #let rc(m, c) = if ("recall_" + c) in m { fmt(m.at("recall_" + c).point) } else [--]
 #let stage-rc(src, arm, st, m) = {
@@ -65,10 +65,10 @@
 
 #figure(
   recall-table(s => (seen-row(s, "Per-dataset", "per-dataset"), seen-row(s, "Fused", "fused-fill"))),
-  caption: [ค่า recall แยกตามคลาสบนชุดข้อมูลทดสอบของแต่ละแหล่งข้อมูล สำหรับโมเดลแบบ letterbox ที่เคยเห็นข้อมูล โดยแสดงค่าเฉลี่ยข้ามโมเดล],
+  caption: [Recall (%) รายคลาสบนชุดข้อมูลทดสอบของแต่ละแหล่งข้อมูล โมเดลแบบ letterbox ที่เคยเห็นข้อมูล ค่าเฉลี่ยข้ามโมเดล],
 ) <tab-recall>
 
-ค่า recall แยกตามคลาส (@tab-recall) เผยให้เห็นลักษณะของข้อผิดพลาดที่เกิดขึ้น โดยชุดข้อมูล PAIMA เป็นแหล่งข้อมูลที่ท้าทายที่สุดแม้จะเป็นแหล่งข้อมูลที่เคยเห็นก็ตาม (ได้ค่า Macro-F1 เท่ากับร้อยละ #pt(k("seen", "paima"), "fused-fill") สำหรับโมเดลแบบ fused) ซึ่งข้อผิดพลาดหลักเกิดขึ้นในคลาส AMD (มีค่า recall เพียงร้อยละ #pt(k("seen", "paima"), "fused-fill", name: "recall_amd")) และเมื่อพิจารณาเจาะลึกในกลุ่ม AMD พบว่าข้อผิดพลาดเกิดจากโรค AMD ชนิดแห้ง (dry AMD) เป็นหลัก กล่าวคือ โมเดลแบบ fused สามารถจำแนกภาพสแกนที่มีดรูเซน (drusen) ในชุดข้อมูล PAIMA ได้ถูกต้องเพียงร้อยละ #as-rec("test|paima|normal_amd", "dry", "fused-fill") เมื่อเทียบกับภาพถ่ายชนิดเปียก (wet AMD) ที่ทำได้ถึงร้อยละ #as-rec("test|paima|normal_amd", "wet", "fused-fill") โดยภาพถ่ายชนิดมีดรูเซนที่ทำนายผิดเกือบทั้งหมดถูกจำแนกว่าเป็นภาพปกติ (normal) โมเดลแบบรายชุดข้อมูล (per-dataset) ของชุดข้อมูล PAIMA ก็แสดงผลลัพธ์ในลักษณะเดียวกัน (ร้อยละ #as-rec("test|paima|normal_amd", "dry", "per-dataset") เทียบกับร้อยละ #as-rec("test|paima|normal_amd", "wet", "per-dataset")) ข้อจำกัดนี้จึงเกิดจากลักษณะเฉพาะของภาพสแกนชนิดดรูเซนในชุดข้อมูล PAIMA เอง ไม่ได้เกิดจากกระบวนการรวมข้อมูล (fusing) ภาพถ่ายชนิดมีดรูเซนในชุดข้อมูล OCTDL ได้รับการจำแนกถูกต้องน้อยกว่าชนิดเปียกเช่นกัน (ร้อยละ #as-rec("test|octdl|all", "dry", "fused-fill") เทียบกับร้อยละ #as-rec("test|octdl|all", "wet", "fused-fill") สำหรับโมเดลแบบ fused) ทว่าในชุดข้อมูลทดสอบ (test split) ของ OCTDL มีภาพถ่ายชนิดมีดรูเซนเพียง #AS.at("test|octdl|all").stages.dry.n_images ภาพจากผู้ป่วย #AS.at("test|octdl|all").stages.dry.n_groups รายเท่านั้น สำหรับภาพถ่ายชนิดมีดรูเซนในชุดข้อมูล Kermany นั้น ทั้งสองโมเดลสามารถจำแนกได้อย่างถูกต้องอย่างน้อยร้อยละ #fmt(calc.min(..("per-dataset", "fused-fill").map(a => AS.at("test|kermany|all").stages.dry.arms.at(a).recall))) ของกรณีทั้งหมด
+ค่า recall แยกตามคลาส (@tab-recall) เผยให้เห็นลักษณะของข้อผิดพลาดที่เกิดขึ้น โดย _dry_ และ _wet_ คือค่า recall ภายในคลาส AMD ทั้งนี้ คลาส AMD ในชุดข้อมูล Duke เป็นชนิดแห้งทั้งหมด และไม่ได้แสดงระยะปานกลางของ OCTDL ทั้งนี้ PAIMA ไม่มีภาวะ DME ชุดข้อมูล PAIMA เป็นแหล่งข้อมูลที่ท้าทายที่สุดแม้จะเป็นแหล่งข้อมูลที่เคยเห็นก็ตาม (ได้ค่า Macro-F1 เท่ากับร้อยละ #pt(k("seen", "paima"), "fused-fill") สำหรับโมเดลแบบ fused) ซึ่งข้อผิดพลาดหลักเกิดขึ้นในคลาส AMD (มีค่า recall เพียงร้อยละ #pt(k("seen", "paima"), "fused-fill", name: "recall_amd")) และเมื่อพิจารณาเจาะลึกในกลุ่ม AMD พบว่าข้อผิดพลาดเกิดจากโรค AMD ชนิดแห้ง (dry AMD) เป็นหลัก กล่าวคือ โมเดลแบบ fused สามารถจำแนกภาพสแกนที่มีดรูเซน (drusen) ในชุดข้อมูล PAIMA ได้ถูกต้องเพียงร้อยละ #as-rec("test|paima|normal_amd", "dry", "fused-fill") เมื่อเทียบกับภาพถ่ายชนิดเปียก (wet AMD) ที่ทำได้ถึงร้อยละ #as-rec("test|paima|normal_amd", "wet", "fused-fill") โดยภาพถ่ายชนิดมีดรูเซนที่ทำนายผิดเกือบทั้งหมดถูกจำแนกว่าเป็นภาพปกติ (normal) โมเดลแบบรายชุดข้อมูล (per-dataset) ของชุดข้อมูล PAIMA ก็แสดงผลลัพธ์ในลักษณะเดียวกัน (ร้อยละ #as-rec("test|paima|normal_amd", "dry", "per-dataset") เทียบกับร้อยละ #as-rec("test|paima|normal_amd", "wet", "per-dataset")) ข้อจำกัดนี้จึงเกิดจากลักษณะเฉพาะของภาพสแกนชนิดดรูเซนในชุดข้อมูล PAIMA เอง ไม่ได้เกิดจากกระบวนการรวมข้อมูล (fusing) ภาพถ่ายชนิดมีดรูเซนในชุดข้อมูล OCTDL ได้รับการจำแนกถูกต้องน้อยกว่าชนิดเปียกเช่นกัน (ร้อยละ #as-rec("test|octdl|all", "dry", "fused-fill") เทียบกับร้อยละ #as-rec("test|octdl|all", "wet", "fused-fill") สำหรับโมเดลแบบ fused) ทว่าในชุดข้อมูลทดสอบ (test split) ของ OCTDL มีภาพถ่ายชนิดมีดรูเซนเพียง #AS.at("test|octdl|all").stages.dry.n_images ภาพจากผู้ป่วย #AS.at("test|octdl|all").stages.dry.n_groups รายเท่านั้น สำหรับภาพถ่ายชนิดมีดรูเซนในชุดข้อมูล Kermany นั้น ทั้งสองโมเดลสามารถจำแนกได้อย่างถูกต้องอย่างน้อยร้อยละ #fmt(calc.min(..("per-dataset", "fused-fill").map(a => AS.at("test|kermany|all").stages.dry.arms.at(a).recall))) ของกรณีทั้งหมด
 
 == แหล่งข้อมูลที่ไม่เคยเห็น <sec-unseen>
 
@@ -76,14 +76,13 @@
   {
     set text(size: (9.5 / 11) * 1em)
     table(
-      columns: 7,
-      align: (left, right, right, right, right, right, right),
+      columns: 5,
+      align: (left, right, right, right, right),
       table.header(
         table.cell(rowspan: 2)[แหล่งข้อมูลที่กันไว้],
-        table.cell(colspan: 3, align: center)[Macro-F1 (test split)],
-        table.cell(colspan: 2, align: center)[AUROC (test split)],
-        table.cell(rowspan: 2)[Macro-F1 \ (full source)],
-        [Seen], [Unseen], [Gap], [Seen], [Unseen],
+        table.cell(colspan: 3, align: center)[Macro-F1 (ชุดทดสอบ)],
+        table.cell(rowspan: 2)[Macro-F1 \ (ทั้งแหล่งข้อมูล)],
+        [เคยเห็น], [ไม่เคยเห็น], [ส่วนต่าง],
         table.hline(),
       ),
       ..srcs
@@ -92,28 +91,41 @@
           pt(k("gap_test", s), "fused-fill"),
           pt(k("gap_test", s), "loso-fill"),
           dl(k("gap_test", s), "loso-fill - fused-fill"),
-          pt(k("gap_test", s), "fused-fill", name: "macro_auroc"),
-          pt(k("gap_test", s), "loso-fill", name: "macro_auroc"),
           ci(k("loso_full", s), "loso-fill"),
         ))
         .flatten(),
       table.hline(),
     )
   },
-  caption: [การเปรียบเทียบระหว่างแหล่งข้อมูลที่เคยเห็น (fused) กับแหล่งข้อมูลที่ไม่เคยเห็น (LOSO) สำหรับโมเดลแบบ letterbox โดยค่า Gap หมายถึงผลต่างแบบจับคู่ระหว่างโมเดลแบบ LOSO กับโมเดลแบบ fused บนชุดภาพทดสอบเดียวกัน พร้อมช่วงความเชื่อมั่นร้อยละ 95 ส่วนค่า Full source คือการประเมินผลโมเดลแบบ LOSO บนภาพทั้งหมดของแหล่งข้อมูลที่ถูกแยกไว้ สำหรับชุดข้อมูล Duke ในกรณีที่เป็นแหล่งข้อมูลที่ถูกแยกไว้ (held out) จะใช้โมเดลเดี่ยวที่ประเมินผลบนดวงตาทั้ง #DS.duke.n_groups ดวง],
+  caption: [Macro-F1 (%) ของแหล่งข้อมูลที่เคยเห็น (fused) เทียบกับไม่เคยเห็น (LOSO) รูปแบบ letterbox โดย _ส่วนต่าง_ คือผลต่างแบบจับคู่ (LOSO ลบด้วย fused) บนชุดภาพทดสอบเดียวกัน พร้อมช่วงความเชื่อมั่นร้อยละ 95],
 ) <tab-unseen>
 
+ทุกแหล่งข้อมูลมีประสิทธิภาพลดลงเกินระดับสัญญาณรบกวนเมื่อเป็นแหล่งข้อมูลที่ไม่เคยเห็น (@tab-unseen) โดยคอลัมน์ทั้งแหล่งข้อมูลประเมินโมเดลแบบ LOSO บนภาพทั้งหมดของแหล่งข้อมูลที่ถูกแยกไว้ และชุดข้อมูล Duke ที่ถูกแยกไว้ประเมินด้วยโมเดลเดี่ยวบนดวงตาทั้ง #DS.duke.n_groups ดวง สำหรับชุดข้อมูล OCTDL, PAIMA และ Duke ส่วนต่างของค่า Macro-F1 อยู่ที่ #span(("octdl", "paima", "duke").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) จุด ขณะที่ชุดข้อมูล Kermany มีส่วนต่างอยู่ที่ #dl(k("gap_test", "kermany"), "loso-fill - fused-fill")
+
+สำหรับแหล่งข้อมูลประเภท 3 คลาส ส่วนต่างของค่า AUROC มีค่าน้อยกว่าส่วนต่างของค่า Macro-F1 อย่างมาก (@tab-auroc; สำหรับ Kermany #dl(k("gap_test", "kermany"), "loso-fill - fused-fill", name: "macro_auroc")) ซึ่งชี้ให้เห็นว่าโมเดลยังคงจัดอันดับคลาสที่ถูกต้องไว้ในลำดับต้น ๆ ได้ดีในภาพส่วนใหญ่ แต่การตัดสินใจมักตกไปอยู่อีกฝั่งของจุดตัดการตัดสินใจ ชุดข้อมูล PAIMA เป็นข้อยกเว้นเพียงหนึ่งเดียว โดยมีส่วนต่างของค่า AUROC อยู่ที่ #dl(k("gap_test", "paima"), "loso-fill - fused-fill", name: "macro_auroc") เมื่อเปรียบเทียบกับส่วนต่างของค่า Macro-F1 ที่ #dp(k("gap_test", "paima"), "loso-fill - fused-fill") ซึ่งสะท้อนถึงการเปลี่ยนแปลงในความสามารถด้านการจัดอันดับ ไม่ใช่เพียงแค่การคลาดเคลื่อนของจุดตัดเท่านั้น
+
 #figure(
-  kind: image,
-  fig("gap"),
-  caption: [ค่า Macro-F1 บนชุดข้อมูลทดสอบ (test split) ของแต่ละแหล่งข้อมูล เมื่อแหล่งข้อมูลนั้นเป็นแบบเคยเห็น (fused, จุดโปร่ง) และไม่เคยเห็น (LOSO, จุดทึบ) สำหรับโมเดลแบบ letterbox โดยเส้นแสดงช่วงความเชื่อมั่นร้อยละ 95 ของคะแนนบนแหล่งข้อมูลที่ไม่เคยเห็น (unseen) ส่วนผลต่างแบบจับคู่ (paired gaps) แสดงไว้ใน @tab-unseen โดยคะแนนทั้งสองรูปแบบได้รับการประเมินบนชุดภาพทดสอบเดียวกัน ทั้งนี้ สำหรับชุดข้อมูล Kermany ภาพส่วนใหญ่มีขนาด 1024×496 พิกเซล และได้คะแนนสูงกว่าชุดข้อมูล Kermany ในภาพรวมทั้งชุดข้อมูล (@tab-unseen, full source)],
-) <fig-gap>
-
-ทุกแหล่งข้อมูลมีประสิทธิภาพลดลงอย่างมีนัยสำคัญเหนือสัญญาณรบกวนเมื่อกลายเป็นแหล่งข้อมูลที่ไม่เคยเห็น (unseen source) (@tab-unseen, @fig-gap) โดยสำหรับชุดข้อมูล OCTDL, PAIMA และ Duke ส่วนต่างของค่า Macro-F1 อยู่ที่ #span(("octdl", "paima", "duke").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) จุดเปอร์เซ็นต์ ขณะที่ชุดข้อมูล Kermany มีส่วนต่างอยู่ที่ #dl(k("gap_test", "kermany"), "loso-fill - fused-fill")
-
-สำหรับแหล่งข้อมูลประเภท 3 คลาส ส่วนต่างของค่า AUROC มีค่าน้อยกว่าส่วนต่างของค่า Macro-F1 อย่างชัดเจน (#dl(k("gap_test", "kermany"), "loso-fill - fused-fill", name: "macro_auroc") สำหรับชุดข้อมูล Kermany, #dl(k("gap_test", "octdl"), "loso-fill - fused-fill", name: "macro_auroc") สำหรับชุดข้อมูล OCTDL และ #dl(k("gap_test", "duke"), "loso-fill - fused-fill", name: "macro_auroc") สำหรับชุดข้อมูล Duke) ซึ่งชี้ให้เห็นว่าโมเดลยังคงจัดอันดับคลาสที่ถูกต้องไว้ในลำดับต้น ๆ ได้ดีในภาพส่วนใหญ่ แต่คะแนนการทำนายมักตกไปอยู่อีกฝั่งของจุดตัดการตัดสินใจ (cutoff threshold)
-
-ชุดข้อมูล PAIMA เป็นข้อยกเว้นเพียงหนึ่งเดียว โดยมีส่วนต่างของค่า AUROC อยู่ที่ #dl(k("gap_test", "paima"), "loso-fill - fused-fill", name: "macro_auroc") เมื่อเปรียบเทียบกับส่วนต่างของค่า Macro-F1 ที่ #dp(k("gap_test", "paima"), "loso-fill - fused-fill") ซึ่งสะท้อนถึงการเปลี่ยนแปลงในความสามารถด้านการจัดอันดับ (ranking) ไม่ใช่เพียงแค่การคลาดเคลื่อนของจุดตัดการตัดสินใจเท่านั้น
+  {
+    set text(size: (9.5 / 11) * 1em)
+    table(
+      columns: 4,
+      align: (left, right, right, right),
+      table.header(
+        table.cell(rowspan: 2)[แหล่งข้อมูลที่กันไว้], table.cell(colspan: 3, align: center)[AUROC (ชุดทดสอบ)],
+        [เคยเห็น], [ไม่เคยเห็น], [ส่วนต่าง],
+        table.hline(),
+      ),
+      ..srcs.map(s => (
+        [#source-name.at(s)],
+        pt(k("gap_test", s), "fused-fill", name: "macro_auroc"),
+        pt(k("gap_test", s), "loso-fill", name: "macro_auroc"),
+        dl(k("gap_test", s), "loso-fill - fused-fill", name: "macro_auroc"),
+      )).flatten(),
+      table.hline(),
+    )
+  },
+  caption: [Macro-AUROC ของแหล่งข้อมูลที่เคยเห็นเทียบกับไม่เคยเห็น (ชุดทดสอบ, letterbox) โดย _ส่วนต่าง_ คือผลต่างแบบจับคู่ พร้อมช่วงความเชื่อมั่นร้อยละ 95],
+) <tab-auroc>
 
 ชุดข้อมูลทดสอบ (test set) ของ Kermany ไม่ได้เป็นตัวแทนที่ดีของชุดข้อมูลโดยรวม กล่าวคือ มีภาพจำนวนถึง #DS.kermany.test_sizes.at("1024x496") ภาพจากทั้งหมด #num(DS.kermany.n_test) ภาพที่มีขนาด 1024×496 พิกเซล ซึ่งเป็นขนาดที่มีสัดส่วนเพียงร้อยละ #pct1(size-share("kermany", "1024x496") * 100) ในชุดข้อมูล Kermany ทั้งหมด
 
