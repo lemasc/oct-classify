@@ -76,7 +76,7 @@ then a square of tissue with no letterbox bands (@fig-padding, right), so the sc
 versions of the fused and LOSO models with otherwise identical settings, and call the default arm _letterbox_ to
 contrast the two.
 
-== Evaluation
+== Evaluation <sec-eval>
 
 All metrics are computed per B-scan, for every source. We report macro-F1 (the mean of the per-class F1 scores) as the main metric, because the classes are imbalanced
 and differ in balance between sources, together with macro-AUROC (one-vs-rest, averaged over classes), which
