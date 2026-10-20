@@ -82,9 +82,26 @@ function host(el, inline) {
   return bar;
 }
 
-// Render an <img> (PNG or the SVGs Typst embeds) onto a white canvas. SVGs are drawn large so the
+// An inline <svg> (Typst html.frame, e.g. the flowchart) as a loaded <img>, sized from its viewBox
+// because the page sizes it in em.
+function svgImage(svg) {
+  const copy = svg.cloneNode(true);
+  const [, , w, h] = svg.getAttribute("viewBox").split(/\s+/);
+  copy.setAttribute("width", w);
+  copy.setAttribute("height", h);
+  copy.removeAttribute("style");
+  const img = new Image();
+  return new Promise((ok, no) => {
+    img.onload = () => ok(img);
+    img.onerror = () => no(new Error("svg failed to load"));
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(new XMLSerializer().serializeToString(copy));
+  });
+}
+
+// Render an <img> or inline <svg> (PNG or the SVGs Typst embeds) onto a white canvas. SVGs are drawn large so the
 // copy stays sharp; the white fill keeps transparent figures readable once pasted elsewhere.
-function rasterize(img, type, quality) {
+async function rasterize(source, type, quality) {
+  const img = source instanceof SVGElement ? await svgImage(source) : source;
   const svg = img.src.startsWith("data:image/svg");
   const w0 = img.naturalWidth || img.width, h0 = img.naturalHeight || img.height;
   const k = svg ? Math.max(1, 1600 / w0) : 1;
@@ -107,7 +124,7 @@ function download(blob, name) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
-for (const img of $$("img")) {
+for (const img of $$("img, figure svg")) {
   const id = img.closest("figure[id]")?.id || "figure";
   const bar = host(img, true);
   // The async clipboard only accepts PNG across browsers, hence JPEG is a download.

@@ -2,19 +2,17 @@
 
 = Discussion <sec-discussion>
 
-*Accuracy on a seen source overstates accuracy on a new one.* All four sources score #span(("kermany", "octdl", "paima", "duke").map(s => metric(k("seen", s), "per-dataset").point)) macro-F1 when the model
-has seen them, and every one of them loses accuracy beyond noise when it has not: #span(("octdl", "paima", "duke").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) points for OCTDL,
-PAIMA and Duke, and about #whole(delta(k("gap_test", "kermany"), "loso-fill - fused-fill").point) for Kermany on its test split. A single-dataset benchmark, the most common way OCT
-classifiers are evaluated, cannot show this. A
+*Accuracy on a seen source overstates accuracy on a new one.* Every source loses accuracy beyond noise when the
+model has not seen it (@tab-unseen). A single-dataset benchmark, the most common way OCT classifiers are evaluated,
+cannot show this. A
 different device is not needed for the drop: three of the four sources come from the same manufacturer
 (Heidelberg), and OCTDL, the only other vendor, does not have a larger gap than they do. Site, population, protocol and labelling are enough.
 
 *Pooling datasets can import their shortcuts.* The largest gap, Kermany's, is partly caused by a property of
 _another_ dataset: in Duke, image size gives the label away, and models trained with Duke apply that rule to
 Kermany. The shortcut is invisible on Duke itself, where it is always right, and the fused model scores well
-on every source. It only shows when the model meets a source where the rule is wrong. Chest radiographs show the same pattern: the
-hospital can predict the label @zech2018, and testing COVID-19 models on an external hospital alone did not reveal
-that they read markers and patient position rather than the lungs @degrave2021. Here, too, the cause showed only
+on every source. It only shows when the model meets a source where the rule is wrong. Chest radiographs show the same pattern (@sec-prior-shortcut): testing COVID-19 models on an external hospital
+alone did not reveal that they read markers and patient position rather than the lungs @degrave2021. Here, too, the cause showed only
 when we changed the inputs (@sec-shortcut). The rule is an artifact of
 acquisition settings on one device (@sec-data), so it would not be caught by matching devices across datasets. A
 simple check would have
@@ -28,23 +26,21 @@ costs the other unseen sources in different ways: OCTDL loses normal recall (nor
 DME recall, and PAIMA loses ranking quality. One possible cause for OCTDL and Duke is lost tissue: the square window keeps nearly the whole width of a
 512×496 scan, but only about two thirds of a 768×496 scan and about a third of a typical 880×320 OCTDL scan, and
 almost every OCTDL scan is that elongated. About #whole(size-share("kermany", "512x496"))% of Kermany is 512×496, where little tissue is lost. We have not
-tested this for OCTDL or Duke. It does not explain PAIMA: averaging predictions over several square windows that
-together cover the whole PAIMA scan moves its AUROC only from #fmt(MW.paima.all.mean.auroc.at(0) / 100) to
-#fmt(MW.paima.all.mean.auroc.at(1) / 100). We found no single preprocessing that is best
+tested this for OCTDL or Duke. It does not explain PAIMA, whose loss stays unexplained (@sec-limits). We found no single preprocessing that is best
 on every unseen source.
 
-*DME is the weak point, but not the whole story.* Once the size cue is accounted for, most of the remaining gap is DME
-recall. DME is also the class with the fewest training examples from the fewest sources: PAIMA has none, so a model
-with Kermany held out learns DME from only two sources, one per vendor. A fused model trained
-without Kermany's DME separates "unseen source" from "unseen DME". On Kermany's test split, missing in-device DME
-alone costs about #zd-share()% as much as the held-out gap, all through DME recall, and at least as much DME recall
-as the held-out model loses. The held-out model's other loss, normal recall, comes from the source being unseen, as
-the size cue predicts. Whether DME from more sources would close the DME part is still untested.
+*DME is the weak point for some sources, not all.* For OCTDL and Duke, DME recall is the largest per-class loss when the
+source is held out (@tab-recall-unseen), though with wide intervals. Kermany's largest loss is normal recall, and PAIMA, which has
+no DME, loses AMD recall. DME is also the class with the fewest training examples from the fewest sources: PAIMA has none, so a model
+with Kermany held out learns DME from only two sources, one per vendor. Removing Kermany's DME from a fused
+model (@tab-zero-dme) reproduces about #zd-share()% of Kermany's held-out gap, so missing DME is a real but partial
+cause; the rest, a loss in normal recall, comes from the source being unseen, as the size cue predicts. Whether DME
+from more sources would close the DME part is still untested.
 
 *Dry AMD is hard on some sources, not all.* AMD merges a dry and a wet stage, and the sources mix them very
 differently (@tab-data). PAIMA, where most AMD is dry, misses its drusen scans far more often than its wet ones,
 both when seen and when held out, and OCTDL shows the same on a few dozen scans, while Kermany's drusen scans are
-recognised almost perfectly by every model (@tab-recall, @tab-recall-unseen). The dry stage is therefore not hard in general; something
+recognised almost perfectly when seen and lose only about #whole(AS.at("test|kermany|all").deltas.dry.at("loso-fill - fused-fill").point) point when held out (@tab-recall, @tab-recall-unseen). The dry stage is therefore not hard in general; something
 about PAIMA's drusen scans is, and our data cannot tell what. A single AMD score hides this difference, which is why we report the two stages separately.
 
 == Limitations <sec-limits>
@@ -58,9 +54,11 @@ about PAIMA's drusen scans is, and our data cannot tell what. A single AMD score
   #span1(seed-vals("paima", "loso-fill", name: "macro_auroc"))), so the loss is real but its size is unstable.
 - *Small Duke.* Duke has 45 eyes, and Duke held out is a single LOSO model. Its intervals are wide, and we use it
   only to support directions seen on the other sources.
-- *Unexplained PAIMA loss under square crop.* Shrinking the test tissue toward the scale seen in training lowers
-  PAIMA's AUROC instead of recovering it, so tissue scale does not explain the loss (enlarging was not tested).
-  Nor does AMD stage: with seed 20260913 the AUROC loss is mostly in separating normal from dry AMD, but with
+- *Unexplained PAIMA loss under square crop.* Tissue scale does not explain it: shrinking the test tissue toward the scale seen in training lowers PAIMA's
+  AUROC instead of recovering it (enlarging was not tested), and averaging predictions over several square windows
+  that together cover the whole scan moves its AUROC only from #fmt(MW.paima.all.mean.auroc.at(0) / 100) to
+  #fmt(MW.paima.all.mean.auroc.at(1) / 100).
+  AMD stage does not explain it either: with seed 20260913 the AUROC loss is mostly in separating normal from dry AMD, but with
   the other two seeds both stages lose about equally.
 - *Hardware and batch size.* The fused letterbox models were trained on a different GPU from every other model,
   and no seed noise floor exists for the fused models. Every comparison with them therefore also crosses hardware:
@@ -68,8 +66,7 @@ about PAIMA's drusen scans is, and our data cannot tell what. A single AMD score
   12 instead of 16, so the gap compares models that differ in batch size as well as in training data. Kermany's
   gap is far larger than such effects; differences of a few points against the fused models are less certain.
 - *Zero-DME control.* The fused model without Kermany DME is one seed trained on a different GPU from the fused
-  reference, and removing Kermany's DME also changes Kermany's share of each training batch. Its Duke result rests on
-  45 eyes.
+  reference, and removing Kermany's DME also changes Kermany's share of each training batch.
 - *Source is not device.* Three of the four sources share one manufacturer, so our gaps measure a shift between datasets
   (site, population, acquisition protocol, labelling and label unit; Duke labels whole eyes, the others single
   B-scans), not a shift between devices. Only OCTDL adds a vendor change, and a single source cannot separate it
@@ -78,10 +75,11 @@ about PAIMA's drusen scans is, and our data cannot tell what. A single AMD score
 
 == Future work
 
-Two directions follow from the remaining gap. Augmentation that mimics other sources' appearance (speckle,
-contrast, resolution), as noise transfer @koch2022svdna and built-in speckle noise @chutani2026 do, would target the part of the gap that size and DME do not explain. OCT-specific pretraining
-@jannat2025selfnet @zhou2023retfound @morano2025mirage, for example self-supervised pretraining on unlabelled scans from all sources including the unseen one, would change
-the features themselves, which our diagnostics point to as the limiting factor.
+Two directions follow from the remaining gap (both surveyed in @sec-prior-shift). Augmentation that mimics other
+sources' appearance (speckle, contrast, resolution), as built-in speckle noise does @chutani2026, would target the part
+of the gap that size and DME do not explain. OCT-specific pretraining, for example self-supervised pretraining on
+unlabelled scans from all sources including the unseen one, would change the features themselves, which our
+diagnostics point to as the limiting factor.
 
 = Conclusion
 
@@ -89,5 +87,6 @@ A ResNet-50 that scores #span(("kermany", "octdl", "paima", "duke").map(s => met
 #span(("octdl", "paima", "duke", "kermany").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) points on one it has not, although three of the four come from the same manufacturer.
 Part of that loss comes from the training data rather than the new dataset: pooling let a label-predicting image
 size in Duke become a rule that fails on Kermany. Removing the cue recovers much of Kermany's gap but is not a
-general fix, and most of what remains is DME, the class seen from the fewest sources. Before pooling OCT datasets,
+general fix, and what remains differs by source: DME recall for OCTDL and Duke, normal recall for Kermany and AMD recall
+for PAIMA. Before pooling OCT datasets,
 compare scan settings against labels, and test on a held-out source, not only a held-out split.

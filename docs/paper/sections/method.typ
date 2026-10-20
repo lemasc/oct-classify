@@ -1,16 +1,35 @@
 #import "../lib.typ": *
+#import "../flow.typ": method-flow
 
 = Method <sec-method>
+
+@fig-method outlines the study. We train three variants with letterbox preprocessing, score the gap between seen
+and unseen sources, and then diagnose where the gap comes from. The diagnosis found an image-size cue, which led to
+a second, square-crop arm (@sec-square).
+
+#figure(
+  kind: image,
+  method-flow(),
+  caption: [Overview of the study.],
+) <fig-method>
 
 == Model and training
 
 All models are ResNet-50 networks initialised from ImageNet weights, with a three-way output (normal, AMD, DME).
 Each B-scan is scaled to fit a 224×224 canvas with its aspect ratio kept (letterboxing), and the empty bands are
-filled with the median intensity of the scan. Intensities are rescaled to the 1st–99th percentile of the tissue.
+filled with the median intensity of the scan. The bands grow with the width of the scan (@fig-padding): they cover
+about 3% of the canvas for a 512×496 scan, 35% for 768×496 and 52% for 1024×496. Intensities are rescaled to the 1st–99th percentile of the tissue.
 Some sources rotate or crop their scans and fill the exposed corners with white; we exclude this fill from the
 percentiles and redraw it from nearby background (_fill-aware padding_), so that it neither compresses the
 tissue contrast nor marks a source. Training augmentations are horizontal flip, rotation up to 10°, small
 brightness and contrast jitter, and light Gaussian blur.
+
+#figure(
+  kind: image,
+  fig("padding"),
+  caption: [How a B-scan becomes the model input, for Duke's three image sizes: letterbox (the default) and
+    square crop.],
+) <fig-padding>
 
 We train with AdamW (learning rate $10^(-4)$, weight decay $10^(-4)$, batch size 16, or 12 for the LOSO models
 below) for up to 100 epochs of 1,000 batches, with early stopping after 10 epochs without improvement. Batches are
@@ -28,8 +47,7 @@ discusses seed variation.
 #figure(
   kind: image,
   fig("design"),
-  caption: [The three training variants. Per-dataset and fused models are tested on sources they trained on;
-    leave-one-source-out (LOSO) models are tested on a source they never saw.],
+  caption: [The three training variants and the sources each is tested on.],
 ) <fig-design>
 
 We train three variants (@fig-design), all scored on each source's test split:
@@ -54,7 +72,7 @@ used in training; we call this the _full-source_ score.
 
 To test whether models use image size as a label cue (@sec-shortcut), we add one arm that hides it. _Square crop_
 trains on a random square window (height × height) of each scan and tests on the centred window. Every input is
-then a square of tissue with no letterbox bands, so the scan's original width cannot be read. We train square-crop
+then a square of tissue with no letterbox bands (@fig-padding, right), so the scan's original width cannot be read. We train square-crop
 versions of the fused and LOSO models with otherwise identical settings, and call the default arm _letterbox_ to
 contrast the two.
 
@@ -72,7 +90,7 @@ patients, or eyes for Duke, are resampled with all their images. When two arms a
 one resample is shared by both, so the difference has a _paired_ interval. We call a difference beyond noise when
 its paired interval excludes zero.
 
-*Attribution and intervention.* To see where held-out models find evidence for a class, we compute Grad-CAM
+*Attribution and intervention.* To illustrate where held-out models find evidence for a class, we compute Grad-CAM
 @selvaraju2017gradcam maps at the last convolutional stage for the predicted class, and check them against a
 model whose top stage is re-initialised @adebayo2018sanity. Because attribution maps show where gradients point
 rather than what causes a prediction, we also change selected pixels of the input (@sec-shortcut) and record how
