@@ -650,7 +650,7 @@ def with_marks(tokens: list[tuple], marks: dict[int, str]) -> list[tuple]:
 
 # --- the pages as laid out --------------------------------------------------------------------
 
-SHEETS: dict[str, bytes] = {}  # PDFs of working-tree pages being viewed, by key (the newest few)
+SHEETS: dict[tuple[str, str], bytes] = {}  # PDFs of working-tree pages being viewed, by (key, lang): the newest few
 SHEET_KEY = re.compile(rf"([0-9a-f]{{40}}|{WORKTREE}-[0-9a-f]{{12}})")
 FIGURE_PART = 3  # points: a stroke thinner than this cannot make a figure, only join one
 FIGURE_GAP = 6  # points between parts that still belong to one figure
@@ -667,9 +667,9 @@ def sheet_key(sha: str, version: str) -> str:
 
 def sheet_pdf(key: str, lang: str) -> bytes:
     if key.startswith(WORKTREE):
-        if key not in SHEETS:
+        if (key, lang) not in SHEETS:  # both languages share a key, so the language must be part of the lookup
             raise Error(404, "that working-tree page is out of date")
-        return SHEETS[key]
+        return SHEETS[key, lang]
     return compiled(key, lang, "pdf")
 
 
@@ -974,7 +974,7 @@ def stage(sha: str, lang: str, version: str) -> tuple[bytes, str]:
     """The PDF of a revision, and the key its page images are served under."""
     pdf, key = compiled(sha, lang, "pdf"), sheet_key(sha, version)
     if sha == WORKTREE:
-        SHEETS[key] = pdf
+        SHEETS[key, lang] = pdf
         for stale in list(SHEETS)[:-4]:
             del SHEETS[stale]
     return pdf, key
