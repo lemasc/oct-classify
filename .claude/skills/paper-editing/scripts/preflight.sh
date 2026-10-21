@@ -15,8 +15,8 @@ done
 
 echo; echo "words per English section (source, includes inline code):"
 wc -w sections/*.typ | sed 's|sections/||'
-echo; echo "words per Thai section (source, whitespace-split so not comparable to English):"
-wc -w th/sections/*.typ | sed 's|th/sections/||'
+echo; echo "words per Thai section (source, segmented with pythainlp; still not directly comparable to English):"
+(cd "$root" && uv run --quiet --group paper .claude/skills/paper-editing/scripts/count_thai_words.py docs/paper/th/sections/*.typ)
 
 echo; echo "run-in bold paragraphs (should be 0; each is a point that needs its own paragraph or heading):"
 grep -nE '^\*[^*]+\*' sections/*.typ | cut -c1-100 || true
