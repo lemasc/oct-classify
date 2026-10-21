@@ -14,7 +14,7 @@
   show math.equation: set text(size: (11 / 14) * 1em) if lang == "th"
   // Thai has no spaces between words, and the optimized (Knuth-Plass) breaker mishandles the Thai/Latin boundary:
   // it breaks before the space, so the next line starts with a stray space. First-fit breaking does not.
-  set par(justify: true, ..if lang == "th" { (linebreaks: "simple") })
+  set par(justify: true, ..if lang == "th" { (linebreaks: "simple", first-line-indent: (amount: 1.5em, all: true)) })
   set heading(numbering: "1.1", ..if lang == "th" { (supplement: [หัวข้อที่]) })
   // Captions and table text (in the sections) are 9.5/11 of the body, so they scale with the language's body size.
   show figure.caption: set text(size: (9.5 / 11) * 1em)
