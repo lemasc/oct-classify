@@ -467,7 +467,7 @@ class Piece(NamedTuple):
     x1: float
     y1: float
     col: int  # 1 or 2; 0 if the word spans both columns
-    more: tuple = ()  # boxes (x0, y0, x1, y1) of the rest of a piece broken over later lines
+    more: tuple = ()  # boxes (page, x0, y0, x1, y1) of the rest of a piece broken over later lines
 
 
 class Pdf(NamedTuple):
@@ -479,44 +479,54 @@ class Pdf(NamedTuple):
     outline: list[tuple]  # level, title, page, column, y of each heading
 
 
-def word_runs(words: list, mid: float) -> list[list[tuple]]:
-    """Group extracted (x0, y0, x1, y1, text) words so that a word wrapped across lines is one run.
+def joins(prev: tuple, word: tuple) -> bool:
+    """Whether `word` carries on the word `prev` broke off (both are (x0, y0, x1, y1, text, page))."""
+    last, first = prev[4][-1], word[4][0]
+    if THAI.search(last) and THAI.search(first):  # Thai has no spaces: a line break falls inside a run
+        return True
+    return last in BREAKS and len(prev[4]) > 1 and first.isalnum()  # "Sec-" "tion", "10.1016/" "j.cell"
 
-    Thai has no spaces, so a line break falls inside a run of text; cut at the break, the two
-    fragments would segment differently from the same text laid out with another line width. A
-    Latin word is broken after a hyphen, slash or dash ("Sec-" "tion", "10.1016/" "j.cell"); the halves are rejoined."""
+
+def join(run: list[tuple], word: tuple) -> None:
+    if run[-1][4].endswith("\u00ad"):  # a hyphen the line breaker added is not part of the word
+        run[-1] = (*run[-1][:4], run[-1][4][:-1], run[-1][5])
+    run.append(word)
+
+
+def word_runs(words: list, mid: float, number: int) -> list[list[tuple]]:
+    """Group a page's extracted words so that a word wrapped across lines is one run.
+
+    Cut at the break, the two fragments would segment differently (Thai) or compare unequal (Latin)
+    from the same text laid out with another line width."""
     runs: list[list[tuple]] = []
     for x0, y0, x1, y1, text, *_ in words:
-        word = (x0, y0, x1, y1, text.replace("\u0e4d\u0e32", "\u0e33"))  # extracted as nikhahit + sara aa
+        word = (x0, y0, x1, y1, text.replace("\u0e4d\u0e32", "\u0e33"), number)  # nikhahit + sara aa
         prev = runs[-1][-1] if runs else None
         wraps = prev and (
             (y0 > prev[1] + 3 and x0 < prev[0] + 1)  # the next line
             or (prev[0] < mid <= x0 and y0 < prev[1] - 3)  # foot of column 1 to head of column 2
         )
-        hyphen = wraps and prev[4][-1] in BREAKS and len(prev[4]) > 1 and word[4][0].isalnum()
-        if wraps and ((THAI.search(prev[4][-1]) and THAI.search(text[0])) or hyphen):
-            if prev[4].endswith("\u00ad"):  # a hyphen the line breaker added is not part of the word
-                runs[-1][-1] = (*prev[:4], prev[4][:-1])
-            runs[-1].append(word)
+        if wraps and joins(prev, word):
+            join(runs[-1], word)
         else:
             runs.append([word])
     return runs
 
 
-def run_pieces(run: list[tuple], number: int, mid: float) -> list[Piece]:
+def run_pieces(run: list[tuple], mid: float) -> list[Piece]:
     """Cut a run of words into diffable pieces, each with the box of the line it starts on."""
     owner = [(k, j) for k, word in enumerate(run) for j in range(len(word[4]))]
     pieces, at = [], 0
     for part in segment("".join(word[4] for word in run)):
         (k, j), (end, last) = owner[at], owner[at + len(part) - 1]
-        x0, y0, x1, y1, text = run[k]
+        x0, y0, x1, y1, text, number = run[k]
         left = x0 + (x1 - x0) * j / len(text)
         right = x0 + (x1 - x0) * (last + 1) / len(text) if end == k else x1
         more = []
-        for m in range(k + 1, end + 1):  # the rest of the piece, on the lines that follow
-            mx0, my0, mx1, my1, mtext = run[m]
+        for m in range(k + 1, end + 1):  # the rest of the piece, on the lines (or page) that follow
+            mx0, my0, mx1, my1, mtext, mpage = run[m]
             used = last + 1 if m == end else len(mtext)
-            more.append((mx0, my0, mx0 + (mx1 - mx0) * used / len(mtext), my1))
+            more.append((mpage, mx0, my0, mx0 + (mx1 - mx0) * used / len(mtext), my1))
         column = 1 if right <= mid + 1 else 2 if left >= mid - 1 else 0
         pieces.append(
             Piece(fold(part), part, at == 0, number, left, y0, right, y1, column, tuple(more))
@@ -573,7 +583,7 @@ def read_pdf(data: bytes, images: bool = False) -> Pdf:
         import pymupdf
     except ImportError:
         raise Error(500, "the paper pages need pymupdf: run with `uv run --group paper ...`") from None
-    sizes, pieces, pictures, lines = [], [], [], []
+    sizes, pictures, lines, chains = [], [], [], []
     with pymupdf.open(stream=data, filetype="pdf") as doc:
         digests: dict[int, str] = {}
         for number, sheet in enumerate(doc, 1):
@@ -588,10 +598,15 @@ def read_pdf(data: bytes, images: bool = False) -> Pdf:
                               max(w[2] for w in group), max(w[3] for w in group),
                               " ".join(w[4] for w in group)))  # fmt: skip
             body = [w for w in found if w[1] < sheet.rect.height - FOOTER]
-            for words in word_runs(body, mid):
-                pieces += run_pieces(words, number, mid)
+            page_runs = word_runs(body, mid, number)
+            if page_runs and chains and joins(chains[-1][-1], page_runs[0][0]):  # cut by the page
+                first = page_runs.pop(0)
+                join(chains[-1], first[0])
+                chains[-1] += first[1:]
+            chains += page_runs
             if images:
                 pictures += [(number, box, sig) for box, sig in figures_of(sheet, digests)]
+        pieces = [p for chain in chains for p in run_pieces(chain, sizes[0][0] / 2)]
         outline = [
             (level, title, page, 1 if dest["to"].x < sizes[page - 1][0] / 2 else 2, dest["to"].y)
             for level, title, page, dest in doc.get_toc(simple=False)
@@ -641,6 +656,8 @@ FIGURE_PART = 3  # points: a stroke thinner than this cannot make a figure, only
 FIGURE_GAP = 6  # points between parts that still belong to one figure
 FIGURE_MIN = 40  # points: a cluster smaller than this is not a figure
 FOOTER = 56  # points from the page bottom below which a word is the page number, not the text
+MIN_MOVE = 8  # pieces: a leftover run this long on both sides is text that moved
+MOVE_BUDGET = 25_000_000  # old x new leftovers beyond which moves are not looked for (too slow)
 GAP = 8  # points between two highlighted words that still count as one run
 
 
@@ -669,12 +686,12 @@ def runs(pieces: list[Piece]) -> list[list]:
     """Merge neighbouring pieces on one line into [page, x0, y0, x1, y1] boxes."""
     boxes: list[list] = []
     for p in pieces:
-        for x0, y0, x1, y1 in ((p.x0, p.y0, p.x1, p.y1), *p.more):
+        for page, x0, y0, x1, y1 in ((p.page, p.x0, p.y0, p.x1, p.y1), *p.more):
             last = boxes[-1] if boxes else None
-            if last and last[0] == p.page and abs(last[2] - y0) < 3 and -1 <= x0 - last[3] < GAP:
+            if last and last[0] == page and abs(last[2] - y0) < 3 and -1 <= x0 - last[3] < GAP:
                 last[3], last[4] = max(last[3], x1), max(last[4], y1)
             else:
-                boxes.append([p.page, x0, y0, x1, y1])
+                boxes.append([page, x0, y0, x1, y1])
     return boxes
 
 
@@ -738,30 +755,39 @@ def layout(new_pdf: bytes, old_pdf: bytes | None) -> tuple[list[dict], list[dict
     def keys(pieces: list[Piece]) -> list[tuple]:
         return [("text", "", p.text) for p in pieces]  # the shape `opcodes` takes
 
-    def words(pieces: list[Piece]) -> tuple:
-        return tuple(p.text for p in pieces)
-
     ops = [op for op in opcodes(keys(old.pieces), keys(new.pieces)) if op[0] != "equal"]
-    # a float (figure, table) that changed page is deleted in one place and inserted in another
-    moved = {words(old.pieces[a0:a1]) for tag, a0, a1, _, _ in ops if tag == "delete"} & {
-        words(new.pieces[b0:b1]) for tag, _, _, b0, b1 in ops if tag == "insert"
-    }
-    for tag, a0, a1, b0, b1 in ops:
-        if tag == "delete" and words(old.pieces[a0:a1]) in moved:
-            continue
-        if tag == "insert" and words(new.pieces[b0:b1]) in moved:
-            continue
-        for page, x0, y0, x1, y1 in runs(new.pieces[b0:b1]):
+    # A float (a wide figure or table sits at the top or bottom of some page) or a paragraph moved by
+    # the page break is deleted in one place and inserted in another. Match what is left over once
+    # more, and a run that turns up on both sides is a move, not an edit.
+    gone = [i for _, a0, a1, _, _ in ops for i in range(a0, a1)]
+    came = [j for _, _, _, b0, b1 in ops for j in range(b0, b1)]
+    moved_old, moved_new = set(), set()
+    while gone and came and len(gone) * len(came) <= MOVE_BUDGET:
+        # one pass keeps a single in-order alignment, so moves that cross need another pass
+        left = SequenceMatcher(None, [old.pieces[i].text for i in gone],
+                               [new.pieces[j].text for j in came], autojunk=False)  # fmt: skip
+        found = [m for m in left.get_matching_blocks() if m.size >= MIN_MOVE]
+        if not found:
+            break
+        for m in found:
+            moved_old.update(gone[m.a : m.a + m.size])
+            moved_new.update(came[m.b : m.b + m.size])
+        gone = [i for i in gone if i not in moved_old]
+        came = [j for j in came if j not in moved_new]
+    for _, a0, a1, b0, b1 in ops:
+        added = [new.pieces[j] for j in range(b0, b1) if j not in moved_new]
+        removed = [old.pieces[i] for i in range(a0, a1) if i not in moved_old]
+        for page, x0, y0, x1, y1 in runs(added):
             sheets[page - 1]["added"].append(pct(page, x0 - 1, y0, x1 + 1, y1))
-        for p in new.pieces[b0:b1]:
+        for p in added:
             sheets[p.page - 1]["add"] += worded([p])
             events += [(p.page, 2 if p.col == 2 else 1, p.y0, "add")] * worded([p])
-        if a1 > a0:
+        if removed:
             at = new.pieces[min(b0, len(new.pieces) - 1)]
             sheet = sheets[at.page - 1]
-            sheet["gone"].append({"style": pct(at.page, at.x0, at.y0, at.x0, at.y1), "text": spoken(old.pieces[a0:a1])})
-            sheet["rem"] += worded(old.pieces[a0:a1])
-            events += [(at.page, 2 if at.col == 2 else 1, at.y0, "rem")] * worded(old.pieces[a0:a1])
+            sheet["gone"].append({"style": pct(at.page, at.x0, at.y0, at.x0, at.y1), "text": spoken(removed)})
+            sheet["rem"] += worded(removed)
+            events += [(at.page, 2 if at.col == 2 else 1, at.y0, "rem")] * worded(removed)
     before = Counter(d for _, _, d in old.figures)
     for page, (x0, y0, x1, y1), digest in new.figures:
         if not before[digest]:
