@@ -474,7 +474,7 @@ class Pdf(NamedTuple):
     title: str
     sizes: list[tuple[float, float]]  # per page: width, height
     pieces: list[Piece]  # in laid-out order
-    images: list[tuple[int, tuple, str]]  # page, box, digest of the embedded file
+    figures: list[tuple[int, tuple, str]]  # page, box, fingerprint of each picture (see `figures_of`)
     lines: list[tuple]  # page, x0, y0, x1, y1, text of each line the PDF sets
     outline: list[tuple]  # level, title, page, column, y of each heading
 
@@ -525,6 +525,42 @@ def run_pieces(run: list[tuple], number: int, mid: float) -> list[Piece]:
     return pieces
 
 
+def figures_of(sheet, digests: dict) -> list[tuple[tuple, str]]:
+    """Pictures on a page: embedded images and vector drawings clustered into figures.
+
+    A figure is drawn from many parts (a stack of scans, boxes and arrows), so parts that touch are
+    one figure, whose fingerprint covers every part. Positions are taken from the figure's own
+    corner, so a figure that merely moved keeps its fingerprint. Table rules are too thin to count."""
+    import pymupdf
+
+    parts: list[tuple] = []  # (rect, what it is)
+    for info in sheet.get_image_info(xrefs=True):
+        if info["xref"]:
+            if info["xref"] not in digests:
+                digests[info["xref"]] = hashlib.md5(sheet.parent.extract_image(info["xref"])["image"]).hexdigest()
+            parts.append((pymupdf.Rect(info["bbox"]), ("image", digests[info["xref"]])))
+    for path in sheet.get_drawings():
+        rect = path["rect"]
+        if rect.width >= FIGURE_PART and rect.height >= FIGURE_PART:
+            kind = ("path", round(rect.width), round(rect.height), str(path.get("fill")),
+                    str(path.get("color")), len(path["items"]))  # fmt: skip
+            parts.append((rect, kind))
+    groups: list[list[int]] = []
+    for i, (rect, _) in enumerate(parts):  # merge every group the part touches
+        touching = [g for g in groups if any((rect + (-2, -2, 2, 2)).intersects(parts[j][0]) for j in g)]
+        merged = [i, *(j for g in touching for j in g)]
+        groups = [g for g in groups if g not in touching] + [merged]
+    found = []
+    for group in groups:
+        box = pymupdf.Rect(parts[group[0]][0])
+        for j in group:
+            box |= parts[j][0]
+        if box.width >= FIGURE_MIN and box.height >= FIGURE_MIN:
+            shape = sorted((kind, round(r.x0 - box.x0), round(r.y0 - box.y0)) for r, kind in (parts[j] for j in group))
+            found.append((tuple(box), hashlib.md5(repr(shape).encode()).hexdigest()))
+    return found
+
+
 def read_pdf(data: bytes, images: bool = False) -> Pdf:
     """Text pieces (and, on request, embedded images) of a PDF as Typst laid it out.
 
@@ -550,12 +586,8 @@ def read_pdf(data: bytes, images: bool = False) -> Pdf:
             body = [w for w in found if w[1] < sheet.rect.height - FOOTER]
             for words in word_runs(body, mid):
                 pieces += run_pieces(words, number, mid)
-            for info in sheet.get_image_info(xrefs=True) if images else ():
-                xref = info["xref"]
-                if xref and xref not in digests:
-                    digests[xref] = hashlib.md5(doc.extract_image(xref)["image"]).hexdigest()
-                if xref:
-                    pictures.append((number, info["bbox"], digests[xref]))
+            if images:
+                pictures += [(number, box, sig) for box, sig in figures_of(sheet, digests)]
         outline = [
             (level, title, page, 1 if dest["to"].x < sizes[page - 1][0] / 2 else 2, dest["to"].y)
             for level, title, page, dest in doc.get_toc(simple=False)
@@ -601,6 +633,8 @@ def with_marks(tokens: list[tuple], marks: dict[int, str]) -> list[tuple]:
 
 SHEETS: dict[str, bytes] = {}  # PDFs of working-tree pages being viewed, by key (the newest few)
 SHEET_KEY = re.compile(rf"([0-9a-f]{{40}}|{WORKTREE}-[0-9a-f]{{12}})")
+FIGURE_PART = 3  # points: thinner drawings are rules and underlines, not part of a figure
+FIGURE_MIN = 40  # points: a cluster smaller than this is not a figure
 FOOTER = 56  # points from the page bottom below which a word is the page number, not the text
 GAP = 8  # points between two highlighted words that still count as one run
 
@@ -723,10 +757,10 @@ def layout(new_pdf: bytes, old_pdf: bytes | None) -> tuple[list[dict], list[dict
             sheet["gone"].append({"style": pct(at.page, at.x0, at.y0, at.x0, at.y1), "text": spoken(old.pieces[a0:a1])})
             sheet["rem"] += worded(old.pieces[a0:a1])
             events += [(at.page, 2 if at.col == 2 else 1, at.y0, "rem")] * worded(old.pieces[a0:a1])
-    before = Counter(d for _, _, d in old.images)
-    for page, (x0, y0, x1, y1), digest in new.images:
+    before = Counter(d for _, _, d in old.figures)
+    for page, (x0, y0, x1, y1), digest in new.figures:
         if not before[digest]:
-            sheets[page - 1]["frames"].append(pct(page, x0, y0, x1, y1))
+            sheets[page - 1]["frames"].append(pct(page, x0 - 3, y0 - 3, x1 + 3, y1 + 3))
             sheets[page - 1]["blocks"] += 1
             events.append((page, 1 if x0 < new.sizes[page - 1][0] / 2 else 2, y0, "blocks"))
         else:
