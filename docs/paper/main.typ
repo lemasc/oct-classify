@@ -1,20 +1,31 @@
 // Presubmission draft (English). Build: typst compile --root ../.. main.typ
 // Thai companion: th/main.typ (same sections, English wherever a Thai section is not written yet).
-#import "template.typ": paper, front
+#import "template.typ": author-grid, front, paper
 #import "lib.typ": *
 
 #show: paper.with(
   title: [Cross-dataset classification analysis of optical coherence tomography retinal images using convolutional neural networks],
 )
 
+#let institute = [
+  School of Information Technology \
+  King Mongkut's Institute of Technology Ladkrabang \
+  Bangkok, Thailand
+]
+
 #front[
-#align(center)[
-  #text(
-    size: 1.45em,
-    weight: "bold",
-  )[Cross-dataset classification analysis of optical coherence tomography retinal images using convolutional neural networks]
-  #v(0.5em)
-  #todo[authors, affiliation]
+  #align(center)[
+    #text(
+      size: 1.45em,
+      weight: "bold",
+    )[Cross-dataset classification analysis of optical coherence tomography retinal images using convolutional neural networks]
+    #v(1em)
+    #author-grid(
+      (name: "Sakditach Thanasodsai", institute: institute, email: "67070173@kmitl.ac.th"),
+      (name: "Pitsinee Vongsuppatham", institute: institute, email: "67070260@kmitl.ac.th"),
+    )
+    #v(1em)
+  ]
 ]
 
 #heading(outlined: false, numbering: none)[Abstract]
@@ -31,7 +42,7 @@ when wide scans are fitted to a square input. Training without the size cue rais
 normal recall for Kermany and AMD recall for PAIMA. Shifting the decision cutoff or using AdaBN leaves most of the gap in place. Comparing scan settings against labels
 before pooling datasets would have exposed the shortcut.
 
-]
+*Keywords:* optical coherence tomography; convolutional neural networks; cross-dataset generalization; shortcut learning; age-related macular degeneration; diabetic macular edema
 
 #include "sections/introduction.typ"
 #include "sections/background.typ"
