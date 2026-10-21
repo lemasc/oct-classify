@@ -443,9 +443,16 @@ def redline(old_page: str | None, new_page: str, pdf: bytes | None = None) -> st
 MIN_RUN = 20
 
 
+# Hyphens are dropped when comparing: a word broken over two lines ("Sec-" "tion", "B-" "scans") must
+# equal the same word set on one line, and "B-scans" is not worth telling apart from "Bscans".
+BREAKS = "-\u00ad/\u2013\u2014"  # a word may be broken after any of these (DOIs, ranges, hyphens)
+HYPHENS = {ord(c): None for c in "-\u00ad\u2010\u2011"}
+
+
 def fold(word: str) -> str:
-    """Comparable form of a word: HTML entities decoded, ligatures and width variants unfolded."""
-    return unicodedata.normalize("NFKC", html.unescape(word))
+    """Comparable form of a word: HTML entities decoded, ligatures and width variants unfolded,
+    hyphens dropped."""
+    return unicodedata.normalize("NFKC", html.unescape(word)).translate(HYPHENS)
 
 
 class Piece(NamedTuple):
@@ -460,6 +467,7 @@ class Piece(NamedTuple):
     x1: float
     y1: float
     col: int  # 1 or 2; 0 if the word spans both columns
+    more: tuple = ()  # boxes (x0, y0, x1, y1) of the rest of a piece broken over later lines
 
 
 class Pdf(NamedTuple):
@@ -472,16 +480,23 @@ class Pdf(NamedTuple):
 
 
 def word_runs(words: list, mid: float) -> list[list[tuple]]:
-    """Group extracted (x0, y0, x1, y1, text) words so that Thai text wrapped across lines is one run.
+    """Group extracted (x0, y0, x1, y1, text) words so that a word wrapped across lines is one run.
 
     Thai has no spaces, so a line break falls inside a run of text; cut at the break, the two
-    fragments would segment differently from the same text laid out with another line width."""
+    fragments would segment differently from the same text laid out with another line width. A
+    Latin word is broken after a hyphen, slash or dash ("Sec-" "tion", "10.1016/" "j.cell"); the halves are rejoined."""
     runs: list[list[tuple]] = []
     for x0, y0, x1, y1, text, *_ in words:
         word = (x0, y0, x1, y1, text.replace("\u0e4d\u0e32", "\u0e33"))  # extracted as nikhahit + sara aa
         prev = runs[-1][-1] if runs else None
-        wraps = prev and y0 > prev[1] + 3 and x0 < prev[0] + 1 and (x0 < mid) == (prev[0] < mid)
-        if wraps and THAI.search(prev[4][-1]) and THAI.search(text[0]):
+        wraps = prev and (
+            (y0 > prev[1] + 3 and x0 < prev[0] + 1)  # the next line
+            or (prev[0] < mid <= x0 and y0 < prev[1] - 3)  # foot of column 1 to head of column 2
+        )
+        hyphen = wraps and prev[4][-1] in BREAKS and len(prev[4]) > 1 and word[4][0].isalnum()
+        if wraps and ((THAI.search(prev[4][-1]) and THAI.search(text[0])) or hyphen):
+            if prev[4].endswith("\u00ad"):  # a hyphen the line breaker added is not part of the word
+                runs[-1][-1] = (*prev[:4], prev[4][:-1])
             runs[-1].append(word)
         else:
             runs.append([word])
@@ -497,8 +512,15 @@ def run_pieces(run: list[tuple], number: int, mid: float) -> list[Piece]:
         x0, y0, x1, y1, text = run[k]
         left = x0 + (x1 - x0) * j / len(text)
         right = x0 + (x1 - x0) * (last + 1) / len(text) if end == k else x1
+        more = []
+        for m in range(k + 1, end + 1):  # the rest of the piece, on the lines that follow
+            mx0, my0, mx1, my1, mtext = run[m]
+            used = last + 1 if m == end else len(mtext)
+            more.append((mx0, my0, mx0 + (mx1 - mx0) * used / len(mtext), my1))
         column = 1 if right <= mid + 1 else 2 if left >= mid - 1 else 0
-        pieces.append(Piece(fold(part), part, at == 0, number, left, y0, right, y1, column))
+        pieces.append(
+            Piece(fold(part), part, at == 0, number, left, y0, right, y1, column, tuple(more))
+        )
         at += len(part)
     return pieces
 
@@ -608,11 +630,12 @@ def runs(pieces: list[Piece]) -> list[list]:
     """Merge neighbouring pieces on one line into [page, x0, y0, x1, y1] boxes."""
     boxes: list[list] = []
     for p in pieces:
-        last = boxes[-1] if boxes else None
-        if last and last[0] == p.page and abs(last[2] - p.y0) < 3 and -1 <= p.x0 - last[3] < GAP:
-            last[3], last[4] = max(last[3], p.x1), max(last[4], p.y1)
-        else:
-            boxes.append([p.page, p.x0, p.y0, p.x1, p.y1])
+        for x0, y0, x1, y1 in ((p.x0, p.y0, p.x1, p.y1), *p.more):
+            last = boxes[-1] if boxes else None
+            if last and last[0] == p.page and abs(last[2] - y0) < 3 and -1 <= x0 - last[3] < GAP:
+                last[3], last[4] = max(last[3], x1), max(last[4], y1)
+            else:
+                boxes.append([p.page, x0, y0, x1, y1])
     return boxes
 
 
