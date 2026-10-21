@@ -115,12 +115,14 @@
         [เคยเห็น], [ไม่เคยเห็น], [ส่วนต่าง],
         table.hline(),
       ),
-      ..srcs.map(s => (
-        [#source-name.at(s)],
-        pt(k("gap_test", s), "fused-fill", name: "macro_auroc"),
-        pt(k("gap_test", s), "loso-fill", name: "macro_auroc"),
-        dl(k("gap_test", s), "loso-fill - fused-fill", name: "macro_auroc"),
-      )).flatten(),
+      ..srcs
+        .map(s => (
+          [#source-name.at(s)],
+          pt(k("gap_test", s), "fused-fill", name: "macro_auroc"),
+          pt(k("gap_test", s), "loso-fill", name: "macro_auroc"),
+          dl(k("gap_test", s), "loso-fill - fused-fill", name: "macro_auroc"),
+        ))
+        .flatten(),
       table.hline(),
     )
   },
@@ -261,22 +263,27 @@
       columns: 5,
       align: (left, left, right, right, right),
       table.header([แหล่งข้อมูลที่กันไว้], [ตัวชี้วัด], [Letterbox], [Square], [ผลต่าง], table.hline()),
-      ..("octdl", "duke").map(s => {
-        let key = "loso_full|" + s + "|"
-        (
-          table.cell(rowspan: 3)[#source-name.at(s)],
-          [Normal/AMD macro-F1],
-          pt(key + "normal_amd", "loso-fill"), pt(key + "normal_amd", "loso-sq"),
-          dl(key + "normal_amd", "loso-sq - loso-fill"),
-          [Normal recall],
-          pt(key + "all", "loso-fill", name: "recall_normal"), pt(key + "all", "loso-sq", name: "recall_normal"),
-          dl(key + "all", "loso-sq - loso-fill", name: "recall_normal"),
-          [DME recall],
-          pt(key + "all", "loso-fill", name: "recall_dme"), pt(key + "all", "loso-sq", name: "recall_dme"),
-          dl(key + "all", "loso-sq - loso-fill", name: "recall_dme"),
-          table.hline(stroke: 0.3pt + gray),
-        )
-      }).flatten(),
+      ..("octdl", "duke")
+        .map(s => {
+          let key = "loso_full|" + s + "|"
+          (
+            table.cell(rowspan: 3)[#source-name.at(s)],
+            [Normal/AMD macro-F1],
+            pt(key + "normal_amd", "loso-fill"),
+            pt(key + "normal_amd", "loso-sq"),
+            dl(key + "normal_amd", "loso-sq - loso-fill"),
+            [Normal recall],
+            pt(key + "all", "loso-fill", name: "recall_normal"),
+            pt(key + "all", "loso-sq", name: "recall_normal"),
+            dl(key + "all", "loso-sq - loso-fill", name: "recall_normal"),
+            [DME recall],
+            pt(key + "all", "loso-fill", name: "recall_dme"),
+            pt(key + "all", "loso-sq", name: "recall_dme"),
+            dl(key + "all", "loso-sq - loso-fill", name: "recall_dme"),
+            table.hline(stroke: 0.3pt + gray),
+          )
+        })
+        .flatten(),
       table.hline(),
     )
   },
@@ -290,71 +297,18 @@
 == จุดที่เกิดส่วนต่างประสิทธิภาพ <sec-remaining>
 
 #figure(
-  {
-    set text(size: (9.5 / 11) * 1em)
-    table(
-      columns: 5,
-      align: (left, right, right, right, right),
-      table.header(
-        table.cell(rowspan: 2)[แหล่งข้อมูลที่กันไว้], table.cell(rowspan: 2)[ส่วนต่าง 3 คลาส],
-        table.cell(colspan: 3, align: center)[Macro-F1 (มุมมอง Normal/AMD)],
-        [เคยเห็น], [ไม่เคยเห็น], [ส่วนต่าง],
-        table.hline(),
-      ),
-      ..srcs
-        .map(s => (
-          [#source-name.at(s)],
-          if s == "paima" [--] else { dl("gap_test|" + s + "|all", "loso-fill - fused-fill") },
-          pt("gap_test|" + s + "|normal_amd", "fused-fill"),
-          pt("gap_test|" + s + "|normal_amd", "loso-fill"),
-          dl("gap_test|" + s + "|normal_amd", "loso-fill - fused-fill"),
-        ))
-        .flatten(),
-      table.hline(),
-    )
-  },
-  caption: [ส่วนต่างประสิทธิภาพบนแหล่งข้อมูลที่ไม่เคยเห็นในมุมมอง 3 คลาสและมุมมอง Normal/AMD (letterbox, ชุดทดสอบ, LOSO ลบด้วย fused หน่วยจุดเปอร์เซ็นต์ พร้อมช่วงความเชื่อมั่นแบบจับคู่ร้อยละ 95)],
-) <tab-remaining>
+  kind: image,
+  fig("recall-change"),
+  caption: [การเปลี่ยนแปลงของค่า recall รายคลาส (จุดเปอร์เซ็นต์) เมื่อแหล่งข้อมูลถูกแยกไว้ (LOSO ลบด้วย fused, letterbox, ชุดทดสอบ) พร้อมช่วงความเชื่อมั่นแบบจับคู่ร้อยละ 95 ระดับของโมเดล fused อยู่ใน @tab-recall],
+) <fig-recall-change>
 
-คลาสที่เป็นสาเหตุของส่วนต่างแตกต่างกันไปตามแหล่งข้อมูล (@tab-remaining) โดยบนชุดข้อมูลทดสอบ ค่า recall ของภาวะ DME เมื่อเป็นแหล่งข้อมูลที่ถูกแยกไว้ ลดลง #span(("kermany", "octdl", "duke").map(s => delta("gap_test|" + s + "|all", "loso-fill - fused-fill", name: "recall_dme").point)) จุดสำหรับ Kermany, OCTDL และ Duke (@tab-recall-unseen) แม้ว่าช่วงความเชื่อมั่นของ OCTDL และ Duke จะค่อนข้างกว้าง ในมุมมอง Normal/AMD ส่วนต่างของ OCTDL และ Duke แยกไม่ออกจากศูนย์ ซึ่งชี้ว่าภาวะ DME เป็นสาเหตุหลักสำหรับสองแหล่งข้อมูลนี้ แต่ช่วงความเชื่อมั่นยังกว้างเกินกว่าจะระบุว่า DME อธิบายส่วนต่างทั้งหมดได้ Kermany ยังคงมีส่วนต่างขนาดใหญ่ในมุมมอง Normal/AMD จากภาพปกติที่ถูกทำนายเป็น AMD: เมื่อถูกแยกไว้ ค่า recall ของภาพปกติเปลี่ยนไป #dl("gap_test|kermany|all", "loso-fill - fused-fill", name: "recall_normal") (@tab-recall-unseen) และภาพปกติส่วนใหญ่ที่ทำนายผิดถูกระบุว่าเป็น AMD ซึ่งสอดคล้องกับสิ่งชี้แนะจากขนาดภาพข้างต้น (@fig-kermany-size) เนื่องจากชุดทดสอบส่วนใหญ่เป็นขนาด 1024×496 ซึ่งเป็นขนาดที่มีเฉพาะ AMD ใน Duke สำหรับ PAIMA ซึ่งไม่มีภาวะ DME ยังคงมีส่วนต่างจากการสูญเสีย recall ของ AMD และเป็นชนิด dry AMD เป็นหลักเช่นเดิม: ค่า recall เมื่อถูกแยกไว้เปลี่ยนไป #as-dl("test|paima|normal_amd", "dry", "loso-fill - fused-fill") สำหรับภาพสแกนชนิดดรูเซน และ #as-dl("test|paima|normal_amd", "wet", "loso-fill - fused-fill") สำหรับชนิดเปียก
+คลาสที่เป็นสาเหตุของส่วนต่างแตกต่างกันไปตามแหล่งข้อมูล (@fig-recall-change): แต่ละแหล่งข้อมูลสูญเสียมากที่สุดในคลาสเดียว ได้แก่ ภาพปกติสำหรับ Kermany, ภาวะ DME สำหรับ OCTDL และ Duke, และ AMD ชนิดแห้งสำหรับ PAIMA
 
-// One source's row of per-class recall changes, LOSO minus fused (paired, with intervals).
-#let recall-change-row(s) = {
-  let g = k("gap_test", s)
-  let pair = "loso-fill - fused-fill"
-  let stage(st) = if s == "duke" { if st == "dry" { dl(g, pair, name: "recall_amd") } else [--] } else {
-    as-dl(k("test", s), st, pair)
-  }
-  (
-    [#source-name.at(s)],
-    dl(g, pair, name: "recall_normal"),
-    dl(g, pair, name: "recall_amd"),
-    stage("dry"),
-    stage("wet"),
-    if s == "paima" [--] else { dl(g, pair, name: "recall_dme") },
-  )
-}
+ค่า recall ของ DME ไม่นับภาพปกติหรือภาพ AMD ที่ถูกทำนายผิดเป็น DME เราจึงประเมินในมุมมอง Normal/AMD เพิ่มเติม ซึ่งตัดทั้งภาพ DME และ output ของ DME ออก (@sec-eval) ในมุมมองนี้ ส่วนต่างของ OCTDL และ Duke เท่ากับ #dl("gap_test|octdl|normal_amd", "loso-fill - fused-fill") และ #dl("gap_test|duke|normal_amd", "loso-fill - fused-fill") ซึ่งแยกไม่ออกจากศูนย์ ชี้ว่าภาวะ DME เป็นสาเหตุหลักสำหรับสองแหล่งข้อมูลนี้ แต่ช่วงความเชื่อมั่นยังกว้างเกินกว่าจะระบุว่า DME อธิบายส่วนต่างทั้งหมดได้
 
-#figure(
-  {
-    set text(size: (9.5 / 11) * 1em)
-    table(
-      columns: 6,
-      align: (left, right, right, right, right, right),
-      table.header(
-        table.cell(rowspan: 2)[แหล่งข้อมูลที่กันไว้], table.cell(rowspan: 2)[ปกติ], table.cell(rowspan: 2)[AMD],
-        table.cell(colspan: 2, align: center)[ระยะของ AMD], table.cell(rowspan: 2)[DME],
-        [dry], [wet],
-        table.hline(),
-      ),
-      ..srcs.map(recall-change-row).flatten(),
-      table.hline(),
-    )
-  },
-  caption: [การเปลี่ยนแปลงของค่า recall รายคลาส (จุดเปอร์เซ็นต์) เมื่อแหล่งข้อมูลถูกแยกไว้ (LOSO ลบด้วย fused, letterbox, ชุดทดสอบ) พร้อมช่วงความเชื่อมั่นแบบจับคู่ร้อยละ 95 คอลัมน์เหมือนใน @tab-recall ซึ่งแสดงระดับของโมเดล fused],
-) <tab-recall-unseen>
+Kermany ยังคงมีส่วนต่างในมุมมอง Normal/AMD เท่ากับ #dl("gap_test|kermany|normal_amd", "loso-fill - fused-fill"): ภาพปกติส่วนใหญ่ที่ทำนายผิดถูกระบุว่าเป็น AMD ซึ่งสอดคล้องกับสิ่งชี้แนะจากขนาดภาพ (@fig-kermany-size) เนื่องจากชุดทดสอบส่วนใหญ่เป็นขนาด 1024×496 ซึ่งเป็นขนาดที่มีเฉพาะ AMD ใน Duke สำหรับ PAIMA ซึ่งไม่มีภาวะ DME สูญเสีย recall ของ AMD ชนิดแห้งมากกว่าชนิดเปียก เช่นเดียวกับเมื่อเป็นแหล่งข้อมูลที่เคยเห็น (@tab-recall)
 
-สาเหตุที่เป็นไปได้คือ โมเดลแบบ LOSO แต่ละโมเดลได้รับการฝึกสอนด้วยข้อมูลภาวะ DME จากจำนวนแหล่งข้อมูลที่น้อยลง กล่าวคือ ชุดข้อมูล PAIMA ไม่มีข้อมูลภาวะ DME เลย ดังนั้น เมื่อทำการแยกชุดข้อมูล Kermany ไว้ โมเดลจึงเรียนรู้ลักษณะเฉพาะของภาวะ DME จากชุดข้อมูล OCTDL และ Duke เท่านั้น
+สาเหตุที่เป็นไปได้ของการสูญเสีย recall ของ DME คือ โมเดลแบบ LOSO แต่ละโมเดลได้รับการฝึกสอนด้วยข้อมูลภาวะ DME จากจำนวนแหล่งข้อมูลที่น้อยลง กล่าวคือ ชุดข้อมูล PAIMA ไม่มีข้อมูลภาวะ DME เลย ดังนั้น เมื่อทำการแยกชุดข้อมูล Kermany ไว้ โมเดลจึงเรียนรู้ลักษณะเฉพาะของภาวะ DME จากชุดข้อมูล OCTDL และ Duke เท่านั้น
 
 งานวิจัยนี้ได้ทดสอบสมมติฐานดังกล่าวสำหรับชุดข้อมูล Kermany ด้วยโมเดลแบบ fused ที่ฝึกสอนบนทั้ง 4 แหล่งข้อมูล แต่ทำการตัดภาพถ่ายภาวะ DME ของชุดข้อมูล Kermany ออกทั้งหมด (ทั้งในชุดข้อมูลฝึกสอน (training set) และชุดข้อมูลตรวจสอบความถูกต้อง (validation set) โดยคลาสอื่นและแหล่งข้อมูลอื่นยังคงเดิม พร้อมทั้งฝึกสอนแบบ 5 ส่วน (5 folds) ตามชุดข้อมูล Duke ภายใต้ขั้นตอนเดียวกันกับโมเดลแบบ fused ปกติ
 
@@ -362,11 +316,17 @@
 
 // Rows of the zero-DME control: per-arm levels, and paired differences between arms (italic).
 #let zd-level(label, key, arm) = (
-  [#label], zd-pt(key, arm), zd-pt(key, arm, name: "recall_normal"), zd-pt(key, arm, name: "recall_amd"),
+  [#label],
+  zd-pt(key, arm),
+  zd-pt(key, arm, name: "recall_normal"),
+  zd-pt(key, arm, name: "recall_amd"),
   if "recall_dme" in ZD.at(key).arms.at(arm).metrics { zd-pt(key, arm, name: "recall_dme") } else [--],
 )
 #let zd-diff(label, key, pair) = (
-  [_#label _], zd-dl(key, pair), zd-dl(key, pair, name: "recall_normal"), zd-dl(key, pair, name: "recall_amd"),
+  [_#label _],
+  zd-dl(key, pair),
+  zd-dl(key, pair, name: "recall_normal"),
+  zd-dl(key, pair, name: "recall_amd"),
   if "recall_dme" in ZD.at(key).deltas.at(pair) { zd-dl(key, pair, name: "recall_dme") } else [--],
 )
 #let zd-key = "kermany|all"

@@ -30,7 +30,7 @@ tested this for OCTDL or Duke. It does not explain PAIMA, whose loss stays unexp
 on every unseen source.
 
 *DME is the weak point for some sources, not all.* For OCTDL and Duke, DME recall is the largest per-class loss when the
-source is held out (@tab-recall-unseen), though with wide intervals. Kermany's largest loss is normal recall, and PAIMA, which has
+source is held out (@fig-recall-change), though with wide intervals. Kermany's largest loss is normal recall, and PAIMA, which has
 no DME, loses AMD recall. DME is also the class with the fewest training examples from the fewest sources: PAIMA has none, so a model
 with Kermany held out learns DME from only two sources, one per vendor. Removing Kermany's DME from a fused
 model (@tab-zero-dme) reproduces about #zd-share()% of Kermany's held-out gap, so missing DME is a real but partial
@@ -40,7 +40,7 @@ from more sources would close the DME part is still untested.
 *Dry AMD is hard on some sources, not all.* AMD merges a dry and a wet stage, and the sources mix them very
 differently (@tab-data). PAIMA, where most AMD is dry, misses its drusen scans far more often than its wet ones,
 both when seen and when held out, and OCTDL shows the same on a few dozen scans, while Kermany's drusen scans are
-recognised almost perfectly when seen and lose only about #whole(AS.at("test|kermany|all").deltas.dry.at("loso-fill - fused-fill").point) point when held out (@tab-recall, @tab-recall-unseen). The dry stage is therefore not hard in general; something
+recognised almost perfectly when seen and lose only about #whole(AS.at("test|kermany|all").deltas.dry.at("loso-fill - fused-fill").point) point when held out (@tab-recall, @fig-recall-change). The dry stage is therefore not hard in general; something
 about PAIMA's drusen scans is, and our data cannot tell what. A single AMD score hides this difference, which is why we report the two stages separately.
 
 == Limitations <sec-limits>
