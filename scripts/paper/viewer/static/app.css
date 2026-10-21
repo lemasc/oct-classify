@@ -92,3 +92,46 @@ td.gone,th.gone{background:var(--del)}
  figure,.tbl-ins,.tbl-del{break-inside:avoid}
  h2,h3{break-after:avoid}
 }
+
+/* live reload */
+.live{display:inline-flex;gap:.6rem;align-items:center}
+.live label{cursor:pointer;user-select:none}
+#reload{background:var(--accent);color:Canvas;border:0;border-radius:4px;font-weight:bold}
+#reload.fail{background:var(--delfg)}
+
+/* where the two-column PDF breaks (shown with the "page marks" toggle) */
+.pb{display:none}
+body.marks .pb{display:inline-block;font:600 10px/1.4 sans-serif;color:var(--accent);
+ border:1px dashed var(--accent);border-radius:3px;padding:0 .35em;margin:0 .35em;
+ vertical-align:middle;user-select:none}
+body.marks .pb::before{content:attr(data-label)}
+body.marks .pb.page{background:var(--accent);color:Canvas;border-style:solid}
+@media print{.pb{display:none!important}}
+.legend label{cursor:pointer;user-select:none}
+
+/* the pages as Typst lays them out */
+body.pages .layout{grid-template-columns:minmax(0,52rem)}
+.sheet{position:relative;width:100%;margin:1rem auto;background:#fff;box-shadow:0 1px 6px #0006}
+.sheet img{display:block;width:100%;height:100%}
+.sheet .hl{position:absolute;background:#2ecc4040;border-bottom:2px solid #2a9d3f;pointer-events:none}
+.sheet .frame{position:absolute;outline:3px solid #2ecc40;pointer-events:none}
+.sheet .gone{position:absolute;width:9px;margin-left:-4px;cursor:help;
+ background:linear-gradient(#d33,#d33) center/2px 100% no-repeat}
+.sheet .gone::before{content:"";position:absolute;left:1px;top:-3px;border:4px solid transparent;
+ border-top-color:#d33;border-bottom:0}
+.sheet .gone:hover::after,.sheet .gone:focus::after{content:attr(data-text);position:absolute;left:12px;
+ top:0;z-index:1;width:max-content;max-width:22rem;padding:.3rem .5rem;background:var(--del);
+ color:var(--delfg);border:1px solid var(--delfg);border-radius:4px;font:12px/1.4 sans-serif}
+@media(min-width:1100px){body.pages .layout:has(.side){grid-template-columns:16rem minmax(0,52rem)}}
+@media print{
+ .sheet{box-shadow:none;margin:0;break-after:page;break-inside:avoid}
+ .sheet .hl,.sheet .frame{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .sheet .gone{display:none}
+}
+
+/* selectable text over each sheet (invisible; the browser still draws the selection) */
+.sheet .ink{position:absolute;inset:0;width:100%;height:100%;fill:transparent;user-select:text;
+ cursor:text;pointer-events:auto}
+.sheet .ink text{white-space:pre}
+.sheet .ink ::selection{background:#2a6fdb55}
+.sheet .at{position:absolute;left:0;width:0;height:0}

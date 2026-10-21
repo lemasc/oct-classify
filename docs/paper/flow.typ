@@ -24,21 +24,23 @@
 
 #let method-flow(labels: flow-en) = {
   set text(size: (9.5 / 11) * 1em)
-  let stage((name, body)) = grid(
-    columns: (6.5em, 1fr),
-    column-gutter: 0.6em,
-    align: left + horizon,
-    text(weight: "bold", name), text(fill: ink-2, size: (8.5 / 9.5) * 1em, body),
-  )
+  // Stacked (name above the description) so the boxes fit one column. The return arrow and its label hang outside
+  // the boxes, and fletcher does not count them against the given width, so the boxes are sized from a measured
+  // draw (see below) to make the whole diagram exactly as wide as the column.
+  let stage((name, body)) = align(left, {
+    text(weight: "bold", name)
+    linebreak()
+    text(fill: ink-2, size: (8.5 / 9.5) * 1em, body)
+  })
   let n = labels.stages.len()
-  let drawing = diagram(
+  let draw(width) = diagram(
     spacing: (1.5em, 1.2em),
     node-stroke: 0.6pt + ink-3,
     node-corner-radius: 3pt,
     node-inset: 0.6em,
     edge-stroke: 0.7pt + ink-2,
     ..labels.stages.enumerate().map(((i, s)) => (
-      node((0, i), stage(s), width: 36em, name: label("flow-" + str(i))),
+      node((0, i), stage(s), width: width, name: label("flow-" + str(i))),
       if i + 1 < n { edge("-|>") },
     )).flatten().filter(x => x != none),
     // diagnosis -> preprocess: the square-crop arm came from what the diagnosis found
@@ -46,5 +48,8 @@
       corner-radius: 4pt, label: square(text(size: (8.5 / 9.5) * 1em, labels.loop)), label-side: right),
   )
   // HTML export has no layout engine for the diagram, so embed it as an inline SVG there.
-  context if target() == "html" { html.frame(drawing) } else { drawing }
+  context if target() == "html" { html.frame(draw(30em)) } else { layout(size => {
+    let overshoot = measure(draw(size.width)).width - size.width
+    draw(size.width - overshoot)
+  }) }
 }

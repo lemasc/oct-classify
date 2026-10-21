@@ -1,5 +1,8 @@
 {# Wikipedia-style history: pick one 'from' and one 'to' radio, then Compare. #}
 <form class="history" action="{{ lang_prefix }}/" method="get">
+  {%- if layout %}
+  <input type="hidden" name="layout" value="pages">
+  {%- endif %}
   <table>
     {%- for c in commits %}
     <tr>

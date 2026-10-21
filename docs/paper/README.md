@@ -5,7 +5,7 @@ Typst project. Build with `typst compile --root ../.. main.typ` (or `typst watch
 - `sections/`: one file per section, included from `main.typ` (English).
 - `th/`: Thai companion; see [Thai version](#thai-version).
 - `i18n/th.typ`: Thai strings (title, source and split names, the `translated` list). Thai section files import it after `lib.typ` so these names shadow the English ones.
-- `template.typ`: page and font setup shared by both languages.
+- `template.typ`: page and font setup shared by both languages. The page is two columns; `front[...]` (used in both `main.typ` files) puts the title and abstract across both columns on page 1.
 - `flow.typ`: the study overview flowchart (`@fig-method`), drawn in Typst with the `@preview/fletcher` package, which Typst downloads on the first compile. Its labels are content, so the Thai version passes its own (`flow-labels` in `i18n/th.typ`).
 - `figures/`: generated figures. Do not edit by hand; regenerate with the scripts in `scripts/paper/`.
 - Every number in the text comes from tracked outputs under `data/` (`data/final-scoring/`, `data/paper/`).
@@ -28,6 +28,7 @@ Rules:
 
 - Translate prose, captions and table headers. Leave unchanged: code (`#pt(…)`, `#ci(…)`, `#dp(…)`, `#num(…)`, `#let …`), numbers, `@refs`, `<labels>` and citations (`@srinivasan2014`). Numbers are the same in both languages, so move the call to where the Thai word order puts it rather than retyping the value.
 - Names and mathematics that are Latin stay Latin: dataset and model names (Kermany, ResNet-50), metrics (macro-F1, AUROC), LOSO, AdaBN, Grad-CAM, `$…$`. Give a Thai term on first use where one exists.
+- Figures and tables float (`placement: auto`). They stay in a column by default; to span both columns, add the label to `wide-figures` in `template.typ` (one list for both languages, so nothing to carry into Thai sections).
 - Table text is a fixed fraction of the body size (see `template.typ`), so Thai tables get larger text than English ones without any change. Do not hard-code `pt` sizes.
 - Each table builds its header inline, so translate it in place. `recall-table`, `rc` and `stage-rc` in `results.typ` have English headers hard-coded; they are copied with the rest of the file, so translate them there.
 - Source and split names in tables come from `source-name` and `split-name` in `i18n/th.typ`; edit them there, not in the section.
