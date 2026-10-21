@@ -661,8 +661,10 @@ MOVE_BUDGET = 25_000_000  # old x new leftovers beyond which moves are not looke
 GAP = 8  # points between two highlighted words that still count as one run
 
 
-def sheet_key(sha: str, version: str) -> str:
-    return sha if sha != WORKTREE else f"{WORKTREE}-{version}"
+def sheet_key(sha: str, pdf: bytes) -> str:
+    """Committed revisions are named by their SHA; the working tree by the digest of its PDF, so a
+    page URL (cached as immutable) always means the same bytes, however the sources changed meanwhile."""
+    return sha if sha != WORKTREE else f"{WORKTREE}-{hashlib.md5(pdf).hexdigest()[:12]}"
 
 
 def sheet_pdf(key: str, lang: str) -> bytes:
@@ -970,9 +972,10 @@ def page(lang: str, rest: str, *, label: str, old: str, new: str, body: str, tit
     )  # fmt: skip
 
 
-def stage(sha: str, lang: str, version: str) -> tuple[bytes, str]:
+def stage(sha: str, lang: str) -> tuple[bytes, str]:
     """The PDF of a revision, and the key its page images are served under."""
-    pdf, key = compiled(sha, lang, "pdf"), sheet_key(sha, version)
+    pdf = compiled(sha, lang, "pdf")
+    key = sheet_key(sha, pdf)
     if sha == WORKTREE:
         SHEETS[key, lang] = pdf
         for stale in list(SHEETS)[:-4]:
@@ -985,7 +988,7 @@ def diff_page(lang: str, base: str, head: str, pages: bool = False) -> str:
     old_sha, new_sha = resolve(base), resolve(head or WORKTREE)
     label = f"{describe(base, old_sha)} → {describe(head or WORKTREE, new_sha)}"
     rest = f"{base}..{head}"
-    new_pdf, key = stage(new_sha, lang, version)
+    new_pdf, key = stage(new_sha, lang)
     if pages:
         sheets, toc = layout(new_pdf, compiled(old_sha, lang, "pdf"))
         return page(
@@ -1004,7 +1007,7 @@ def view_page(lang: str, rev: str, pages: bool = False) -> str:
     """One revision, styled like the diff pages but with nothing marked."""
     version = fingerprint()
     sha = resolve(rev)
-    pdf, key = stage(sha, lang, version)
+    pdf, key = stage(sha, lang)
     label = f"viewing {describe(rev, sha)}"
     if pages:
         sheets, toc = layout(pdf, None)
