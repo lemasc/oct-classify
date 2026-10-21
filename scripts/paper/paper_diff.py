@@ -530,33 +530,37 @@ def figures_of(sheet, digests: dict) -> list[tuple[tuple, str]]:
 
     A figure is drawn from many parts (a stack of scans, boxes and arrows), so parts that touch are
     one figure, whose fingerprint covers every part. Positions are taken from the figure's own
-    corner, so a figure that merely moved keeps its fingerprint. Table rules are too thin to count."""
+    corner, so a figure that merely moved keeps its fingerprint. Thin strokes (arrows, ticks) join a
+    figure but cannot make one, so a table of rules is not a figure."""
     import pymupdf
 
-    parts: list[tuple] = []  # (rect, what it is)
+    parts: list[tuple] = []  # (rect, what it is, whether it can make a figure on its own)
     for info in sheet.get_image_info(xrefs=True):
         if info["xref"]:
             if info["xref"] not in digests:
                 digests[info["xref"]] = hashlib.md5(sheet.parent.extract_image(info["xref"])["image"]).hexdigest()
-            parts.append((pymupdf.Rect(info["bbox"]), ("image", digests[info["xref"]])))
+            parts.append((pymupdf.Rect(info["bbox"]), ("image", digests[info["xref"]]), True))
     for path in sheet.get_drawings():
         rect = path["rect"]
-        if rect.width >= FIGURE_PART and rect.height >= FIGURE_PART:
-            kind = ("path", round(rect.width), round(rect.height), str(path.get("fill")),
-                    str(path.get("color")), len(path["items"]))  # fmt: skip
-            parts.append((rect, kind))
+        kind = ("path", round(rect.width), round(rect.height), str(path.get("fill")),
+                str(path.get("color")), len(path["items"]))  # fmt: skip
+        parts.append((rect, kind, min(rect.width, rect.height) >= FIGURE_PART))
+
+    def touch(a, b) -> bool:  # `intersects` is false for a rule with no thickness
+        return (a.x0 - FIGURE_GAP <= b.x1 and b.x0 - FIGURE_GAP <= a.x1
+                and a.y0 - FIGURE_GAP <= b.y1 and b.y0 - FIGURE_GAP <= a.y1)  # fmt: skip
+
     groups: list[list[int]] = []
-    for i, (rect, _) in enumerate(parts):  # merge every group the part touches
-        touching = [g for g in groups if any((rect + (-2, -2, 2, 2)).intersects(parts[j][0]) for j in g)]
-        merged = [i, *(j for g in touching for j in g)]
-        groups = [g for g in groups if g not in touching] + [merged]
+    for i, (rect, *_) in enumerate(parts):  # merge every group the part touches
+        touching = [g for g in groups if any(touch(rect, parts[j][0]) for j in g)]
+        groups = [g for g in groups if g not in touching] + [[i, *(j for g in touching for j in g)]]
     found = []
     for group in groups:
         box = pymupdf.Rect(parts[group[0]][0])
         for j in group:
             box |= parts[j][0]
-        if box.width >= FIGURE_MIN and box.height >= FIGURE_MIN:
-            shape = sorted((kind, round(r.x0 - box.x0), round(r.y0 - box.y0)) for r, kind in (parts[j] for j in group))
+        if box.width >= FIGURE_MIN and box.height >= FIGURE_MIN and any(parts[j][2] for j in group):
+            shape = sorted((kind, round(r.x0 - box.x0), round(r.y0 - box.y0)) for r, kind, _ in (parts[j] for j in group))
             found.append((tuple(box), hashlib.md5(repr(shape).encode()).hexdigest()))
     return found
 
@@ -633,7 +637,8 @@ def with_marks(tokens: list[tuple], marks: dict[int, str]) -> list[tuple]:
 
 SHEETS: dict[str, bytes] = {}  # PDFs of working-tree pages being viewed, by key (the newest few)
 SHEET_KEY = re.compile(rf"([0-9a-f]{{40}}|{WORKTREE}-[0-9a-f]{{12}})")
-FIGURE_PART = 3  # points: thinner drawings are rules and underlines, not part of a figure
+FIGURE_PART = 3  # points: a stroke thinner than this cannot make a figure, only join one
+FIGURE_GAP = 6  # points between parts that still belong to one figure
 FIGURE_MIN = 40  # points: a cluster smaller than this is not a figure
 FOOTER = 56  # points from the page bottom below which a word is the page number, not the text
 GAP = 8  # points between two highlighted words that still count as one run
