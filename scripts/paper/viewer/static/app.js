@@ -287,3 +287,10 @@ if (version) {
   reload.addEventListener("click", () => refresh().catch((err) => complain(String(err))));
   listen();
 }
+
+// --- page marks toggle ----------------------------------------------------------------------------
+const marks = document.getElementById("marks");
+marks.checked = stored("paper-marks") !== "0";
+const showMarks = () => document.body.classList.toggle("marks", marks.checked);
+marks.addEventListener("change", () => (stored("paper-marks", marks.checked ? "1" : "0"), showMarks()));
+showMarks();

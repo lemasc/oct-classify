@@ -7,7 +7,9 @@
     http://localhost:8731/th/main..HEAD    the same three forms for the Thai paper (docs/paper/th/)
 
 Each revision is extracted with `git archive` and compiled with `typst --features html`; the
-built HTML is cached per commit and variant under artifacts/paper-diff/. The two HTML bodies are
+built HTML is cached per commit and variant under artifacts/paper-diff/, next to the PDF Typst
+lays out (two columns, as submitted): aligning its words with the HTML words tells where each page and
+column begins, which the single-column page shows as small markers. The two HTML bodies are
 tokenised and diffed with difflib (Thai runs are segmented into words with pythainlp first).
 Tables are diffed as whole blocks (old table dimmed above the new one, changed cells shaded green
 in the new table, removed cells red in the old), since a per-cell diff breaks when columns move.
@@ -29,6 +31,7 @@ import subprocess
 import tempfile
 import threading
 import time
+import unicodedata
 from contextlib import contextmanager
 from difflib import SequenceMatcher
 from functools import cache
@@ -96,26 +99,26 @@ def resolve(rev: str) -> str:
     return done.stdout.strip()
 
 
-def typst(workdir: Path, out: Path, lang: str) -> None:
+def typst(workdir: Path, out: Path, lang: str, fmt: str = "html") -> None:
     if not (workdir / ENTRY[lang]).exists():
         raise Error(404, f"no {lang} paper ({PAPER}/{ENTRY[lang]}) in this revision")
+    features = ["--features", "html"] if fmt == "html" else []
     done = subprocess.run(
-        ["typst", "compile", "--root", "../..", "--features", "html", "--format", "html",
-         ENTRY[lang], str(out)],
+        ["typst", "compile", "--root", "../..", *features, "--format", fmt, ENTRY[lang], str(out)],
         cwd=workdir, capture_output=True, text=True, check=False,
     )  # fmt: skip
     if done.returncode:
         raise Error(500, f"typst failed in {workdir}:\n{done.stderr}")
 
 
-def build(sha: str, lang: str) -> str:
-    """Return the HTML of the `lang` paper at `sha` (or the working tree), compiling on a cache miss."""
+def compiled(sha: str, lang: str, fmt: str) -> bytes:
+    """The `fmt` output of the `lang` paper at `sha` (or the working tree), compiling on a cache miss."""
     if sha == WORKTREE:
         with tempfile.TemporaryDirectory() as tmp:
-            out = Path(tmp) / "main.html"
-            typst(REPO / PAPER, out, lang)
-            return out.read_text()
-    cached = CACHE / (f"{sha}.html" if lang == "en" else f"{sha}.{lang}.html")
+            out = Path(tmp) / f"main.{fmt}"
+            typst(REPO / PAPER, out, lang, fmt)
+            return out.read_bytes()
+    cached = CACHE / (f"{sha}.{fmt}" if lang == "en" else f"{sha}.{lang}.{fmt}")
     with BUILD_LOCK:
         if not cached.exists():
             with tempfile.TemporaryDirectory() as tmp:
@@ -128,9 +131,14 @@ def build(sha: str, lang: str) -> str:
                     subprocess.run(["tar", "-x", "-C", tmp], input=archive.stdout, check=True)
                 CACHE.mkdir(parents=True, exist_ok=True)
                 partial = cached.with_suffix(".tmp")
-                typst(Path(tmp) / PAPER, partial, lang)
+                typst(Path(tmp) / PAPER, partial, lang, fmt)
                 partial.replace(cached)
-    return cached.read_text()
+    return cached.read_bytes()
+
+
+def build(sha: str, lang: str) -> str:
+    """HTML of the `lang` paper at `sha`."""
+    return compiled(sha, lang, "html").decode()
 
 
 # --- watching the working tree --------------------------------------------------------------
@@ -362,10 +370,14 @@ def opcodes(old: list, new: list) -> list[tuple]:
     return [piece for op in ops for piece in pair_tables(*op)]
 
 
-def redline(old_page: str | None, new_page: str) -> str:
-    """Body HTML of `new_page`, with the edits since `old_page` marked up (none if it is None)."""
+def redline(old_page: str | None, new_page: str, pdf: bytes | None = None) -> str:
+    """Body HTML of `new_page`, with the edits since `old_page` marked up (none if it is None).
+
+    `pdf` is the same revision as laid out by Typst; with it, page and column starts are marked."""
     new = tokenize(body_of(new_page))
     old = new if old_page is None else tokenize(body_of(old_page))
+    if pdf is not None:
+        new = with_marks(new, page_marks(new, pdf))  # keys are untouched, so the diff is the same
     out: list[str] = []
 
     def wrap(tokens: list, tag: str, keep_tags: bool) -> None:
@@ -421,6 +433,72 @@ def redline(old_page: str | None, new_page: str) -> str:
             wrap(old[a0:a1], "del", keep_tags=False)
             wrap(new[b0:b1], "ins", keep_tags=True)
     return "".join(out)
+
+
+# --- pages and columns -----------------------------------------------------------------------
+
+# Aligned runs shorter than this are not trusted for where a page or column starts: floats (tables,
+# captions) sit elsewhere in the PDF than in the text, and a stray "the" can match by coincidence.
+MIN_RUN = 20
+
+
+def fold(word: str) -> str:
+    """Comparable form of a word: HTML entities decoded, ligatures and width variants unfolded."""
+    return unicodedata.normalize("NFKC", html.unescape(word))
+
+
+def pdf_words(data: bytes) -> list[tuple[str, int, int]]:
+    """(piece, page, column) in laid-out order; column 0 means the word spans both columns.
+
+    Words are cut into the same pieces as the HTML text (see `segment`): in Thai a PDF "word" is a
+    line fragment, so only dictionary pieces line up."""
+    try:
+        import pymupdf
+    except ImportError:
+        raise Error(500, "page markers need pymupdf: run with `uv run --group paper ...`") from None
+    found = []
+    with pymupdf.open(stream=data, filetype="pdf") as doc:
+        for number, sheet in enumerate(doc, 1):
+            mid = sheet.rect.width / 2
+            for x0, _, x1, _, word, *_ in sheet.get_text("words"):
+                column = 1 if x1 <= mid + 1 else 2 if x0 >= mid - 1 else 0
+                word = word.replace("\u0e4d\u0e32", "\u0e33")  # extracted as nikhahit + sara aa
+                found += [(fold(piece), number, column) for piece in segment(word)]
+    return found
+
+
+def page_marks(tokens: list[tuple], pdf: bytes) -> dict[int, str]:
+    """Token index -> label for the words where the PDF starts a new page or column."""
+    starts = [i for i, token in enumerate(tokens) if token[0] == "text"]
+    words = [fold(tokens[i][2]) for i in starts]
+    laid = pdf_words(pdf)
+    blocks = SequenceMatcher(None, words, [w for w, _, _ in laid], autojunk=False).get_matching_blocks()
+    marks, page, column = {}, 0, 0
+    for block in blocks:
+        if block.size < MIN_RUN:
+            continue
+        for k in range(block.size):
+            _, number, col = laid[block.b + k]
+            label = None
+            if number != page:
+                label = f"page {number}" + (f" · col {col}" if col else "")
+                page, column = number, col
+            elif col > column:  # within a page the flow only moves from column 1 to 2
+                label, column = (f"col {col}" if column else None), col
+            if label:
+                marks[starts[block.a + k]] = label
+    return marks
+
+
+def with_marks(tokens: list[tuple], marks: dict[int, str]) -> list[tuple]:
+    """Tokens with an empty <span class="pb"> in front of each marked word (after its space)."""
+    out = list(tokens)
+    for i, label in marks.items():
+        kind, raw, key = out[i]
+        space = raw[: len(raw) - len(raw.lstrip())]
+        cls = "pb page" if label.startswith("page") else "pb"
+        out[i] = (kind, f'{space}<span class="{cls}" data-label="{label}"></span>{raw.lstrip()}', key)
+    return out
 
 
 # --- contents -------------------------------------------------------------------------------
@@ -594,7 +672,8 @@ def diff_page(lang: str, base: str, head: str) -> str:
     new_page = build(new_sha, lang)
     return page(
         lang, f"{base}..{head}", label=label, old=old_sha, new=new_sha, diffing=True,
-        body=redline(build(old_sha, lang), new_page), title=title_of(new_page), version=version,
+        body=redline(build(old_sha, lang), new_page, compiled(new_sha, lang, "pdf")),
+        title=title_of(new_page), version=version,
     )  # fmt: skip
 
 
@@ -605,7 +684,8 @@ def view_page(lang: str, rev: str) -> str:
     new_page = build(sha, lang)
     return page(
         lang, rev, label=f"viewing {describe(rev, sha)}", old="", new=sha, diffing=False,
-        body=redline(None, new_page), title=title_of(new_page), version=version,
+        body=redline(None, new_page, compiled(sha, lang, "pdf")),
+        title=title_of(new_page), version=version,
     )  # fmt: skip
 
 

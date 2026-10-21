@@ -24,6 +24,7 @@
       <a href="{{ switch[code] }}"{{ ' aria-current=page' if code == lang }}>{{ name }}</a>
       {%- endfor %}
     </span>
+    <label title="Mark where the two-column PDF starts a new page or column"><input type="checkbox" id="marks"> page marks</label>
     {%- if version %}
     <span class="live">
       <button type="button" id="reload" hidden title="The paper sources changed">changed · reload</button>

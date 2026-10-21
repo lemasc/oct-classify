@@ -98,3 +98,13 @@ td.gone,th.gone{background:var(--del)}
 .live label{cursor:pointer;user-select:none}
 #reload{background:var(--accent);color:Canvas;border:0;border-radius:4px;font-weight:bold}
 #reload.fail{background:var(--delfg)}
+
+/* where the two-column PDF breaks (shown with the "page marks" toggle) */
+.pb{display:none}
+body.marks .pb{display:inline-block;font:600 10px/1.4 sans-serif;color:var(--accent);
+ border:1px dashed var(--accent);border-radius:3px;padding:0 .35em;margin:0 .35em;
+ vertical-align:middle;user-select:none}
+body.marks .pb::before{content:attr(data-label)}
+body.marks .pb.page{background:var(--accent);color:Canvas;border-style:solid}
+@media print{.pb{display:none!important}}
+.legend label{cursor:pointer;user-select:none}
