@@ -108,3 +108,23 @@ body.marks .pb::before{content:attr(data-label)}
 body.marks .pb.page{background:var(--accent);color:Canvas;border-style:solid}
 @media print{.pb{display:none!important}}
 .legend label{cursor:pointer;user-select:none}
+
+/* the pages as Typst lays them out */
+body.pages .layout{grid-template-columns:minmax(0,52rem)}
+.sheet{position:relative;width:100%;margin:1rem auto;background:#fff;box-shadow:0 1px 6px #0006}
+.sheet img{display:block;width:100%;height:100%}
+.sheet .hl{position:absolute;background:#2ecc4040;border-bottom:2px solid #2a9d3f;pointer-events:none}
+.sheet .frame{position:absolute;outline:3px solid #2ecc40;pointer-events:none}
+.sheet .gone{position:absolute;width:9px;margin-left:-4px;cursor:help;
+ background:linear-gradient(#d33,#d33) center/2px 100% no-repeat}
+.sheet .gone::before{content:"";position:absolute;left:1px;top:-3px;border:4px solid transparent;
+ border-top-color:#d33;border-bottom:0}
+.sheet .gone:hover::after,.sheet .gone:focus::after{content:attr(data-text);position:absolute;left:12px;
+ top:0;z-index:1;width:max-content;max-width:22rem;padding:.3rem .5rem;background:var(--del);
+ color:var(--delfg);border:1px solid var(--delfg);border-radius:4px;font:12px/1.4 sans-serif}
+@media(min-width:1100px){body.pages .layout:has(.side){grid-template-columns:16rem minmax(0,52rem)}}
+@media print{
+ .sheet{box-shadow:none;margin:0;break-after:page;break-inside:avoid}
+ .sheet .hl,.sheet .frame{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .sheet .gone{display:none}
+}

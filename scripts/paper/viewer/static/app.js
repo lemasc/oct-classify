@@ -26,8 +26,7 @@ for (const form of $$("form.history")) {
 
 // --- contents: open on wide screens, highlight the section being read ---------------------------
 const wide = matchMedia("(min-width:1100px)");
-const lists = $$("details.toc");
-const place = () => lists.forEach((d) => (d.open = wide.matches));
+const place = () => $$("details.toc").forEach((d) => (d.open = wide.matches));
 wide.addEventListener("change", place);
 place();
 
@@ -128,7 +127,7 @@ function download(blob, name) {
 }
 
 function addImageTools(root) {
-  for (const img of $$("img, figure svg", root)) {
+  for (const img of $$("img, figure svg", root).filter((el) => !el.closest(".sheet"))) {
     const id = img.closest("figure[id]")?.id || "figure";
     const bar = host(img, true);
     // The async clipboard only accepts PNG across browsers, hence JPEG is a download.
@@ -216,6 +215,8 @@ const stored = (key, value) => {
 // The block at the top of the viewport, named by its section, its text and its place in the section.
 function anchor() {
   const edge = (legend?.offsetHeight ?? 0) + 8;
+  const sheet = $$("main .sheet").find((el) => el.getBoundingClientRect().bottom > edge);
+  if (sheet) return { sheet: sheet.id, shift: (edge - sheet.getBoundingClientRect().top) / sheet.offsetHeight };
   let head = "", n = 0;
   for (const el of $$(`main ${BLOCKS}`)) {
     if (/^H[2-4]$/.test(el.tagName)) [head, n] = [el.id, -1];
@@ -228,6 +229,11 @@ function anchor() {
 function restore(at) {
   if (!at) return;
   const edge = (legend?.offsetHeight ?? 0) + 8;
+  if (at.sheet) {
+    const el = document.getElementById(at.sheet);
+    if (el) scrollBy({ top: el.getBoundingClientRect().top + at.shift * el.offsetHeight - edge, behavior: "instant" });
+    return;
+  }
   let head = "", n = 0;
   const section = [];
   for (const el of $$(`main ${BLOCKS}`)) {
@@ -290,7 +296,9 @@ if (version) {
 
 // --- page marks toggle ----------------------------------------------------------------------------
 const marks = document.getElementById("marks");
-marks.checked = stored("paper-marks") !== "0";
-const showMarks = () => document.body.classList.toggle("marks", marks.checked);
-marks.addEventListener("change", () => (stored("paper-marks", marks.checked ? "1" : "0"), showMarks()));
-showMarks();
+if (marks) {
+  marks.checked = stored("paper-marks") !== "0";
+  const showMarks = () => document.body.classList.toggle("marks", marks.checked);
+  marks.addEventListener("change", () => (stored("paper-marks", marks.checked ? "1" : "0"), showMarks()));
+  showMarks();
+}

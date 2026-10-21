@@ -32,6 +32,7 @@ import tempfile
 import threading
 import time
 import unicodedata
+from collections import Counter
 from contextlib import contextmanager
 from difflib import SequenceMatcher
 from functools import cache
@@ -377,7 +378,7 @@ def redline(old_page: str | None, new_page: str, pdf: bytes | None = None) -> st
     new = tokenize(body_of(new_page))
     old = new if old_page is None else tokenize(body_of(old_page))
     if pdf is not None:
-        new = with_marks(new, page_marks(new, pdf))  # keys are untouched, so the diff is the same
+        new = with_marks(new, page_marks(new, read_pdf(pdf).pieces))  # keys are untouched, so the diff is the same
     out: list[str] = []
 
     def wrap(tokens: list, tag: str, keep_tags: bool) -> None:
@@ -447,38 +448,96 @@ def fold(word: str) -> str:
     return unicodedata.normalize("NFKC", html.unescape(word))
 
 
-def pdf_words(data: bytes) -> list[tuple[str, int, int]]:
-    """(piece, page, column) in laid-out order; column 0 means the word spans both columns.
+class Piece(NamedTuple):
+    """One diffable piece of laid-out text with its box on the page (PDF points, y down)."""
 
-    Words are cut into the same pieces as the HTML text (see `segment`): in Thai a PDF "word" is a
-    line fragment, so only dictionary pieces line up."""
+    text: str  # folded, for comparing
+    raw: str  # as extracted, for showing
+    space: bool  # starts a whitespace-separated word
+    page: int
+    x0: float
+    y0: float
+    x1: float
+    y1: float
+    col: int  # 1 or 2; 0 if the word spans both columns
+
+
+class Pdf(NamedTuple):
+    title: str
+    sizes: list[tuple[float, float]]  # per page: width, height
+    pieces: list[Piece]  # in laid-out order
+    images: list[tuple[int, tuple, str]]  # page, box, digest of the embedded file
+
+
+def word_runs(words: list, mid: float) -> list[list[tuple]]:
+    """Group extracted (x0, y0, x1, y1, text) words so that Thai text wrapped across lines is one run.
+
+    Thai has no spaces, so a line break falls inside a run of text; cut at the break, the two
+    fragments would segment differently from the same text laid out with another line width."""
+    runs: list[list[tuple]] = []
+    for x0, y0, x1, y1, text, *_ in words:
+        word = (x0, y0, x1, y1, text.replace("\u0e4d\u0e32", "\u0e33"))  # extracted as nikhahit + sara aa
+        prev = runs[-1][-1] if runs else None
+        wraps = prev and y0 > prev[1] + 3 and x0 < prev[0] + 1 and (x0 < mid) == (prev[0] < mid)
+        if wraps and THAI.search(prev[4][-1]) and THAI.search(text[0]):
+            runs[-1].append(word)
+        else:
+            runs.append([word])
+    return runs
+
+
+def run_pieces(run: list[tuple], number: int, mid: float) -> list[Piece]:
+    """Cut a run of words into diffable pieces, each with the box of the line it starts on."""
+    owner = [(k, j) for k, word in enumerate(run) for j in range(len(word[4]))]
+    pieces, at = [], 0
+    for part in segment("".join(word[4] for word in run)):
+        (k, j), (end, last) = owner[at], owner[at + len(part) - 1]
+        x0, y0, x1, y1, text = run[k]
+        left = x0 + (x1 - x0) * j / len(text)
+        right = x0 + (x1 - x0) * (last + 1) / len(text) if end == k else x1
+        column = 1 if right <= mid + 1 else 2 if left >= mid - 1 else 0
+        pieces.append(Piece(fold(part), part, at == 0, number, left, y0, right, y1, column))
+        at += len(part)
+    return pieces
+
+
+def read_pdf(data: bytes, images: bool = False) -> Pdf:
+    """Text pieces (and, on request, embedded images) of a PDF as Typst laid it out.
+
+    Words are cut into the same pieces as the HTML text (see `segment`), so the two line up."""
     try:
         import pymupdf
     except ImportError:
-        raise Error(500, "page markers need pymupdf: run with `uv run --group paper ...`") from None
-    found = []
+        raise Error(500, "the paper pages need pymupdf: run with `uv run --group paper ...`") from None
+    sizes, pieces, pictures = [], [], []
     with pymupdf.open(stream=data, filetype="pdf") as doc:
+        digests: dict[int, str] = {}
         for number, sheet in enumerate(doc, 1):
+            sizes.append((sheet.rect.width, sheet.rect.height))
             mid = sheet.rect.width / 2
-            for x0, _, x1, _, word, *_ in sheet.get_text("words"):
-                column = 1 if x1 <= mid + 1 else 2 if x0 >= mid - 1 else 0
-                word = word.replace("\u0e4d\u0e32", "\u0e33")  # extracted as nikhahit + sara aa
-                found += [(fold(piece), number, column) for piece in segment(word)]
-    return found
+            body = [w for w in sheet.get_text("words") if w[1] < sheet.rect.height - FOOTER]
+            for words in word_runs(body, mid):
+                pieces += run_pieces(words, number, mid)
+            for info in sheet.get_image_info(xrefs=True) if images else ():
+                xref = info["xref"]
+                if xref and xref not in digests:
+                    digests[xref] = hashlib.md5(doc.extract_image(xref)["image"]).hexdigest()
+                if xref:
+                    pictures.append((number, info["bbox"], digests[xref]))
+        return Pdf(doc.metadata.get("title") or "", sizes, pieces, pictures)
 
 
-def page_marks(tokens: list[tuple], pdf: bytes) -> dict[int, str]:
+def page_marks(tokens: list[tuple], laid: list[Piece]) -> dict[int, str]:
     """Token index -> label for the words where the PDF starts a new page or column."""
     starts = [i for i, token in enumerate(tokens) if token[0] == "text"]
     words = [fold(tokens[i][2]) for i in starts]
-    laid = pdf_words(pdf)
-    blocks = SequenceMatcher(None, words, [w for w, _, _ in laid], autojunk=False).get_matching_blocks()
+    blocks = SequenceMatcher(None, words, [w.text for w in laid], autojunk=False).get_matching_blocks()
     marks, page, column = {}, 0, 0
     for block in blocks:
         if block.size < MIN_RUN:
             continue
         for k in range(block.size):
-            _, number, col = laid[block.b + k]
+            number, col = laid[block.b + k].page, laid[block.b + k].col
             label = None
             if number != page:
                 label = f"page {number}" + (f" · col {col}" if col else "")
@@ -499,6 +558,108 @@ def with_marks(tokens: list[tuple], marks: dict[int, str]) -> list[tuple]:
         cls = "pb page" if label.startswith("page") else "pb"
         out[i] = (kind, f'{space}<span class="{cls}" data-label="{label}"></span>{raw.lstrip()}', key)
     return out
+
+
+# --- the pages as laid out --------------------------------------------------------------------
+
+SHEETS: dict[str, bytes] = {}  # PDFs of working-tree pages being viewed, by key (the newest few)
+SHEET_KEY = re.compile(rf"([0-9a-f]{{40}}|{WORKTREE}-[0-9a-f]{{12}})")
+FOOTER = 56  # points from the page bottom below which a word is the page number, not the text
+GAP = 8  # points between two highlighted words that still count as one run
+
+
+def sheet_key(sha: str, version: str) -> str:
+    return sha if sha != WORKTREE else f"{WORKTREE}-{version}"
+
+
+def sheet_pdf(key: str, lang: str) -> bytes:
+    if key.startswith(WORKTREE):
+        if key not in SHEETS:
+            raise Error(404, "that working-tree page is out of date")
+        return SHEETS[key]
+    return compiled(key, lang, "pdf")
+
+
+def sheet_svg(pdf: bytes, number: int) -> bytes:
+    import pymupdf
+
+    with pymupdf.open(stream=pdf, filetype="pdf") as doc:
+        if not 1 <= number <= len(doc):
+            raise Error(404, f"no page {number}")
+        return doc[number - 1].get_svg_image(text_as_path=True).encode()
+
+
+def runs(pieces: list[Piece]) -> list[list]:
+    """Merge neighbouring pieces on one line into [page, x0, y0, x1, y1] boxes."""
+    boxes: list[list] = []
+    for p in pieces:
+        last = boxes[-1] if boxes else None
+        if last and last[0] == p.page and abs(last[2] - p.y0) < 3 and -1 <= p.x0 - last[3] < GAP:
+            last[3], last[4] = max(last[3], p.x1), max(last[4], p.y1)
+        else:
+            boxes.append([p.page, p.x0, p.y0, p.x1, p.y1])
+    return boxes
+
+
+def spoken(pieces: list[Piece]) -> str:
+    return "".join((" " if p.space else "") + p.raw for p in pieces).strip()
+
+
+def worded(pieces: list[Piece]) -> int:
+    return sum(any(c.isalnum() for c in p.raw) for p in pieces)
+
+
+def layout(new_pdf: bytes, old_pdf: bytes | None) -> list[dict]:
+    """Per page of `new_pdf`: its size and, against `old_pdf`, the boxes to draw over it.
+
+    Added words are boxed, removed words become a tick (with the old text) where they were, and an
+    embedded image that is not in the old PDF gets a frame. Boxes are percentages of the page."""
+    new = read_pdf(new_pdf, images=True)
+    sheets = [{"n": n, "w": w, "h": h, "added": [], "gone": [], "frames": [], "add": 0, "rem": 0, "blocks": 0}
+              for n, (w, h) in enumerate(new.sizes, 1)]  # fmt: skip
+
+    def pct(page: int, x0: float, y0: float, x1: float, y1: float) -> str:
+        w, h = new.sizes[page - 1]
+        return (f"left:{x0 / w:.3%};top:{y0 / h:.3%};width:{(x1 - x0) / w:.3%};"
+                f"height:{(y1 - y0) / h:.3%}")  # fmt: skip
+
+    if old_pdf is None:
+        return sheets
+    old = read_pdf(old_pdf, images=True)
+
+    def keys(pieces: list[Piece]) -> list[tuple]:
+        return [("text", "", p.text) for p in pieces]  # the shape `opcodes` takes
+
+    def words(pieces: list[Piece]) -> tuple:
+        return tuple(p.text for p in pieces)
+
+    ops = [op for op in opcodes(keys(old.pieces), keys(new.pieces)) if op[0] != "equal"]
+    # a float (figure, table) that changed page is deleted in one place and inserted in another
+    moved = {words(old.pieces[a0:a1]) for tag, a0, a1, _, _ in ops if tag == "delete"} & {
+        words(new.pieces[b0:b1]) for tag, _, _, b0, b1 in ops if tag == "insert"
+    }
+    for tag, a0, a1, b0, b1 in ops:
+        if tag == "delete" and words(old.pieces[a0:a1]) in moved:
+            continue
+        if tag == "insert" and words(new.pieces[b0:b1]) in moved:
+            continue
+        for page, x0, y0, x1, y1 in runs(new.pieces[b0:b1]):
+            sheets[page - 1]["added"].append(pct(page, x0 - 1, y0, x1 + 1, y1))
+        for p in new.pieces[b0:b1]:
+            sheets[p.page - 1]["add"] += worded([p])
+        if a1 > a0:
+            at = new.pieces[min(b0, len(new.pieces) - 1)]
+            sheet = sheets[at.page - 1]
+            sheet["gone"].append({"style": pct(at.page, at.x0, at.y0, at.x0, at.y1), "text": spoken(old.pieces[a0:a1])})
+            sheet["rem"] += worded(old.pieces[a0:a1])
+    before = Counter(d for _, _, d in old.images)
+    for page, (x0, y0, x1, y1), digest in new.images:
+        if not before[digest]:
+            sheets[page - 1]["frames"].append(pct(page, x0, y0, x1, y1))
+            sheets[page - 1]["blocks"] += 1
+        else:
+            before[digest] -= 1
+    return sheets
 
 
 # --- contents -------------------------------------------------------------------------------
@@ -654,38 +815,68 @@ def describe(rev: str, sha: str) -> str:
 
 
 def page(lang: str, rest: str, *, label: str, old: str, new: str, body: str, title: str,
-         diffing: bool, version: str) -> str:  # fmt: skip
-    body, toc = outline(body)
-    lists = listing(body)
+         diffing: bool, version: str, sheets: list[dict] | None = None, key: str = "") -> str:  # fmt: skip
+    """`sheets` (from `layout`) shows the pages as Typst lays them out, in place of the text `body`."""
+    toc, lists = [], {"fig": [], "tab": []}
+    if sheets is None:
+        body, toc = outline(body)
+        lists = listing(body)
+    tail = "?layout=pages" if sheets is not None else ""
     return TEMPLATES.get_template("page.html").render(
         lang=lang, lang_prefix=prefix(lang), label=label, title=title, body=body, toc=toc,
         figures=lists["fig"], tables=lists["tab"], diffing=diffing, commits=picker_rows(old, new),
         version=version if new == WORKTREE else "",  # only the working tree can change under us
-        switch={code: f"{prefix(code)}/{rest}" for code in LANGS},
+        sheets=sheets, key=key, layout=tail,
+        switch={code: f"{prefix(code)}/{rest}{tail}" for code in LANGS},
+        modes={"text": f"{prefix(lang)}/{rest}", "pages": f"{prefix(lang)}/{rest}?layout=pages"},
     )  # fmt: skip
 
 
-def diff_page(lang: str, base: str, head: str) -> str:
+def stage(sha: str, lang: str, version: str) -> tuple[bytes, str]:
+    """The PDF of a revision, and the key its page images are served under."""
+    pdf, key = compiled(sha, lang, "pdf"), sheet_key(sha, version)
+    if sha == WORKTREE:
+        SHEETS[key] = pdf
+        for stale in list(SHEETS)[:-4]:
+            del SHEETS[stale]
+    return pdf, key
+
+
+def diff_page(lang: str, base: str, head: str, pages: bool = False) -> str:
     version = fingerprint()  # before building, so an edit during the build still shows as new
     old_sha, new_sha = resolve(base), resolve(head or WORKTREE)
     label = f"{describe(base, old_sha)} → {describe(head or WORKTREE, new_sha)}"
+    rest = f"{base}..{head}"
+    new_pdf, key = stage(new_sha, lang, version)
+    if pages:
+        return page(
+            lang, rest, label=label, old=old_sha, new=new_sha, diffing=True, body="", version=version,
+            title=read_pdf(new_pdf).title or lang, key=key,
+            sheets=layout(new_pdf, compiled(old_sha, lang, "pdf")),
+        )  # fmt: skip
     new_page = build(new_sha, lang)
     return page(
-        lang, f"{base}..{head}", label=label, old=old_sha, new=new_sha, diffing=True,
-        body=redline(build(old_sha, lang), new_page, compiled(new_sha, lang, "pdf")),
+        lang, rest, label=label, old=old_sha, new=new_sha, diffing=True,
+        body=redline(build(old_sha, lang), new_page, new_pdf),
         title=title_of(new_page), version=version,
     )  # fmt: skip
 
 
-def view_page(lang: str, rev: str) -> str:
+def view_page(lang: str, rev: str, pages: bool = False) -> str:
     """One revision, styled like the diff pages but with nothing marked."""
     version = fingerprint()
     sha = resolve(rev)
+    pdf, key = stage(sha, lang, version)
+    label = f"viewing {describe(rev, sha)}"
+    if pages:
+        return page(
+            lang, rev, label=label, old="", new=sha, diffing=False, body="", version=version,
+            title=read_pdf(pdf).title or lang, key=key, sheets=layout(pdf, None),
+        )  # fmt: skip
     new_page = build(sha, lang)
     return page(
-        lang, rev, label=f"viewing {describe(rev, sha)}", old="", new=sha, diffing=False,
-        body=redline(None, new_page, compiled(sha, lang, "pdf")),
-        title=title_of(new_page), version=version,
+        lang, rev, label=label, old="", new=sha, diffing=False,
+        body=redline(None, new_page, pdf), title=title_of(new_page), version=version,
     )  # fmt: skip
 
 
@@ -703,13 +894,14 @@ def compare_redirect(lang: str, query: dict[str, list[str]]) -> str | None:
     if "to" not in query:
         return None
     new = query["to"][0]
+    tail = "?layout=pages" if query.get("layout") == ["pages"] else ""
     if "from" not in query:
-        return f"{prefix(lang)}/{short(new)}"
+        return f"{prefix(lang)}/{short(new)}{tail}"
     old = query["from"][0]
     order = [c.sha for c in history()]
     if old in order and new in order and order.index(old) < order.index(new):
         old, new = new, old
-    return f"{prefix(lang)}/{short(old)}..{'' if new == WORKTREE else short(new)}"
+    return f"{prefix(lang)}/{short(old)}..{'' if new == WORKTREE else short(new)}{tail}"
 
 
 # --- server ---------------------------------------------------------------------------------
@@ -745,11 +937,30 @@ class Handler(BaseHTTPRequestHandler):
         except (BrokenPipeError, ConnectionResetError):
             pass  # the tab went away
 
+    def sheet(self, path: str) -> None:
+        """`_pages/<key>/<lang>/<n>.svg`: one page of a PDF Typst laid out, drawn as an SVG."""
+        try:
+            _, key, lang, name = path.split("/")
+            if not (SHEET_KEY.fullmatch(key) and lang in LANGS and name.endswith(".svg")):
+                raise Error(404, "no such page")
+            svg = sheet_svg(sheet_pdf(key, lang), int(name.removesuffix(".svg")))
+        except (ValueError, Error) as error:
+            status = error.status if isinstance(error, Error) else 404
+            return self.respond(status, str(error).encode(), "text/plain")
+        self.send_response(200)
+        self.send_header("Content-Type", "image/svg+xml")
+        self.send_header("Content-Length", str(len(svg)))
+        self.send_header("Cache-Control", "max-age=31536000, immutable")  # the key names the content
+        self.end_headers()
+        self.wfile.write(svg)
+
     def do_GET(self) -> None:
         raw_path, _, query = self.path.partition("?")
         path = unquote(raw_path).strip("/")
         if path == "_events":
             return self.stream(parse_qs(query).get("v", [""])[0])
+        if path.startswith("_pages/"):
+            return self.sheet(path)
         if path.startswith("_static/"):
             asset = VIEWER / "static" / Path(path).name  # name only: no traversal
             if not asset.is_file():
@@ -757,6 +968,7 @@ class Handler(BaseHTTPRequestHandler):
             kind = mimetypes.guess_type(asset.name)[0] or "application/octet-stream"
             return self.respond(200, asset.read_bytes(), f"{kind}; charset=utf-8")
         lang, path = split_lang(path)
+        pages = parse_qs(query).get("layout") == ["pages"]
         try:
             if path == "" and (target := compare_redirect(lang, parse_qs(query))):
                 self.send_response(303)
@@ -769,9 +981,9 @@ class Handler(BaseHTTPRequestHandler):
                 raise Error(404, "no favicon")
             elif ".." in path:
                 base, head = path.split("..", 1)
-                body, status = diff_page(lang, base, head), 200
+                body, status = diff_page(lang, base, head, pages), 200
             else:
-                body, status = view_page(lang, path), 200
+                body, status = view_page(lang, path, pages), 200
         except Error as error:
             body, status = f"<pre>{html.escape(str(error))}</pre>", error.status
         self.respond(status, body.encode(), "text/html; charset=utf-8")

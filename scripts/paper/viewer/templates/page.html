@@ -14,7 +14,7 @@
 <title>{{ title }}{{ ' (diff)' if diffing }}</title>
 <link rel="stylesheet" href="/_static/app.css">
 </head>
-<body{% if version %} data-version="{{ version }}"{% endif %}>
+<body{% if sheets is not none %} class="pages"{% endif %}{% if version %} data-version="{{ version }}"{% endif %}>
 <div class="legend">
   <div class="bar">
     <span class="label">{{ label|safe }}
@@ -24,7 +24,15 @@
       <a href="{{ switch[code] }}"{{ ' aria-current=page' if code == lang }}>{{ name }}</a>
       {%- endfor %}
     </span>
+    <span class="lang" role="group" aria-label="layout">
+      {%- for code, name in (('text', 'text'), ('pages', 'pages')) %}
+      <a href="{{ modes[code] }}" title="{{ 'Single column, easiest to read the edits' if code == 'text' else 'The pages as Typst lays them out (two columns)' }}"
+        {{- ' aria-current=page' if (code == 'pages') == (sheets is not none) }}>{{ name }}</a>
+      {%- endfor %}
+    </span>
+    {%- if sheets is none %}
     <label title="Mark where the two-column PDF starts a new page or column"><input type="checkbox" id="marks"> page marks</label>
+    {%- endif %}
     {%- if version %}
     <span class="live">
       <button type="button" id="reload" hidden title="The paper sources changed">changed · reload</button>
@@ -38,6 +46,15 @@
 </div>
 <div class="layout">
   <nav class="side">
+    {%- if sheets %}
+    <details class="toc contents"><summary>Pages</summary>
+      <ol>
+      {%- for s in sheets %}
+        <li>{{ entry(s, 'page-' ~ s.n, 'Page ' ~ s.n) }}</li>
+      {%- endfor %}
+      </ol>
+    </details>
+    {%- endif %}
     {%- if toc %}
     <details class="toc contents"><summary>Contents</summary>
       <ol>
@@ -61,7 +78,20 @@
     </details>
     {%- endfor %}
   </nav>
+  {%- if sheets is not none %}
+  <main class="sheets">
+    {%- for s in sheets %}
+    <section class="sheet" id="page-{{ s.n }}" style="aspect-ratio:{{ s.w }}/{{ s.h }}">
+      <img src="/_pages/{{ key }}/{{ lang }}/{{ s.n }}.svg" alt="page {{ s.n }}" loading="lazy">
+      {%- for style in s.added %}<span class="hl" style="{{ style }}"></span>{% endfor %}
+      {%- for style in s.frames %}<span class="frame" style="{{ style }}"></span>{% endfor %}
+      {%- for g in s.gone %}<span class="gone" tabindex="0" style="{{ g.style }}" data-text="{{ g.text }}"></span>{% endfor %}
+    </section>
+    {%- endfor %}
+  </main>
+  {%- else %}
   <main><h1>{{ title }}</h1>{{ body|safe }}</main>
+  {%- endif %}
 </div>
 <script src="/_static/app.js"></script>
 </body>
