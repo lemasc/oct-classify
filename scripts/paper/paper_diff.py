@@ -13,7 +13,9 @@ Tables are diffed as whole blocks (old table dimmed above the new one, changed c
 in the new table, removed cells red in the old), since a per-cell diff breaks when columns move.
 Images (and inline SVG drawings, e.g. the fletcher flowchart, hashed as a whole) get the same treatment: each is identified by its Git blob id (the id `git ls-tree` reports
 for the figure file, recovered from the data URI Typst embeds), and a changed blob shows old dimmed
-above new. The page chrome (contents with per-section change counts, language switch, copy tools)
+above new. Pages that show the working tree stay connected over
+Server-Sent Events: while any is open a watcher polls the paper sources, and an edit makes the page
+offer a reload (or reload itself, keeping its place in the text). The page chrome (contents with per-section change counts, language switch, copy tools)
 lives in viewer/templates (Jinja2) and viewer/static; dependencies are in the `paper` group.
 """
 
@@ -26,6 +28,8 @@ import re
 import subprocess
 import tempfile
 import threading
+import time
+from contextlib import contextmanager
 from difflib import SequenceMatcher
 from functools import cache
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -46,6 +50,8 @@ ENTRY = {"en": "main.typ", "th": "th/main.typ"}  # relative to PAPER
 MIN_ANCHOR = 4  # equal runs shorter than this between two edits are folded into the edit
 HISTORY = 150  # commits scanned for the revision picker
 BUILD_LOCK = threading.Lock()
+POLL = 0.5  # seconds between looks at the paper sources while a live page is open
+KEEPALIVE = 10  # seconds of silence before a comment line probes the stream (and drops dead clients)
 TEMPLATES = Environment(
     loader=FileSystemLoader(VIEWER / "templates"),
     autoescape=select_autoescape(["html"]),
@@ -125,6 +131,72 @@ def build(sha: str, lang: str) -> str:
                 typst(Path(tmp) / PAPER, partial, lang)
                 partial.replace(cached)
     return cached.read_text()
+
+
+# --- watching the working tree --------------------------------------------------------------
+
+
+def fingerprint() -> str:
+    """Digest of name, mtime and size of every file the working-tree paper builds from."""
+    state = []
+    for root in (PAPER, *DATA_DIRS):
+        for path in sorted((REPO / root).rglob("*")):
+            if path.name == "main.pdf" or not path.is_file():
+                continue  # a PDF built by hand is an output, not a source
+            stat = path.stat()
+            state.append((str(path), stat.st_mtime_ns, stat.st_size))
+    return hashlib.md5(repr(state).encode()).hexdigest()[:12]
+
+
+class Watch:
+    """Polls `fingerprint()`, but only while some live page is listening."""
+
+    def __init__(self) -> None:
+        self.cond = threading.Condition()
+        self.listeners = 0
+        self.published = ""
+        self.thread: threading.Thread | None = None
+
+    @contextmanager
+    def listening(self):
+        with self.cond:
+            self.listeners += 1
+            if self.thread is None:
+                self.published = fingerprint()
+                self.thread = threading.Thread(target=self.run, daemon=True)
+                self.thread.start()
+        try:
+            yield
+        finally:
+            with self.cond:
+                self.listeners -= 1
+
+    def run(self) -> None:
+        candidate = None
+        while True:
+            time.sleep(POLL)
+            with self.cond:
+                if not self.listeners:
+                    self.thread = None
+                    return
+            now = fingerprint()
+            if now == self.published:
+                candidate = None
+            elif now == candidate:  # unchanged for a whole poll: the editor has finished writing
+                with self.cond:
+                    self.published = now
+                    self.cond.notify_all()
+            else:
+                candidate = now
+
+    def wait(self, seen: str, timeout: float) -> str | None:
+        """The new fingerprint once it differs from `seen`, or None after `timeout`."""
+        with self.cond:
+            self.cond.wait_for(lambda: self.published != seen, timeout)
+            return self.published if self.published != seen else None
+
+
+WATCH = Watch()
 
 
 # --- diff -----------------------------------------------------------------------------------
@@ -504,33 +576,36 @@ def describe(rev: str, sha: str) -> str:
 
 
 def page(lang: str, rest: str, *, label: str, old: str, new: str, body: str, title: str,
-         diffing: bool) -> str:  # fmt: skip
+         diffing: bool, version: str) -> str:  # fmt: skip
     body, toc = outline(body)
     lists = listing(body)
     return TEMPLATES.get_template("page.html").render(
         lang=lang, lang_prefix=prefix(lang), label=label, title=title, body=body, toc=toc,
         figures=lists["fig"], tables=lists["tab"], diffing=diffing, commits=picker_rows(old, new),
+        version=version if new == WORKTREE else "",  # only the working tree can change under us
         switch={code: f"{prefix(code)}/{rest}" for code in LANGS},
     )  # fmt: skip
 
 
 def diff_page(lang: str, base: str, head: str) -> str:
+    version = fingerprint()  # before building, so an edit during the build still shows as new
     old_sha, new_sha = resolve(base), resolve(head or WORKTREE)
     label = f"{describe(base, old_sha)} → {describe(head or WORKTREE, new_sha)}"
     new_page = build(new_sha, lang)
     return page(
         lang, f"{base}..{head}", label=label, old=old_sha, new=new_sha, diffing=True,
-        body=redline(build(old_sha, lang), new_page), title=title_of(new_page),
+        body=redline(build(old_sha, lang), new_page), title=title_of(new_page), version=version,
     )  # fmt: skip
 
 
 def view_page(lang: str, rev: str) -> str:
     """One revision, styled like the diff pages but with nothing marked."""
+    version = fingerprint()
     sha = resolve(rev)
     new_page = build(sha, lang)
     return page(
         lang, rev, label=f"viewing {describe(rev, sha)}", old="", new=sha, diffing=False,
-        body=redline(None, new_page), title=title_of(new_page),
+        body=redline(None, new_page), title=title_of(new_page), version=version,
     )  # fmt: skip
 
 
@@ -574,9 +649,27 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(payload)
 
+    def stream(self, seen: str) -> None:
+        """Server-Sent Events: one `data: <fingerprint>` line per settled edit of the sources."""
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream")
+        self.send_header("Cache-Control", "no-cache")
+        self.end_headers()
+        try:
+            with WATCH.listening():
+                while True:
+                    now = WATCH.wait(seen, KEEPALIVE)
+                    self.wfile.write(b": keepalive\n\n" if now is None else f"data: {now}\n\n".encode())
+                    self.wfile.flush()
+                    seen = seen if now is None else now
+        except (BrokenPipeError, ConnectionResetError):
+            pass  # the tab went away
+
     def do_GET(self) -> None:
         raw_path, _, query = self.path.partition("?")
         path = unquote(raw_path).strip("/")
+        if path == "_events":
+            return self.stream(parse_qs(query).get("v", [""])[0])
         if path.startswith("_static/"):
             asset = VIEWER / "static" / Path(path).name  # name only: no traversal
             if not asset.is_file():

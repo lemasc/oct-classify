@@ -92,3 +92,9 @@ td.gone,th.gone{background:var(--del)}
  figure,.tbl-ins,.tbl-del{break-inside:avoid}
  h2,h3{break-after:avoid}
 }
+
+/* live reload */
+.live{display:inline-flex;gap:.6rem;align-items:center}
+.live label{cursor:pointer;user-select:none}
+#reload{background:var(--accent);color:Canvas;border:0;border-radius:4px;font-weight:bold}
+#reload.fail{background:var(--delfg)}

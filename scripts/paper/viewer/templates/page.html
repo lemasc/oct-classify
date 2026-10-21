@@ -14,7 +14,7 @@
 <title>{{ title }}{{ ' (diff)' if diffing }}</title>
 <link rel="stylesheet" href="/_static/app.css">
 </head>
-<body>
+<body{% if version %} data-version="{{ version }}"{% endif %}>
 <div class="legend">
   <div class="bar">
     <span class="label">{{ label|safe }}
@@ -24,6 +24,13 @@
       <a href="{{ switch[code] }}"{{ ' aria-current=page' if code == lang }}>{{ name }}</a>
       {%- endfor %}
     </span>
+    {%- if version %}
+    <span class="live">
+      <button type="button" id="reload" hidden title="The paper sources changed">changed · reload</button>
+      <label title="Reload by itself when the paper sources change, keeping your place in the text">
+        <input type="checkbox" id="auto"> auto-reload</label>
+    </span>
+    {%- endif %}
     <button type="button" id="print" title="Print, or save as PDF from the print dialog">Print / PDF</button>
   </div>
   <details><summary>change range</summary>{% include "history.html" %}</details>
