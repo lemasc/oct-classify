@@ -128,3 +128,10 @@ body.pages .layout{grid-template-columns:minmax(0,52rem)}
  .sheet .hl,.sheet .frame{-webkit-print-color-adjust:exact;print-color-adjust:exact}
  .sheet .gone{display:none}
 }
+
+/* selectable text over each sheet (invisible; the browser still draws the selection) */
+.sheet .ink{position:absolute;inset:0;width:100%;height:100%;fill:transparent;user-select:text;
+ cursor:text;pointer-events:auto}
+.sheet .ink text{white-space:pre}
+.sheet .ink ::selection{background:#2a6fdb55}
+.sheet .at{position:absolute;left:0;width:0;height:0}

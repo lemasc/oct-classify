@@ -467,6 +467,8 @@ class Pdf(NamedTuple):
     sizes: list[tuple[float, float]]  # per page: width, height
     pieces: list[Piece]  # in laid-out order
     images: list[tuple[int, tuple, str]]  # page, box, digest of the embedded file
+    lines: list[tuple]  # page, x0, y0, x1, y1, text of each line the PDF sets
+    outline: list[tuple]  # level, title, page, column, y of each heading
 
 
 def word_runs(words: list, mid: float) -> list[list[tuple]]:
@@ -509,13 +511,21 @@ def read_pdf(data: bytes, images: bool = False) -> Pdf:
         import pymupdf
     except ImportError:
         raise Error(500, "the paper pages need pymupdf: run with `uv run --group paper ...`") from None
-    sizes, pieces, pictures = [], [], []
+    sizes, pieces, pictures, lines = [], [], [], []
     with pymupdf.open(stream=data, filetype="pdf") as doc:
         digests: dict[int, str] = {}
         for number, sheet in enumerate(doc, 1):
             sizes.append((sheet.rect.width, sheet.rect.height))
             mid = sheet.rect.width / 2
-            body = [w for w in sheet.get_text("words") if w[1] < sheet.rect.height - FOOTER]
+            found = sheet.get_text("words")
+            line: dict[tuple, list] = {}
+            for word in found:  # (block, line) is how the PDF groups words into lines
+                line.setdefault(word[5:7], []).append(word)
+            for group in line.values():
+                lines.append((number, min(w[0] for w in group), min(w[1] for w in group),
+                              max(w[2] for w in group), max(w[3] for w in group),
+                              " ".join(w[4] for w in group)))  # fmt: skip
+            body = [w for w in found if w[1] < sheet.rect.height - FOOTER]
             for words in word_runs(body, mid):
                 pieces += run_pieces(words, number, mid)
             for info in sheet.get_image_info(xrefs=True) if images else ():
@@ -524,7 +534,12 @@ def read_pdf(data: bytes, images: bool = False) -> Pdf:
                     digests[xref] = hashlib.md5(doc.extract_image(xref)["image"]).hexdigest()
                 if xref:
                     pictures.append((number, info["bbox"], digests[xref]))
-        return Pdf(doc.metadata.get("title") or "", sizes, pieces, pictures)
+        outline = [
+            (level, title, page, 1 if dest["to"].x < sizes[page - 1][0] / 2 else 2, dest["to"].y)
+            for level, title, page, dest in doc.get_toc(simple=False)
+            if 1 <= page <= len(sizes) and "to" in dest
+        ]
+        return Pdf(doc.metadata.get("title") or "", sizes, pieces, pictures, lines, outline)
 
 
 def page_marks(tokens: list[tuple], laid: list[Piece]) -> dict[int, str]:
@@ -609,13 +624,37 @@ def worded(pieces: list[Piece]) -> int:
     return sum(any(c.isalnum() for c in p.raw) for p in pieces)
 
 
-def layout(new_pdf: bytes, old_pdf: bytes | None) -> list[dict]:
+def contents(new: Pdf, events: list[tuple]) -> list[dict]:
+    """The PDF outline as a two-level contents; `events` are (page, column, y, kind) of each edit.
+
+    Like the text page, an h2 entry counts everything up to the next h2 and an h3 only its own."""
+    heads = [(page, col, y) for _, _, page, col, y in new.outline]
+    entries = []
+    for n, (level, title, *_) in enumerate(new.outline):
+        end = next((heads[m] for m in range(n + 1, len(heads)) if new.outline[m][0] <= level), None)
+        mine = [kind for *at, kind in events if heads[n] <= tuple(at) and (end is None or tuple(at) < end)]
+        entries.append({
+            "level": level, "id": f"toc-{n}", "text": title, "page": heads[n][0], "y": heads[n][2],
+            "add": sum(k == "add" for k in mine), "rem": sum(k == "rem" for k in mine),
+            "blocks": sum(k == "blocks" for k in mine),
+        })  # fmt: skip
+    toc: list[dict] = []
+    for entry in entries:
+        if entry["level"] == 1 or not toc:
+            toc.append({**entry, "children": []})
+        else:
+            toc[-1]["children"].append(entry)
+    return toc
+
+
+def layout(new_pdf: bytes, old_pdf: bytes | None) -> tuple[list[dict], list[dict]]:
     """Per page of `new_pdf`: its size and, against `old_pdf`, the boxes to draw over it.
+    Also the contents, with the edits counted per section.
 
     Added words are boxed, removed words become a tick (with the old text) where they were, and an
     embedded image that is not in the old PDF gets a frame. Boxes are percentages of the page."""
     new = read_pdf(new_pdf, images=True)
-    sheets = [{"n": n, "w": w, "h": h, "added": [], "gone": [], "frames": [], "add": 0, "rem": 0, "blocks": 0}
+    sheets = [{"n": n, "w": w, "h": h, "added": [], "gone": [], "frames": [], "ink": [], "anchors": [], "add": 0, "rem": 0, "blocks": 0}
               for n, (w, h) in enumerate(new.sizes, 1)]  # fmt: skip
 
     def pct(page: int, x0: float, y0: float, x1: float, y1: float) -> str:
@@ -623,8 +662,15 @@ def layout(new_pdf: bytes, old_pdf: bytes | None) -> list[dict]:
         return (f"left:{x0 / w:.3%};top:{y0 / h:.3%};width:{(x1 - x0) / w:.3%};"
                 f"height:{(y1 - y0) / h:.3%}")  # fmt: skip
 
+    for page, x0, y0, x1, y1, text in new.lines:  # invisible text over the picture, to select and search
+        size = (y1 - y0) * 0.85
+        sheets[page - 1]["ink"].append({"x": round(x0, 2), "y": round(y1 - (y1 - y0) * 0.22, 2),
+                                        "len": round(x1 - x0, 2), "size": round(size, 2), "text": text})  # fmt: skip
+    for n, (_, _, page, _, y) in enumerate(new.outline):  # where each contents entry lands
+        sheets[page - 1]["anchors"].append({"id": f"toc-{n}", "top": f"{max(y, 0) / new.sizes[page - 1][1]:.3%}"})
+    events: list[tuple] = []
     if old_pdf is None:
-        return sheets
+        return sheets, contents(new, events)
     old = read_pdf(old_pdf, images=True)
 
     def keys(pieces: list[Piece]) -> list[tuple]:
@@ -647,19 +693,22 @@ def layout(new_pdf: bytes, old_pdf: bytes | None) -> list[dict]:
             sheets[page - 1]["added"].append(pct(page, x0 - 1, y0, x1 + 1, y1))
         for p in new.pieces[b0:b1]:
             sheets[p.page - 1]["add"] += worded([p])
+            events += [(p.page, 2 if p.col == 2 else 1, p.y0, "add")] * worded([p])
         if a1 > a0:
             at = new.pieces[min(b0, len(new.pieces) - 1)]
             sheet = sheets[at.page - 1]
             sheet["gone"].append({"style": pct(at.page, at.x0, at.y0, at.x0, at.y1), "text": spoken(old.pieces[a0:a1])})
             sheet["rem"] += worded(old.pieces[a0:a1])
+            events += [(at.page, 2 if at.col == 2 else 1, at.y0, "rem")] * worded(old.pieces[a0:a1])
     before = Counter(d for _, _, d in old.images)
     for page, (x0, y0, x1, y1), digest in new.images:
         if not before[digest]:
             sheets[page - 1]["frames"].append(pct(page, x0, y0, x1, y1))
             sheets[page - 1]["blocks"] += 1
+            events.append((page, 1 if x0 < new.sizes[page - 1][0] / 2 else 2, y0, "blocks"))
         else:
             before[digest] -= 1
-    return sheets
+    return sheets, contents(new, events)
 
 
 # --- contents -------------------------------------------------------------------------------
@@ -815,9 +864,10 @@ def describe(rev: str, sha: str) -> str:
 
 
 def page(lang: str, rest: str, *, label: str, old: str, new: str, body: str, title: str,
-         diffing: bool, version: str, sheets: list[dict] | None = None, key: str = "") -> str:  # fmt: skip
+         diffing: bool, version: str, sheets: list[dict] | None = None, key: str = "",
+         outline_toc: list[dict] | None = None) -> str:  # fmt: skip
     """`sheets` (from `layout`) shows the pages as Typst lays them out, in place of the text `body`."""
-    toc, lists = [], {"fig": [], "tab": []}
+    toc, lists = outline_toc or [], {"fig": [], "tab": []}
     if sheets is None:
         body, toc = outline(body)
         lists = listing(body)
@@ -849,10 +899,10 @@ def diff_page(lang: str, base: str, head: str, pages: bool = False) -> str:
     rest = f"{base}..{head}"
     new_pdf, key = stage(new_sha, lang, version)
     if pages:
+        sheets, toc = layout(new_pdf, compiled(old_sha, lang, "pdf"))
         return page(
             lang, rest, label=label, old=old_sha, new=new_sha, diffing=True, body="", version=version,
-            title=read_pdf(new_pdf).title or lang, key=key,
-            sheets=layout(new_pdf, compiled(old_sha, lang, "pdf")),
+            title=read_pdf(new_pdf).title or lang, key=key, sheets=sheets, outline_toc=toc,
         )  # fmt: skip
     new_page = build(new_sha, lang)
     return page(
@@ -869,9 +919,10 @@ def view_page(lang: str, rev: str, pages: bool = False) -> str:
     pdf, key = stage(sha, lang, version)
     label = f"viewing {describe(rev, sha)}"
     if pages:
+        sheets, toc = layout(pdf, None)
         return page(
             lang, rev, label=label, old="", new=sha, diffing=False, body="", version=version,
-            title=read_pdf(pdf).title or lang, key=key, sheets=layout(pdf, None),
+            title=read_pdf(pdf).title or lang, key=key, sheets=sheets, outline_toc=toc,
         )  # fmt: skip
     new_page = build(sha, lang)
     return page(
