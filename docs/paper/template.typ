@@ -33,4 +33,9 @@
 }
 
 // Title block and abstract span both columns and sit at the top of page 1; the body flows into two columns below.
-#let front(body) = place(top + center, scope: "parent", float: true, clearance: 1em, body)
+// HTML export has no pages and drops `place`, so there the content is emitted in the flow.
+#let front(body) = context if target() == "html" {
+  body
+} else {
+  place(top + center, scope: "parent", float: true, clearance: 1em, body)
+}
