@@ -76,13 +76,14 @@
   {
     set text(size: (9.5 / 11) * 1em)
     table(
-      columns: 5,
-      align: (left, right, right, right, right),
+      columns: 8,
+      align: (left, right, right, right, right, right, right, right),
       table.header(
         table.cell(rowspan: 2)[แหล่งข้อมูลที่กันไว้],
         table.cell(colspan: 3, align: center)[Macro-F1 (ชุดทดสอบ)],
         table.cell(rowspan: 2)[Macro-F1 \ (ทั้งแหล่งข้อมูล)],
-        [เคยเห็น], [ไม่เคยเห็น], [ส่วนต่าง],
+        table.cell(colspan: 3, align: center)[AUROC (ชุดทดสอบ)],
+        [เคยเห็น], [ไม่เคยเห็น], [ส่วนต่าง], [เคยเห็น], [ไม่เคยเห็น], [ส่วนต่าง],
         table.hline(),
       ),
       ..srcs
@@ -92,32 +93,6 @@
           pt(k("gap_test", s), "loso-fill"),
           dl(k("gap_test", s), "loso-fill - fused-fill"),
           ci(k("loso_full", s), "loso-fill"),
-        ))
-        .flatten(),
-      table.hline(),
-    )
-  },
-  caption: [Macro-F1 (%) ของแหล่งข้อมูลที่เคยเห็น (fused) เทียบกับไม่เคยเห็น (LOSO) รูปแบบ letterbox โดย _ส่วนต่าง_ คือผลต่างแบบจับคู่ (LOSO ลบด้วย fused) บนชุดภาพทดสอบเดียวกัน พร้อมช่วงความเชื่อมั่นร้อยละ 95],
-) <tab-unseen>
-
-ทุกแหล่งข้อมูลลดลงเกินระดับสัญญาณรบกวนเมื่อเป็นแหล่งข้อมูลที่ไม่เคยเห็น (@tab-unseen) โดยคอลัมน์ทั้งแหล่งข้อมูลประเมินโมเดล LOSO บนภาพทั้งหมดของแหล่งข้อมูลที่แยกไว้ โดย Duke ประเมินด้วยโมเดลเดี่ยวบนดวงตาทั้ง #DS.duke.n_groups ดวง ส่วนต่างของ Macro-F1 ของ OCTDL, PAIMA และ Duke อยู่ที่ #span(("octdl", "paima", "duke").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) จุด ขณะที่ของ Kermany อยู่ที่ #dl(k("gap_test", "kermany"), "loso-fill - fused-fill")
-
-สำหรับแหล่งข้อมูล 3 คลาส ส่วนต่างของ AUROC น้อยกว่าของ Macro-F1 อย่างมาก (@tab-auroc; สำหรับ Kermany #dl(k("gap_test", "kermany"), "loso-fill - fused-fill", name: "macro_auroc")) ซึ่งชี้ว่าโมเดลยังจัดอันดับคลาสที่ถูกต้องไว้ในลำดับต้น ๆ ได้ในภาพส่วนใหญ่ แต่การตัดสินใจมักตกไปอยู่อีกฝั่งของจุดตัดการตัดสินใจ ซึ่ง PAIMA เป็นข้อยกเว้นเดียว โดยมีส่วนต่างของ AUROC ที่ #dl(k("gap_test", "paima"), "loso-fill - fused-fill", name: "macro_auroc") เทียบกับ Macro-F1 ที่ #dp(k("gap_test", "paima"), "loso-fill - fused-fill") ซึ่งสะท้อนการเปลี่ยนแปลงของความสามารถด้านการจัดอันดับ ไม่ใช่เพียงจุดตัดที่คลาดเคลื่อน
-
-#figure(
-  {
-    set text(size: (9.5 / 11) * 1em)
-    table(
-      columns: 4,
-      align: (left, right, right, right),
-      table.header(
-        table.cell(rowspan: 2)[แหล่งข้อมูลที่กันไว้], table.cell(colspan: 3, align: center)[AUROC (ชุดทดสอบ)],
-        [เคยเห็น], [ไม่เคยเห็น], [ส่วนต่าง],
-        table.hline(),
-      ),
-      ..srcs
-        .map(s => (
-          [#source-name.at(s)],
           pt(k("gap_test", s), "fused-fill", name: "macro_auroc"),
           pt(k("gap_test", s), "loso-fill", name: "macro_auroc"),
           dl(k("gap_test", s), "loso-fill - fused-fill", name: "macro_auroc"),
@@ -126,8 +101,12 @@
       table.hline(),
     )
   },
-  caption: [Macro-AUROC ของแหล่งข้อมูลที่เคยเห็นเทียบกับไม่เคยเห็น (ชุดทดสอบ, letterbox) โดย _ส่วนต่าง_ คือผลต่างแบบจับคู่ พร้อมช่วงความเชื่อมั่นร้อยละ 95],
-) <tab-auroc>
+  caption: [Macro-F1 และ Macro-AUROC (%) ของแหล่งข้อมูลที่เคยเห็น (fused) เทียบกับไม่เคยเห็น (LOSO) รูปแบบ letterbox โดย _ส่วนต่าง_ คือผลต่างแบบจับคู่ (LOSO ลบด้วย fused) บนชุดภาพทดสอบเดียวกัน พร้อมช่วงความเชื่อมั่นร้อยละ 95],
+) <tab-unseen>
+
+ทุกแหล่งข้อมูลลดลงเกินระดับสัญญาณรบกวนเมื่อเป็นแหล่งข้อมูลที่ไม่เคยเห็น (@tab-unseen) โดยคอลัมน์ทั้งแหล่งข้อมูลประเมินโมเดล LOSO บนภาพทั้งหมดของแหล่งข้อมูลที่แยกไว้ โดย Duke ประเมินด้วยโมเดลเดี่ยวบนดวงตาทั้ง #DS.duke.n_groups ดวง ส่วนต่างของ Macro-F1 ของ OCTDL, PAIMA และ Duke อยู่ที่ #span(("octdl", "paima", "duke").map(s => delta(k("gap_test", s), "loso-fill - fused-fill").point)) จุด ขณะที่ของ Kermany อยู่ที่ #dl(k("gap_test", "kermany"), "loso-fill - fused-fill")
+
+สำหรับแหล่งข้อมูล 3 คลาส ส่วนต่างของ AUROC น้อยกว่าของ Macro-F1 อย่างมาก (@tab-unseen; สำหรับ Kermany #dl(k("gap_test", "kermany"), "loso-fill - fused-fill", name: "macro_auroc")) ซึ่งชี้ว่าโมเดลยังจัดอันดับคลาสที่ถูกต้องไว้ในลำดับต้น ๆ ได้ในภาพส่วนใหญ่ แต่การตัดสินใจมักตกไปอยู่อีกฝั่งของจุดตัดการตัดสินใจ ซึ่ง PAIMA เป็นข้อยกเว้นเดียว โดยมีส่วนต่างของ AUROC ที่ #dl(k("gap_test", "paima"), "loso-fill - fused-fill", name: "macro_auroc") เทียบกับ Macro-F1 ที่ #dp(k("gap_test", "paima"), "loso-fill - fused-fill") ซึ่งสะท้อนการเปลี่ยนแปลงของความสามารถด้านการจัดอันดับ ไม่ใช่เพียงจุดตัดที่คลาดเคลื่อน
 
 ชุดทดสอบ (test set) ของ Kermany ไม่ได้เป็นตัวแทนที่ดีของชุดข้อมูลโดยรวม โดยมีภาพถึง #DS.kermany.test_sizes.at("1024x496") ภาพจากทั้งหมด #num(DS.kermany.n_test) ภาพที่มีขนาด 1024×496 พิกเซล ซึ่งมีสัดส่วนเพียงร้อยละ #pct1(size-share("kermany", "1024x496") * 100) ในชุดข้อมูล Kermany ทั้งหมด
 
